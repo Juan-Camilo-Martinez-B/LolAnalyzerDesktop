@@ -1,0 +1,186 @@
+/* ============================================================
+   LolAnalyzer - Glassmorphism & Shared UI Utilities
+   src/styles/glassmorphism.css
+   ============================================================ */
+
+/* ── Glass Cards ── */
+.glass {
+  background: var(--bg-surface-glass);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid var(--border-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--shadow-inset);
+}
+
+.glass-gold {
+  background: rgba(14, 21, 32, 0.88);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--shadow-gold), var(--shadow-inset);
+}
+
+.glass-cyan {
+  background: rgba(10, 20, 32, 0.86);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-cyan);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--shadow-cyan), var(--shadow-inset);
+}
+
+.glass-danger {
+  background: rgba(20, 8, 10, 0.90);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-red);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card), var(--shadow-red), var(--shadow-inset);
+}
+
+/* ── Dividers ── */
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-500) 50%, transparent);
+  opacity: 0.45;
+}
+
+.divider-surface {
+  height: 1px;
+  background: var(--border-surface);
+}
+
+/* ── Text Gradients ── */
+.text-gradient-gold {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-200));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-cyan {
+  background: linear-gradient(135deg, var(--cyan-400), var(--cyan-200));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-victory {
+  background: linear-gradient(135deg, var(--green-400), var(--green-300));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Glow Dots & Pulse Indicators ── */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot--online {
+  background: var(--green-400);
+  box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.6);
+  animation: pulse-online 2s ease-in-out infinite;
+}
+
+.status-dot--warning {
+  background: var(--gold-500);
+  box-shadow: 0 0 0 0 rgba(200, 155, 60, 0.6);
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+.status-dot--danger {
+  background: var(--red-400);
+  box-shadow: 0 0 0 0 rgba(255, 70, 85, 0.6);
+  animation: pulse-danger 1.5s ease-in-out infinite;
+}
+
+.status-dot--offline {
+  background: var(--slate-500);
+}
+
+/* ── Scrollbar Styling ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-surface-1);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--slate-600);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-500);
+}
+
+/* ── Animations ── */
+@keyframes pulse-online {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(0, 214, 143, 0); }
+}
+
+@keyframes pulse-warning {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(200, 155, 60, 0.6); }
+  50%       { box-shadow: 0 0 0 6px rgba(200, 155, 60, 0); }
+}
+
+@keyframes pulse-danger {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 70, 85, 0.6); }
+  50%       { box-shadow: 0 0 0 8px rgba(255, 70, 85, 0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes tilt-pulse {
+  0%, 100% { box-shadow: var(--shadow-red); }
+  50%       { box-shadow: 0 0 40px rgba(255, 70, 85, 0.65), 0 0 80px rgba(255, 70, 85, 0.25); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in       { animation: fade-in 0.35s var(--transition-base) forwards; }
+.animate-slide-left    { animation: slide-in-left 0.30s var(--transition-base) forwards; }
+.animate-slide-right   { animation: slide-in-right 0.30s var(--transition-base) forwards; }
+.animate-scale-in      { animation: scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.animate-tilt-pulse    { animation: tilt-pulse 1.2s ease-in-out infinite; }
+
+/* ── Skeleton Loading ── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-surface-2) 25%,
+    var(--bg-surface-3) 50%,
+    var(--bg-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
