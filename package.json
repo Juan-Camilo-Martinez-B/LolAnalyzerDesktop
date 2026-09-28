@@ -10,10 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "lucide-react": "^1.48.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@overwolf/types": "^3.24.13",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
