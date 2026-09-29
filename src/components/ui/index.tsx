@@ -210,3 +210,7 @@ export function GoldDivider({ className = '' }: { className?: string }) {
 export function SurfaceDivider({ className = '' }: { className?: string }) {
   return <div className={`divider-surface ${className}`} role="separator" />;
 }
+
+export * from './Sparkline';
+export * from './RadarChart';
+
