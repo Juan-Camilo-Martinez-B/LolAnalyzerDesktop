@@ -89,14 +89,27 @@ export interface MatchParticipant {
 /** ── Full match record ── */
 export interface MatchRecord {
   matchId: string;
-  gameCreation: number;       // epoch ms
-  gameDuration: number;       // seconds
+  gameCreation?: number;       // epoch ms
+  gameDuration?: number;       // seconds
   gameMode: string;
-  queueId: number;
-  participants: MatchParticipant[];
-  // Resolved for the local player
+  queueId?: number;
+  participants?: MatchParticipant[];
   localParticipant?: MatchParticipant;
   win?: boolean;
+  // Convenience summary fields
+  isWin?: boolean;
+  durationSec?: number;
+  championName?: string;
+  role?: string;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  kda?: number;
+  cs?: number;
+  csPerMin?: number;
+  timestamp?: string;
+  items?: number[];
+  trinketId?: number;
 }
 
 /** ── Live game state (broadcasted from background) ── */
