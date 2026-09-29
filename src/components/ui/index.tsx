@@ -213,4 +213,6 @@ export function SurfaceDivider({ className = '' }: { className?: string }) {
 
 export * from './Sparkline';
 export * from './RadarChart';
+export * from './Modal';
+export * from './Toast';
 
