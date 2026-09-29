@@ -2,6 +2,7 @@ import React from 'react';
 import { ProfileHeader } from '../components/dashboard/ProfileHeader';
 import { KpiSummaryCards } from '../components/dashboard/KpiSummaryCards';
 import { TiltOMeterGauge } from '../components/dashboard/TiltOMeterGauge';
+import { ChampionPerformanceTable } from '../components/dashboard/ChampionPerformanceTable';
 
 export function DashboardView() {
   return (
@@ -15,7 +16,10 @@ export function DashboardView() {
       {/* Mental Tilt-o-Meter Gauge */}
       <TiltOMeterGauge />
 
-      {/* Placeholder for Commits 16-19 */}
+      {/* Champion Mastery & Performance Table */}
+      <ChampionPerformanceTable />
+
+      {/* Placeholder for Commits 17-19 */}
       <div
         style={{
           border: '1px dashed var(--border-dark)',
@@ -29,7 +33,7 @@ export function DashboardView() {
           fontFamily: 'var(--font-mono)',
         }}
       >
-        [ Champion Performance Table & Match History loading in Commits 16-19 ]
+        [ Match History & Telemetry Drilldown loading in Commits 17-19 ]
       </div>
     </div>
   );
