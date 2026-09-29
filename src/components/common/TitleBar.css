@@ -1,0 +1,109 @@
+/* ============================================================
+   LolAnalyzer - TitleBar Component Styles
+   src/components/common/TitleBar.css
+   ============================================================ */
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--space-3);
+  background: rgba(7, 10, 15, 0.95);
+  border-bottom: 1px solid var(--border-gold);
+  -webkit-app-region: drag;
+  user-select: none;
+  flex-shrink: 0;
+  position: relative;
+  z-index: var(--z-nav);
+}
+
+.titlebar__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__logo-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--gold-500);
+  flex-shrink: 0;
+}
+
+.titlebar__title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--gold-300);
+}
+
+.titlebar__title span {
+  color: var(--cyan-400);
+}
+
+.titlebar__center {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.titlebar__status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--slate-400);
+  font-family: var(--font-mono);
+}
+
+.titlebar__status-item span {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.titlebar__controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--slate-400);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.titlebar__btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+}
+
+.titlebar__btn--close:hover {
+  background: var(--red-500);
+  color: var(--white);
+}
+
+.titlebar__btn--minimize:hover {
+  background: rgba(200, 155, 60, 0.20);
+  color: var(--gold-300);
+}

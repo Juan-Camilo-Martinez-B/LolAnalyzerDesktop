@@ -1,0 +1,179 @@
+/* ============================================================
+   LolAnalyzer - Navbar Component Styles
+   src/components/common/Navbar.css
+   ============================================================ */
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  width: 64px;
+  background: rgba(7, 10, 15, 0.97);
+  border-right: 1px solid var(--border-gold);
+  flex-shrink: 0;
+  padding: var(--space-3) 0;
+  gap: var(--space-1);
+  align-items: center;
+  position: relative;
+  z-index: var(--z-card);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.navbar--expanded {
+  width: 200px;
+}
+
+/* ── Nav Items ── */
+.navbar__item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar--expanded .navbar__item {
+  justify-content: flex-start;
+  padding: 0 var(--space-3);
+}
+
+.navbar__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--slate-400);
+  transition: var(--transition-base);
+  position: relative;
+  justify-content: center;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.navbar--expanded .navbar__btn {
+  width: 100%;
+  justify-content: flex-start;
+  padding: 0 var(--space-3);
+}
+
+.navbar__btn:hover {
+  background: rgba(200, 155, 60, 0.08);
+  color: var(--gold-300);
+}
+
+.navbar__btn--active {
+  color: var(--gold-400) !important;
+  background: rgba(200, 155, 60, 0.12) !important;
+}
+
+.navbar__btn--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: var(--gold-500);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  box-shadow: var(--shadow-gold);
+}
+
+.navbar__icon {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.navbar__label {
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: var(--transition-base);
+  pointer-events: none;
+  font-size: var(--text-sm);
+  letter-spacing: 0.02em;
+}
+
+.navbar--expanded .navbar__label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── Tooltip for collapsed state ── */
+.navbar__tooltip {
+  position: absolute;
+  left: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-surface-3);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-200);
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: var(--transition-fast);
+  z-index: var(--z-modal);
+  box-shadow: var(--shadow-card);
+}
+
+.navbar--expanded .navbar__tooltip {
+  display: none;
+}
+
+.navbar__item:hover .navbar__tooltip {
+  opacity: 1;
+}
+
+/* ── Divider ── */
+.navbar__divider {
+  width: 32px;
+  height: 1px;
+  background: var(--border-surface);
+  margin: var(--space-2) 0;
+}
+
+.navbar--expanded .navbar__divider {
+  width: calc(100% - var(--space-6));
+}
+
+/* ── Toggle expand button ── */
+.navbar__toggle {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border-surface);
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  color: var(--slate-500);
+  transition: var(--transition-base);
+}
+
+.navbar__toggle:hover {
+  border-color: var(--border-gold);
+  color: var(--gold-400);
+  background: rgba(200, 155, 60, 0.08);
+}
+
+.navbar--expanded .navbar__toggle {
+  width: calc(100% - var(--space-6));
+  border-radius: var(--radius-md);
+  justify-content: flex-start;
+  padding: 0 var(--space-3);
+  gap: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--slate-500);
+}
