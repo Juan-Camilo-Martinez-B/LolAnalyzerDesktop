@@ -42,12 +42,14 @@ export interface TelemetrySnapshot {
   minute: number;
   cs: number;
   gold: number;
-  deaths: number;
-  coachInterventions: number;
-  playerComplied: boolean | null; // null if no intervention
+  goldDiff?: number;
+  xpDiff?: number;
+  deaths?: number;
+  coachInterventions?: number;
+  playerComplied?: boolean | null; // null if no intervention
   // comparisons vs baseline
-  csVsChallenger: number;         // delta
-  goldVsChallenger: number;
+  csVsChallenger?: number;         // delta
+  goldVsChallenger?: number;
 }
 
 /** ── Full match telemetry (for the drilldown modal) ── */
@@ -55,8 +57,15 @@ export interface MatchTelemetry {
   matchId: string;
   totalDuration: number;        // minutes
   snapshots: TelemetrySnapshot[];
+  timeline?: TelemetrySnapshot[];
   peakTiltMinute?: number;
-  coachComplianceRate: number;  // 0-100 %
+  coachComplianceRate?: number;  // 0-100 %
+  isWin?: boolean;
+  championName?: string;
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  aiCoachInsights?: string[];
 }
 
 /** ── Tilt risk factors used in gauge calculation ── */

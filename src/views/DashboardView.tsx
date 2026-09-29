@@ -4,6 +4,7 @@ import { KpiSummaryCards } from '../components/dashboard/KpiSummaryCards';
 import { TiltOMeterGauge } from '../components/dashboard/TiltOMeterGauge';
 import { ChampionPerformanceTable } from '../components/dashboard/ChampionPerformanceTable';
 import { MatchHistoryList } from '../components/dashboard/MatchHistoryList';
+import { MatchDetailModal } from '../components/dashboard/MatchDetailModal';
 
 export function DashboardView() {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
@@ -28,6 +29,13 @@ export function DashboardView() {
 
       {/* Recent Match History List */}
       <MatchHistoryList onSelectMatch={handleSelectMatch} />
+
+      {/* Match Detail Modal */}
+      <MatchDetailModal
+        isOpen={selectedMatchId !== null}
+        onClose={() => setSelectedMatchId(null)}
+        matchId={selectedMatchId}
+      />
     </div>
   );
 }
