@@ -218,3 +218,13 @@ export function listenForWindowMessages(
     }
   });
 }
+
+export const overwolfService = {
+  isOverwolfAvailable: isOverwolf,
+  registerGameEvents: registerGameEventListener,
+  obtainDeclaredWindow: getWindowId,
+  restoreWindow: openWindow,
+  closeWindow,
+  sendToWindow,
+  listenForWindowMessages,
+};
