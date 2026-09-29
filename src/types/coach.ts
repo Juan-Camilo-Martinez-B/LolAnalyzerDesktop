@@ -62,9 +62,9 @@ export interface ChampionRecommendation {
   championName: string;
   role: string;
   reason: string;
-  score: number;       // 0-100 recommendation score
-  countersPicks: number[];   // champion IDs this counters
-  synergyWith: number[];     // champion IDs it synergizes with
+  score?: number;       // 0-100 recommendation score
+  countersPicks?: number[];   // champion IDs this counters
+  synergyWith?: number[];     // champion IDs it synergizes with
   runesRecommended?: {
     primaryPath: number;
     keystoneId: number;
@@ -72,7 +72,10 @@ export interface ChampionRecommendation {
     secondaryPath: number;
     secondarySlots: number[];
   };
-  summonerSpells: [number, number];
+  summonerSpells?: [number, number];
+  winrateVsEnemy?: number;
+  synergyScore?: number;
+  tags?: string[];
 }
 
 /** ── Tilt alert payload broadcasted to overlay ── */
