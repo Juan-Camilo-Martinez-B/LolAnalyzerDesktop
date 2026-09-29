@@ -36,6 +36,8 @@ export interface SummonerProfile {
   summonerId: number;
   accountId: string;
   displayName: string;
+  gameName?: string;
+  tagLine?: string;
   summonerLevel: number;
   profileIconId: number;
   region: Region;

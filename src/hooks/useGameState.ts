@@ -44,6 +44,21 @@ export function useSummoner() {
   return { summoner: state.summoner, rankedInfo: state.rankedInfo };
 }
 
+/** Unified Game & Player State Hook */
+export function useGameState() {
+  const { state } = useApp();
+  const { initialize } = useDataInitializer();
+  return {
+    summoner: state.summoner,
+    rankInfo: state.rankedInfo,
+    connectionStatus: state.lcuStatus,
+    backendStatus: state.backendStatus,
+    gamePhase: state.gamePhase,
+    refreshState: initialize,
+  };
+}
+
+
 /** Access KPI data and trigger a refresh */
 export function useKpi() {
   const { state, dispatch } = useApp();
