@@ -50,6 +50,10 @@ export interface CoachAnalytics {
   mostFrequentCategory: CoachCategory;
   categoryBreakdown: { category: CoachCategory; count: number; complianceRate: number }[];
   recentSessions: CoachSession[];
+  // Convenience fields for UI tabs
+  complianceRate?: number;
+  totalInterventions?: number;
+  frequentMistakes?: string[];
 }
 
 /** ── Champ select recommendation entry ── */
