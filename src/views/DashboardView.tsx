@@ -1,5 +1,6 @@
 import React from 'react';
 import { ProfileHeader } from '../components/dashboard/ProfileHeader';
+import { KpiSummaryCards } from '../components/dashboard/KpiSummaryCards';
 
 export function DashboardView() {
   return (
@@ -7,10 +8,12 @@ export function DashboardView() {
       {/* Player Profile Header */}
       <ProfileHeader />
 
-      {/* Placeholders for upcoming Commits 14-19 */}
+      {/* KPI Metric Summary Cards Grid */}
+      <KpiSummaryCards />
+
+      {/* Placeholder for Commits 15-19 */}
       <div
         style={{
-          flex: 1,
           border: '1px dashed var(--border-dark)',
           borderRadius: '12px',
           padding: '32px',
@@ -22,7 +25,7 @@ export function DashboardView() {
           fontFamily: 'var(--font-mono)',
         }}
       >
-        [ Dashboard Metrics, Tilt Gauge, Performance Table & Match History loading in Commits 14-19 ]
+        [ Tilt-o-Meter Gauge, Champion Performance Table & Match History loading in Commits 15-19 ]
       </div>
     </div>
   );

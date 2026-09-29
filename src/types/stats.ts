@@ -14,6 +14,9 @@ export interface KpiSummary {
   kda: number;              // (K+A)/D
   avgCSPerMin: number;
   avgGoldDiffAt15: number;  // positive = ahead
+  damagePerGold?: number;
+  visionScorePerMin?: number;
+  killParticipationPct?: number;
   tiltIndex: number;        // 0-100 (0=zen, 100=full tilt)
   gamesAnalyzed: number;
   lastUpdated: string;      // ISO timestamp
