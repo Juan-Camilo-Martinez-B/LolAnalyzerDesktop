@@ -150,6 +150,13 @@ export interface ChampSelectPlayer {
   cellId: number;
   championId: number;
   assignedPosition: string;
-  summonerId: number;
-  puuid: string;
+  summonerId?: number;
+  puuid?: string;
+  championName?: string;
+  spell1Id?: number;
+  spell2Id?: number;
+  summonerName?: string;
+  isLocalPlayer?: boolean;
 }
+
+export type ChampSelectMember = ChampSelectPlayer;
