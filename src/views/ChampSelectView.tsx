@@ -2,6 +2,7 @@ import React from 'react';
 import { useChampSelect } from '../hooks/useGameState';
 import { TeamCompositionGrid } from '../components/champ-select/TeamCompositionGrid';
 import { CounterPickPanel } from '../components/champ-select/CounterPickPanel';
+import { BanRecommendationWidget } from '../components/champ-select/BanRecommendationWidget';
 
 export function ChampSelectView() {
   const { myTeam, theirTeam } = useChampSelect();
@@ -11,10 +12,13 @@ export function ChampSelectView() {
       {/* Ally vs Enemy Team Grid */}
       <TeamCompositionGrid myTeam={myTeam} theirTeam={theirTeam} />
 
+      {/* AI Ban Recommendation Widget */}
+      <BanRecommendationWidget />
+
       {/* AI Counter-Pick & Synergy Recommendation Panel */}
       <CounterPickPanel />
 
-      {/* Placeholder for Commits 22-24 */}
+      {/* Placeholder for Commits 23-24 */}
       <div
         style={{
           border: '1px dashed var(--border-dark)',
@@ -28,7 +32,7 @@ export function ChampSelectView() {
           fontFamily: 'var(--font-mono)',
         }}
       >
-        [ AI Champion Ban Recommendation Widget & Auto-Rune Importer loading in Commits 22-24 ]
+        [ Auto-Rune Importer & Full Champ Select Flow loading in Commits 23-24 ]
       </div>
     </div>
   );
