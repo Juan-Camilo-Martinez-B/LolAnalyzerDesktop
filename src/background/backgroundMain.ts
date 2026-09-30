@@ -5,13 +5,15 @@
 
 import { eventBus } from '../services/eventBus';
 import { overwolfService } from '../services/overwolfService';
-import { startLcuPolling, probeLcuConnection } from '../services/lcuService';
+import { startLcuPolling } from '../services/lcuService';
+import { deathsBeforeTiltAlert, loadSettings } from '../services/settingsStore';
 import type { GamePhase } from '../types/game';
 
 console.log('[LolAnalyzer] Background service worker initialized.');
 
 class BackgroundCoordinator {
   private currentPhase: GamePhase = 'NONE';
+  private deathsThisGame = 0;
 
   public async initialize() {
     console.log('[BackgroundCoordinator] Starting services...');
@@ -34,21 +36,28 @@ class BackgroundCoordinator {
     // 4. Listen for in-game kills/deaths to trigger overlay alerts
     eventBus.on('game:event', (event) => {
       console.log('[BackgroundCoordinator] Game event broadcast:', event);
-      if (event.type === 'death') {
-        eventBus.emit('coach:tilt_alert', {
-          level: 'high',
-          tiltIndex: 75,
-          triggerReason: 'Muerte reciente en fase de líneas',
-          coachMessage: 'Mantén la calma. Juega defensivo cerca de tu torre.',
-          timestamp: Date.now(),
-        });
-      }
+      if (event.type !== 'death') return;
+
+      this.deathsThisGame += 1;
+      const sensitivity = loadSettings().coachSensitivity;
+      const needed = deathsBeforeTiltAlert(sensitivity);
+      if (this.deathsThisGame < needed) return;
+
+      const level = sensitivity === 'low' ? 'critical' : sensitivity === 'high' ? 'medium' : 'high';
+      eventBus.emit('coach:tilt_alert', {
+        level,
+        tiltIndex: sensitivity === 'low' ? 88 : sensitivity === 'high' ? 55 : 75,
+        triggerReason: `${this.deathsThisGame} muerte${this.deathsThisGame === 1 ? '' : 's'} en la partida`,
+        coachMessage: 'Mantén la calma. Juega defensivo cerca de tu torre.',
+        timestamp: Date.now(),
+      });
     });
   }
 
   private async handlePhaseChange(newPhase: GamePhase) {
     if (this.currentPhase === newPhase) return;
     console.log(`[BackgroundCoordinator] Game Phase transitioning: ${this.currentPhase} -> ${newPhase}`);
+    if (newPhase === 'IN_GAME') this.deathsThisGame = 0;
     this.currentPhase = newPhase;
 
     if (!overwolfService.isOverwolfAvailable()) return;

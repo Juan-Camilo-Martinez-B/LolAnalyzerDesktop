@@ -3,9 +3,18 @@
 // src/services/audioService.ts
 // ============================================================
 
+import { loadSettings, type AudioPreferences } from './settingsStore';
+
 class AudioService {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private tiltAlerts = true;
+  private objectiveAlerts = true;
+  private uiClicks = true;
+
+  constructor() {
+    this.applyPreferences(loadSettings().audio);
+  }
 
   private getContext(): AudioContext | null {
     if (this.isMuted) return null;
@@ -29,8 +38,16 @@ class AudioService {
     return this.isMuted;
   }
 
+  public applyPreferences(audio: AudioPreferences): void {
+    this.isMuted = audio.muted;
+    this.tiltAlerts = audio.tiltAlerts;
+    this.objectiveAlerts = audio.objectiveAlerts;
+    this.uiClicks = audio.uiClicks;
+  }
+
   /** Soft Hextech UI Click */
   public playClick() {
+    if (!this.uiClicks) return;
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -85,6 +102,7 @@ class AudioService {
 
   /** Tilt / Warning Low Pulse */
   public playWarning() {
+    if (!this.tiltAlerts) return;
     const ctx = this.getContext();
     if (!ctx) return;
 
@@ -111,6 +129,7 @@ class AudioService {
 
   /** Hextech Crystal Activation Pulse */
   public playHextechAlert() {
+    if (!this.objectiveAlerts) return;
     const ctx = this.getContext();
     if (!ctx) return;
 

@@ -10,10 +10,24 @@ import { LiveTiltWarning } from './components/LiveTiltWarning';
 import { MiniHudBar } from './components/MiniHudBar';
 import { OverlayControls } from './components/OverlayControls';
 import { useOverlay, useGamePhase } from '../hooks/useGameState';
-import { registerHotkeys } from '../services/overwolfService';
+import { useUserSettings } from '../hooks/useUserSettings';
+import { registerHotkeys, overwolfService } from '../services/overwolfService';
+import { audioService } from '../services/audioService';
+import type { OverlayAnchor } from '../services/settingsStore';
+
+function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
+  if (anchor === 'top-center') {
+    return { position: 'fixed', top: 16, left: '50%', transform: 'translateX(-50%)' };
+  }
+  if (anchor === 'bottom-left') {
+    return { position: 'fixed', bottom: 24, left: 16 };
+  }
+  return { position: 'fixed', top: 16, left: 16 };
+}
 
 const OverlayApp: React.FC = () => {
   const { overlay, setMode, setVisible, setOpacity } = useOverlay();
+  const { settings, update } = useUserSettings();
   const { timeSec } = useGamePhase();
   const [showTiltAlert, setShowTiltAlert] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(false);
@@ -23,6 +37,11 @@ const OverlayApp: React.FC = () => {
     return registerHotkeys();
   }, [setVisible]);
 
+  useEffect(() => {
+    setOpacity(settings.overlayOpacity);
+    audioService.applyPreferences(settings.audio);
+  }, [setOpacity, settings.overlayOpacity, settings.audio]);
+
   if (!overlay.visible || overlay.mode === 'hidden') return null;
 
   const gameTime = timeSec > 0 ? timeSec : overlay.gameTime > 0 ? overlay.gameTime : 872;
@@ -31,6 +50,12 @@ const OverlayApp: React.FC = () => {
   const tiltActive = showTiltAlert || overlay.tiltAlert !== null;
   const tiltLabel = overlay.tiltAlert?.triggerReason ?? '2 muertes consecutivas en 3 minutos';
   const isExpanded = overlay.mode === 'expanded';
+  const nativeWindow = overwolfService.isOverwolfAvailable();
+
+  const changeOpacity = (opacity: number) => {
+    setOpacity(opacity);
+    update({ overlayOpacity: opacity });
+  };
 
   return (
     <div
@@ -47,6 +72,7 @@ const OverlayApp: React.FC = () => {
         opacity: overlay.opacity,
         pointerEvents: 'auto',
         transition: 'opacity 0.15s ease, max-width 0.2s ease',
+        ...(nativeWindow ? { position: 'absolute', top: 12, left: 12 } : anchorStyle(settings.overlayAnchor)),
       }}
     >
       {isExpanded ? (
@@ -67,7 +93,7 @@ const OverlayApp: React.FC = () => {
           <OverlayControls
             opacity={overlay.opacity}
             mode={overlay.mode}
-            onOpacityChange={setOpacity}
+            onOpacityChange={changeOpacity}
             onToggleMode={() => setMode('compact')}
             onHide={() => setVisible(false)}
           />
@@ -88,7 +114,7 @@ const OverlayApp: React.FC = () => {
             <OverlayControls
               opacity={overlay.opacity}
               mode={overlay.mode}
-              onOpacityChange={setOpacity}
+              onOpacityChange={changeOpacity}
               onToggleMode={() => setMode('expanded')}
               onHide={() => setVisible(false)}
             />

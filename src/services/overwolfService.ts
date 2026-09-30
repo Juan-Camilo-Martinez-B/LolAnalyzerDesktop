@@ -9,6 +9,7 @@
 
 import type { GamePhase, LiveGameEvent, ChampSelectSession } from '../types/game';
 import type { TiltAlert, CoachMessage } from '../types/coach';
+import type { OverlayAnchor } from './settingsStore';
 import { eventBus } from './eventBus';
 
 /* ─────────────────────────────────────────────────────────
@@ -83,6 +84,19 @@ export async function toggleOverlay(): Promise<void> {
       overwolf.windows.restore(id, () => {});
     }
   });
+}
+
+/** HUD-safe anchors. Top-right and bottom-center stay clear of the scoreboard and spell bar. */
+const OVERLAY_ANCHORS: Record<OverlayAnchor, { left: number; top: number }> = {
+  'top-left':    { left: 20, top: 120 },
+  'top-center':  { left: 760, top: 24 },
+  'bottom-left': { left: 20, top: 640 },
+};
+
+export function placeOverlay(anchor: OverlayAnchor): void {
+  if (!isOverwolf()) return;
+  const pos = OVERLAY_ANCHORS[anchor];
+  overwolf.windows.changePosition(WINDOW.OVERLAY, pos.left, pos.top, () => {});
 }
 
 /* ─────────────────────────────────────────────────────────

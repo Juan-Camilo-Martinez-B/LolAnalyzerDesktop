@@ -149,6 +149,20 @@ export function stopLcuPolling(): void {
 /* ─────────────────────────────────────────────────────────
    Connection probe (called from background on startup)
 ───────────────────────────────────────────────────────── */
+export function getLcuDiagnostics(): { port: number | null; hasCredentials: boolean; polling: boolean } {
+  return {
+    port: _lcuPort,
+    hasCredentials: _lcuPort !== null && _lcuToken !== null,
+    polling: _pollInterval !== null,
+  };
+}
+
+/** Re-run the summoner probe with credentials already stored in this window. */
+export async function reprobeLcu(): Promise<boolean> {
+  if (_lcuPort === null || _lcuToken === null) return false;
+  return probeLcuConnection(_lcuPort, _lcuToken);
+}
+
 export async function probeLcuConnection(port: number, token: string): Promise<boolean> {
   setLcuCredentials(port, token);
   try {
@@ -226,6 +240,8 @@ function _mapLcuPhase(phase: LcuGameflowPhase) {
 export const lcuService = {
   getCurrentSummoner,
   probeLcuConnection,
+  reprobeLcu,
+  getLcuDiagnostics,
   injectMockLcuProfile,
   importRunePage,
   setSummonerSpells,
