@@ -44,14 +44,8 @@ export const ProfileHeader: React.FC = () => {
         background: 'linear-gradient(135deg, rgba(16, 26, 42, 0.85) 0%, rgba(10, 14, 23, 0.95) 100%)',
         border: '1px solid var(--border-gold)',
         borderRadius: '12px',
-        padding: '20px 24px',
+        padding: '16px 20px',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(200, 155, 60, 0.1)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'relative',
-        overflow: 'hidden',
-        gap: '20px',
       }}
     >
       {/* Hextech Background Glow Accent */}
@@ -67,8 +61,7 @@ export const ProfileHeader: React.FC = () => {
         }}
       />
 
-      {/* Left Section: Avatar + Name + Level */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', zIndex: 1 }}>
+      <div className="profile-identity">
         {/* Profile Icon with Level Badge */}
         <div style={{ position: 'relative' }}>
           <div
@@ -118,19 +111,9 @@ export const ProfileHeader: React.FC = () => {
           </div>
         </div>
 
-        {/* Summoner Name & Status */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <h2
-              style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '0.02em',
-                margin: 0,
-              }}
-            >
+        <div className="profile-identity__text">
+          <div className="profile-identity__name-row">
+            <h2 className="profile-identity__name">
               {name}
             </h2>
 
@@ -143,16 +126,7 @@ export const ProfileHeader: React.FC = () => {
             </Badge>
           </div>
 
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '12px',
-              marginTop: '6px',
-              color: 'var(--text-secondary)',
-              fontSize: '0.8rem',
-            }}
-          >
+          <div className="profile-meta">
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Shield size={13} color="var(--hextech-cyan)" /> Solo/Duo Ranked
             </span>
@@ -164,8 +138,7 @@ export const ProfileHeader: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Section: Ranked Emblem & Winrate Stats */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '24px', zIndex: 1 }}>
+      <div className="profile-rank">
         {/* Rank Badge Emblem */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <img

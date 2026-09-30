@@ -129,11 +129,6 @@ body {
   color: var(--cyan-400);
 }
 
-.profile-header-card {
-  min-width: 0;
-  flex-wrap: wrap;
-}
-
 .team-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -154,10 +149,6 @@ body {
   .settings-page {
     padding: 16px;
     gap: 16px;
-  }
-
-  .profile-header-card {
-    flex-wrap: wrap;
   }
 
   .settings-diag {

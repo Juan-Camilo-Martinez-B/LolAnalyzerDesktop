@@ -20,9 +20,8 @@ export const TiltOMeterGauge: React.FC = () => {
   };
   const currentCategory = { label: tiltBandLabel(band), ...categoryCopy[band] };
 
-  // SVG Semi-circle Arc math
-  const size = 200;
-  const strokeWidth = 14;
+  const size = 148;
+  const strokeWidth = 12;
   const center = size / 2;
   const radius = center - strokeWidth;
   const circumference = Math.PI * radius; // Half circle perimeter
@@ -35,23 +34,20 @@ export const TiltOMeterGauge: React.FC = () => {
   };
 
   return (
-    <Card variant={displayTilt > 75 ? 'danger' : displayTilt > 50 ? 'gold' : 'default'}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Brain size={18} color={currentCategory.color} />
-          <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            Mental Tilt-o-Meter
-          </span>
-        </div>
+    <Card className="tilt-panel" variant={displayTilt > 75 ? 'danger' : displayTilt > 50 ? 'gold' : 'default'}>
+      <div className="tilt-panel__head">
+        <span className="tilt-panel__title">
+          <Brain size={16} color={currentCategory.color} />
+          Tilt-o-Meter
+        </span>
         <Badge variant={displayTilt > 75 ? 'danger' : displayTilt > 50 ? 'gold' : 'win'}>
           {currentCategory.label}
         </Badge>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-around', gap: '20px' }}>
-        {/* Semi-Circle SVG Arc Gauge */}
-        <div style={{ position: 'relative', width: size, height: size / 2 + 20, display: 'flex', justifyContent: 'center' }}>
-          <svg width={size} height={size / 2 + 10} viewBox={`0 0 ${size} ${size / 2 + 10}`}>
+      <div className="tilt-panel__body">
+        <div className="tilt-gauge">
+          <svg width={size} height={size / 2 + 8} viewBox={`0 0 ${size} ${size / 2 + 8}`}>
             <defs>
               <linearGradient id="tiltGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="var(--accent-green)" />
@@ -84,30 +80,23 @@ export const TiltOMeterGauge: React.FC = () => {
           </svg>
 
           {/* Center Value Counter */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '0',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ fontSize: '2.2rem', fontWeight: 800, color: currentCategory.color, fontFamily: 'var(--font-heading)', lineHeight: 1 }}>
+          <div className="tilt-gauge__value">
+            <div style={{ fontSize: '1.65rem', fontWeight: 800, color: currentCategory.color, fontFamily: 'var(--font-heading)', lineHeight: 1 }}>
               {displayTilt}
             </div>
-            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Index Score
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Index
             </div>
           </div>
         </div>
 
-        {/* Status Description & Advice */}
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: currentCategory.color, fontWeight: 700, fontSize: '0.95rem' }}>
+        <div className="tilt-panel__copy">
+          <div className="tilt-panel__state" style={{ color: currentCategory.color }}>
             {currentCategory.icon}
             <span>{currentCategory.label}</span>
           </div>
 
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: '14px' }}>
+          <p className="tilt-panel__desc">
             {currentCategory.desc}
           </p>
 

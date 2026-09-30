@@ -5,6 +5,7 @@ import { TiltOMeterGauge } from '../components/dashboard/TiltOMeterGauge';
 import { ChampionPerformanceTable } from '../components/dashboard/ChampionPerformanceTable';
 import { MatchHistoryList } from '../components/dashboard/MatchHistoryList';
 import { MatchDetailModal } from '../components/dashboard/MatchDetailModal';
+import '../components/dashboard/dashboardHero.css';
 
 export function DashboardView() {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
@@ -15,14 +16,12 @@ export function DashboardView() {
 
   return (
     <div className="page-view">
-      {/* Player Profile Header */}
-      <ProfileHeader />
+      <div className="dashboard-hero">
+        <ProfileHeader />
+        <TiltOMeterGauge />
+      </div>
 
-      {/* KPI Metric Summary Cards Grid */}
       <KpiSummaryCards />
-
-      {/* Mental Tilt-o-Meter Gauge */}
-      <TiltOMeterGauge />
 
       {/* Champion Mastery & Performance Table */}
       <ChampionPerformanceTable />
