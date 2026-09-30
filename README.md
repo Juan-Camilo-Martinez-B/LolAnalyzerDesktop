@@ -28,6 +28,7 @@ Vite abre el escritorio en `http://localhost:5173/`. El overlay está en `http:/
 | `npm run lint` | Oxlint |
 | `npm test` | Pruebas de assets, tilt y estado |
 | `npm run preview` | Sirve el build |
+| `npm run package:opk` | Build y `release/LolAnalyzer.opk` para cargar en Overwolf |
 
 El backend esperado es `http://localhost:8000` (`VITE_API_BASE_URL` lo cambia). Sin ese servidor, el dashboard sigue usable con datos de respaldo y el diagnóstico de Ajustes marca el backend como desconectado.
 

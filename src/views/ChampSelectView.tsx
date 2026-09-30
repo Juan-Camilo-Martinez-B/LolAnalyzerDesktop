@@ -18,7 +18,7 @@ export function ChampSelectView() {
   const phaseName = session?.timer?.phase || 'BAN_PICK_PHASE';
 
   return (
-    <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
+    <div className="page-view">
       {/* Champ Select Phase Status Header Bar */}
       <Card
         variant="gold"

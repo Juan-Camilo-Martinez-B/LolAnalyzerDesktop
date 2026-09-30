@@ -22,6 +22,7 @@ import type { CoachAnalytics, CoachMessage, TiltAlert, OverlayState } from '../t
 import type { ConnectionStatus } from '../types/game';
 import { csPerMinute } from '../services/tiltCalculations';
 import { eventBus } from '../services/eventBus';
+import { setGameClock } from '../services/gameClock';
 import { checkBackendHealth } from '../services/apiClient';
 
 /* ─────────────────────────────────────────────────────────
@@ -181,8 +182,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         dispatch({ type: 'SET_GAME_PHASE', payload: phase })),
 
       eventBus.on('game:time_update', ({ seconds }) => {
-        dispatch({ type: 'SET_GAME_TIME', payload: seconds });
-        dispatch({ type: 'SET_OVERLAY', payload: { gameTime: seconds } });
+        setGameClock(seconds);
       }),
 
       eventBus.on('game:event', (event) => {

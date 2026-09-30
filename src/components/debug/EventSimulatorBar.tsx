@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useGamePhase } from '../../hooks/useGameState';
+import { useGamePhase, useGameClock } from '../../hooks/useGameState';
 import { overwolfService } from '../../services/overwolfService';
 import { audioService } from '../../services/audioService';
 import {
@@ -34,7 +34,8 @@ function formatClock(totalSeconds: number): string {
 /** Manual match controls for browser testing, hidden inside the Overwolf client. */
 export function EventSimulatorBar({ placement = 'dock' }: EventSimulatorBarProps) {
   const { setActiveTab } = useApp();
-  const { phase, timeSec } = useGamePhase();
+  const { phase } = useGamePhase();
+  const timeSec = useGameClock();
   const [running, setRunning] = useState(isSimulatorRunning);
   const [note, setNote] = useState('listo');
 

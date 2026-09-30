@@ -42,6 +42,47 @@ body {
   overflow: hidden;
 }
 
+.page-view {
+  flex: 1;
+  min-width: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1100px) {
+  .page-view,
+  .settings-page {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .profile-header-card {
+    flex-wrap: wrap;
+  }
+
+  .settings-diag {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .sim-bar {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .sim-bar__status {
+    min-width: 0;
+  }
+
+  .navbar--expanded {
+    width: 160px;
+  }
+}
+
 /* ── Focus Visible ── */
 :focus-visible {
   outline: 2px solid var(--gold-500);

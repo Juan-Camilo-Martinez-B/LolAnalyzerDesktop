@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ProfileHeader } from '../components/dashboard/ProfileHeader';
 import { KpiSummaryCards } from '../components/dashboard/KpiSummaryCards';
 import { TiltOMeterGauge } from '../components/dashboard/TiltOMeterGauge';
@@ -9,12 +9,12 @@ import { MatchDetailModal } from '../components/dashboard/MatchDetailModal';
 export function DashboardView() {
   const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
 
-  const handleSelectMatch = (matchId: string) => {
+  const handleSelectMatch = useCallback((matchId: string) => {
     setSelectedMatchId(matchId);
-  };
+  }, []);
 
   return (
-    <div style={{ flex: 1, padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', overflowY: 'auto' }}>
+    <div className="page-view">
       {/* Player Profile Header */}
       <ProfileHeader />
 

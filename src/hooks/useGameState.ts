@@ -3,8 +3,9 @@
 // src/hooks/useGameState.ts
 // ============================================================
 
-import { useCallback } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 import { useApp } from '../context/AppContext';
+import { getGameClock, subscribeGameClock } from '../services/gameClock';
 import type { KpiSummary, ChampionPerformance, MatchTelemetry } from '../types/stats';
 import type { MatchRecord } from '../types/game';
 import type { CoachAnalytics } from '../types/coach';
@@ -16,16 +17,20 @@ import {
   fetchMatchTelemetry,
 } from '../services/apiClient';
 
-/** Access game phase and time */
+/** Access game phase. The match clock is separate so ticks stay off this tree. */
 export function useGamePhase() {
   const { state } = useApp();
   return {
     phase:      state.gamePhase,
-    timeSec:    state.gameTimeSec,
     isInGame:   state.gamePhase === 'IN_GAME',
     isChampSel: state.gamePhase === 'CHAMP_SELECT',
     isIdle:     state.gamePhase === 'NONE' || state.gamePhase === 'LOBBY',
   };
+}
+
+/** Subscribe only the HUD and the simulator bar to the 1-second clock. */
+export function useGameClock(): number {
+  return useSyncExternalStore(subscribeGameClock, getGameClock, getGameClock);
 }
 
 /** Access connection statuses */

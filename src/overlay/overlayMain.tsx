@@ -9,7 +9,7 @@ import { ObjectiveTimersWidget } from './components/ObjectiveTimersWidget';
 import { LiveTiltWarning } from './components/LiveTiltWarning';
 import { MiniHudBar } from './components/MiniHudBar';
 import { OverlayControls } from './components/OverlayControls';
-import { useOverlay, useGamePhase } from '../hooks/useGameState';
+import { useOverlay, useGameClock } from '../hooks/useGameState';
 import { useUserSettings } from '../hooks/useUserSettings';
 import { registerHotkeys, overwolfService } from '../services/overwolfService';
 import { EventSimulatorBar } from '../components/debug/EventSimulatorBar';
@@ -29,7 +29,7 @@ function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
 const OverlayApp: React.FC = () => {
   const { overlay, setMode, setVisible, setOpacity } = useOverlay();
   const { settings, update } = useUserSettings();
-  const { timeSec } = useGamePhase();
+  const timeSec = useGameClock();
   const [showTiltAlert, setShowTiltAlert] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(false);
   const [hiddenTiltAt, setHiddenTiltAt] = useState<number | null>(null);

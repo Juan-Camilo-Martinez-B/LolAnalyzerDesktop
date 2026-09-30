@@ -10,7 +10,7 @@ export interface MatchItemProps {
   onSelectMatch: (matchId: string) => void;
 }
 
-export const MatchItem: React.FC<MatchItemProps> = ({ match, onSelectMatch }) => {
+function MatchItemView({ match, onSelectMatch }: MatchItemProps) {
   const isWin = match.isWin ?? match.win ?? match.localParticipant?.win ?? true;
   const durationSecTotal = match.durationSec ?? match.gameDuration ?? 1680;
   const durationMin = Math.floor(durationSecTotal / 60);
@@ -162,4 +162,6 @@ export const MatchItem: React.FC<MatchItemProps> = ({ match, onSelectMatch }) =>
       </div>
     </Card>
   );
-};
+}
+
+export const MatchItem = React.memo(MatchItemView);
