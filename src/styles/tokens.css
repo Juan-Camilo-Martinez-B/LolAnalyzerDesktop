@@ -126,4 +126,18 @@
   --z-modal:   500;
   --z-overlay: 900;
   --z-toast:   1000;
+
+  /* Aliases used across dashboard, champ select and overlay */
+  --hextech-gold:   var(--gold-500);
+  --hextech-cyan:   var(--cyan-400);
+  --hextech-black:  var(--bg-void);
+  --text-primary:   var(--slate-100);
+  --text-secondary: var(--slate-300);
+  --text-muted:     var(--slate-400);
+  --font-heading:   var(--font-display);
+  --bg-glass-heavy: rgba(14, 21, 32, 0.92);
+  --bg-glass-medium: rgba(14, 21, 32, 0.72);
+  --border-dark:    var(--border-surface);
+  --accent-green:   var(--green-400);
+  --accent-red:     var(--red-400);
 }

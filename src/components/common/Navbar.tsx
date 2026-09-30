@@ -54,6 +54,7 @@ export function Navbar() {
       className={`navbar ${expanded ? 'navbar--expanded' : ''}`}
       aria-label="Main navigation"
     >
+      <div className="navbar__items">
       {/* Game mode indicator */}
       {isInGame && (
         <>
@@ -106,6 +107,7 @@ export function Navbar() {
           {expanded && <span className="navbar__label">Settings</span>}
         </button>
         {!expanded && <span className="navbar__tooltip">Settings</span>}
+      </div>
       </div>
 
       {/* Expand / Collapse toggle */}

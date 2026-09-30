@@ -48,7 +48,7 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Banned Champions Banner */}
       <Card variant="default" style={{ padding: '12px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           {/* Ally Bans */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--hextech-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -97,7 +97,7 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
       </Card>
 
       {/* Team Composition Grid (2 Columns: Ally vs Enemy) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="team-grid">
         {/* ALLY TEAM COLUMN */}
         <Card variant="cyan">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>

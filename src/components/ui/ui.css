@@ -33,6 +33,14 @@
   box-shadow: var(--shadow-card), var(--shadow-gold), var(--shadow-inset);
 }
 
+.card:has(.scroll-region) {
+  overflow: visible;
+}
+
+.card:has(.scroll-region):hover {
+  transform: none;
+}
+
 .card--gold {
   border-color: var(--border-gold);
   box-shadow: var(--shadow-card), var(--shadow-gold), var(--shadow-inset);

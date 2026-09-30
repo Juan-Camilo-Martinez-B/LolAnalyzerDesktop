@@ -107,3 +107,19 @@
   background: rgba(200, 155, 60, 0.20);
   color: var(--gold-300);
 }
+
+@media (max-width: 900px) {
+  .titlebar__status-item span {
+    display: none;
+  }
+
+  .titlebar__title {
+    letter-spacing: 0.04em;
+  }
+}
+
+@media (max-width: 640px) {
+  .titlebar__title {
+    display: none;
+  }
+}

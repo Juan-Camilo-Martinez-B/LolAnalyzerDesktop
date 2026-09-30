@@ -1,31 +1,31 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Search, Trophy, ArrowUpDown, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useChampionPerformance } from '../../hooks/useGameState';
+import { useChampionStream } from '../../hooks/useAnalyticsStream';
 import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Card, Badge } from '../ui';
 import { assetResolver } from '../../services/assetResolver';
 import type { ChampionPerformance } from '../../types/stats';
+import type { ChampionSortField } from '../../workers/analyticsCore';
 
-type SortField = 'winrate' | 'games' | 'kda' | 'mastery' | 'championName';
+const DEFAULT_CHAMPIONS: ChampionPerformance[] = [
+  { championId: 103, championName: 'Ahri', role: 'MID', games: 42, wins: 26, winrate: 61.9, kda: 3.8, avgCSPerMin: 7.9, mastery: 124500, masteryLevel: 7, recentTrend: 'up' },
+  { championId: 84, championName: 'Akali', role: 'MID', games: 28, wins: 17, winrate: 60.7, kda: 3.4, avgCSPerMin: 7.4, mastery: 89200, masteryLevel: 6, recentTrend: 'up' },
+  { championId: 157, championName: 'Yasuo', role: 'MID', games: 22, wins: 11, winrate: 50.0, kda: 2.3, avgCSPerMin: 8.2, mastery: 156000, masteryLevel: 7, recentTrend: 'down' },
+  { championId: 222, championName: 'Jinx', role: 'ADC', games: 19, wins: 13, winrate: 68.4, kda: 4.2, avgCSPerMin: 8.6, mastery: 64100, masteryLevel: 5, recentTrend: 'up' },
+  { championId: 64, championName: 'LeeSin', role: 'JUNGLE', games: 15, wins: 8, winrate: 53.3, kda: 2.9, avgCSPerMin: 5.8, mastery: 98400, masteryLevel: 6, recentTrend: 'stable' },
+];
 
 export const ChampionPerformanceTable: React.FC = () => {
   const { champions } = useChampionPerformance();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortField, setSortField] = useState<SortField>('games');
+  const [sortField, setSortField] = useState<ChampionSortField>('games');
   const [sortAsc, setSortAsc] = useState(false);
 
-  // Mock initial champions if backend list is empty
-  const defaultList: ChampionPerformance[] = [
-    { championId: 103, championName: 'Ahri', role: 'MID', games: 42, wins: 26, winrate: 61.9, kda: 3.8, avgCSPerMin: 7.9, mastery: 124500, masteryLevel: 7, recentTrend: 'up' },
-    { championId: 84, championName: 'Akali', role: 'MID', games: 28, wins: 17, winrate: 60.7, kda: 3.4, avgCSPerMin: 7.4, mastery: 89200, masteryLevel: 6, recentTrend: 'up' },
-    { championId: 157, championName: 'Yasuo', role: 'MID', games: 22, wins: 11, winrate: 50.0, kda: 2.3, avgCSPerMin: 8.2, mastery: 156000, masteryLevel: 7, recentTrend: 'down' },
-    { championId: 222, championName: 'Jinx', role: 'ADC', games: 19, wins: 13, winrate: 68.4, kda: 4.2, avgCSPerMin: 8.6, mastery: 64100, masteryLevel: 5, recentTrend: 'up' },
-    { championId: 64, championName: 'LeeSin', role: 'JUNGLE', games: 15, wins: 8, winrate: 53.3, kda: 2.9, avgCSPerMin: 5.8, mastery: 98400, masteryLevel: 6, recentTrend: 'stable' },
-  ];
+  const dataList = champions.length > 0 ? champions : DEFAULT_CHAMPIONS;
+  const { rows, streaming } = useChampionStream(dataList, searchQuery, sortField, sortAsc);
 
-  const dataList = champions.length > 0 ? champions : defaultList;
-
-  const handleSort = (field: SortField) => {
+  const handleSort = (field: ChampionSortField) => {
     if (sortField === field) {
       setSortAsc(!sortAsc);
     } else {
@@ -33,24 +33,6 @@ export const ChampionPerformanceTable: React.FC = () => {
       setSortAsc(false);
     }
   };
-
-  const filteredAndSorted = useMemo(() => {
-    return dataList
-      .filter((c) =>
-        c.championName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.role.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .sort((a, b) => {
-        let aVal = a[sortField];
-        let bVal = b[sortField];
-        if (typeof aVal === 'string') aVal = (aVal as string).toLowerCase();
-        if (typeof bVal === 'string') bVal = (bVal as string).toLowerCase();
-
-        if (aVal < bVal) return sortAsc ? -1 : 1;
-        if (aVal > bVal) return sortAsc ? 1 : -1;
-        return 0;
-      });
-  }, [dataList, searchQuery, sortField, sortAsc]);
 
   return (
     <Card variant="default">
@@ -82,12 +64,13 @@ export const ChampionPerformanceTable: React.FC = () => {
             </h3>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
               Stat breakdown based on last {dataList.reduce((acc, c) => acc + c.games, 0)} games
+              {streaming && <span className="stream-hint" style={{ marginLeft: 8 }}>Actualizando</span>}
             </div>
           </div>
         </div>
 
         {/* Search Bar Input */}
-        <div style={{ position: 'relative', minWidth: '220px' }}>
+        <div style={{ position: 'relative', flex: '1 1 180px', minWidth: 0, maxWidth: '280px' }}>
           <Search
             size={14}
             style={{
@@ -119,8 +102,8 @@ export const ChampionPerformanceTable: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
+      <div className="scroll-region scroll-region--table" tabIndex={0} aria-label="Tabla de campeones">
+        <table className="data-table">
           <thead>
             <tr
               style={{
@@ -163,7 +146,7 @@ export const ChampionPerformanceTable: React.FC = () => {
           </thead>
 
           <tbody>
-            {filteredAndSorted.map((c) => {
+            {rows.map((c) => {
               const roleEmblem = assetResolver.getRoleEmblem(c.role);
 
               return (

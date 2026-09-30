@@ -19,10 +19,7 @@ const SettingsView    = lazy(() => import('./views/SettingsView').then(m => ({ d
 // ── Loading placeholder ──────────────────────────────────────
 function PageSkeleton() {
   return (
-    <div style={{
-      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'var(--bg-surface-1)',
-    }}>
+    <div className="page-skeleton">
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-4)' }}>
         <div className="skeleton" style={{ width: 48, height: 48, borderRadius: 'var(--radius-full)' }} />
         <div className="skeleton" style={{ width: 180, height: 14 }} />
@@ -38,27 +35,17 @@ function AppShell() {
   const { activeTab } = state;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+    <div className="app-shell">
       {/* Top title bar */}
       <TitleBar />
 
       {/* Main layout */}
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+      <div className="app-body">
         {/* Left nav */}
         <Navbar />
 
         {/* Page area */}
-        <main
-          id="main-content"
-          style={{
-            flex: 1,
-            overflow: 'hidden',
-            display: 'flex',
-            flexDirection: 'column',
-            background: 'var(--bg-slate)',
-          }}
-          role="main"
-        >
+        <main id="main-content" role="main">
           <Suspense fallback={<PageSkeleton />}>
             {activeTab === 'dashboard'    && <DashboardView />}
             {activeTab === 'champ-select' && <ChampSelectView />}

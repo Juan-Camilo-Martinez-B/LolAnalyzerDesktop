@@ -9,6 +9,7 @@
 
 import React, {
   createContext,
+  startTransition,
   useContext,
   useEffect,
   useReducer,
@@ -167,7 +168,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
 
   const setActiveTab = useCallback((tab: AppState['activeTab']) => {
-    dispatch({ type: 'SET_ACTIVE_TAB', payload: tab });
+    startTransition(() => {
+      dispatch({ type: 'SET_ACTIVE_TAB', payload: tab });
+    });
   }, []);
 
   // ── Subscribe to event bus ───────────────────────────────

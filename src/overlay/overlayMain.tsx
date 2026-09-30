@@ -68,10 +68,12 @@ const OverlayApp: React.FC = () => {
       style={{
         width: '100%',
         maxWidth: isExpanded ? '360px' : '340px',
+        maxHeight: 'calc(100vh - 24px)',
         background: 'rgba(5, 8, 14, 0.90)',
         border: '1px solid var(--border-gold)',
         borderRadius: '10px',
-        overflow: 'hidden',
+        overflowX: 'hidden',
+        overflowY: 'auto',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 15px rgba(200, 155, 60, 0.2)',
         fontFamily: 'var(--font-body)',
         color: 'var(--slate-100)',

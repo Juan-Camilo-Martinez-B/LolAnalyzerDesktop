@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { History, Filter } from 'lucide-react';
 import { useMatchHistory } from '../../hooks/useGameState';
+import { useMatchStream } from '../../hooks/useAnalyticsStream';
 import { MatchItem } from './MatchItem';
 import { Card, Badge } from '../ui';
 import type { MatchRecord } from '../../types/game';
@@ -22,15 +23,7 @@ export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatc
   const [filterMode, setFilterMode] = useState<'ALL' | 'RANKED' | 'NORMAL'>('ALL');
 
   const list = matches.length > 0 ? matches : DEFAULT_MATCHES;
-
-  const filteredMatches = list.filter((m) => {
-    if (filterMode === 'RANKED') return m.gameMode.toLowerCase().includes('ranked');
-    if (filterMode === 'NORMAL') return m.gameMode.toLowerCase().includes('normal');
-    return true;
-  });
-
-  const totalWins = filteredMatches.filter((m) => m.isWin).length;
-  const winratePct = filteredMatches.length > 0 ? ((totalWins / filteredMatches.length) * 100).toFixed(0) : '0';
+  const { rows, summary, streaming } = useMatchStream(list, filterMode);
 
   return (
     <Card variant="default">
@@ -61,7 +54,8 @@ export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatc
               >
                 Recent Matches
               </h3>
-              <Badge variant="cyan">{winratePct}% WR (Last {filteredMatches.length})</Badge>
+              <Badge variant="cyan">{summary.winrate}% WR (Last {summary.count})</Badge>
+              {streaming && <span className="stream-hint">Actualizando</span>}
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
               Click any match for telemetry timeline drilldown
@@ -70,7 +64,7 @@ export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatc
         </div>
 
         {/* Queue Filters */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <Filter size={14} color="var(--text-muted)" style={{ marginRight: '4px' }} />
           {(['ALL', 'RANKED', 'NORMAL'] as const).map((mode) => (
             <button
@@ -94,9 +88,13 @@ export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatc
         </div>
       </div>
 
-      {/* Matches List */}
-      <div>
-        {filteredMatches.map((m) => (
+      <div className="scroll-region" tabIndex={0} aria-label="Lista de partidas">
+        {rows.length === 0 && (
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '8px 0' }}>
+            No hay partidas para este filtro.
+          </div>
+        )}
+        {rows.map((m) => (
           <MatchItem key={m.matchId} match={m} onSelectMatch={onSelectMatch} />
         ))}
       </div>

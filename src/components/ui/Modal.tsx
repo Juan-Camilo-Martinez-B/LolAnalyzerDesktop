@@ -140,6 +140,7 @@ export const Modal: React.FC<ModalProps> = ({
             padding: '20px',
             overflowY: 'auto',
             flex: 1,
+            minHeight: 0,
             color: 'var(--text-primary)',
           }}
         >

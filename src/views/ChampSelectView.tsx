@@ -26,8 +26,10 @@ export function ChampSelectView() {
           padding: '14px 20px',
           background: 'linear-gradient(135deg, rgba(200, 155, 60, 0.12) 0%, rgba(10, 14, 23, 0.95) 100%)',
           display: 'flex',
+          flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
+          gap: '12px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
