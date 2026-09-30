@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# LolAnalyzer Desktop
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Cliente de escritorio y overlay para League of Legends. Muestra métricas, asistente de selección de campeón y un HUD de coach en partida. Está hecho con React 19, TypeScript y Vite, y se empaqueta como app de Overwolf.
 
-Currently, two official plugins are available:
+## Ventanas
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Ventana | HTML | Rol |
+|---|---|---|
+| Desktop | `index.html` | Dashboard, selección, coach y ajustes |
+| Overlay | `overlay.html` | Mini-HUD y panel en partida |
+| Background | `background.html` | Eventos de juego, sonda LCU y visibilidad de ventanas |
 
-## React Compiler
+En el navegador cada HTML es una página aparte. No comparten memoria: el estado viaja por el `eventBus` dentro de la misma página y, entre páginas, por `localStorage` (ajustes) o por mensajes de Overwolf.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Desarrollo
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Vite abre el escritorio en `http://localhost:5173/`. El overlay está en `http://localhost:5173/overlay.html`.
+
+| Script | Qué hace |
+|---|---|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | `tsc -b` y bundles de las tres páginas en `dist/` |
+| `npm run lint` | Oxlint |
+| `npm run preview` | Sirve el build |
+
+El backend esperado es `http://localhost:8000` (`VITE_API_BASE_URL` lo cambia). Sin ese servidor, el dashboard sigue usable con datos de respaldo y el diagnóstico de Ajustes marca el backend como desconectado.
+
+## Probar sin el cliente de League
+
+La barra **SIM**, al pie del escritorio y del overlay, solo aparece fuera de Overwolf. Desde ahí se dispara lobby, selección, partida, tiempo, CS, kill, muerte, tilt, consejo, victoria, derrota, una simulación de 40 segundos y reset.
+
+La muerte usa la sensibilidad del coach guardada en Ajustes: 1, 2 o 3 muertes antes de la alerta.
+
+## Overwolf
+
+El manifiesto está en `public/manifest.json`. El juego objetivo es League of Legends, id `5426`. Atajos declarados:
+
+- `Ctrl+Tab` muestra u oculta el overlay.
+- `Shift+F1` alterna Mini-HUD y panel expandido.
+
+En el navegador, `Shift+`` ` también oculta o muestra el overlay.
+
+Detalle de flujo de datos, carga en Overwolf y zonas HUD: [docs/ui_ux_architecture.md](docs/ui_ux_architecture.md).
