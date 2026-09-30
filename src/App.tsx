@@ -7,6 +7,7 @@ import React, { Suspense, lazy } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { TitleBar } from './components/common/TitleBar';
 import { Navbar }   from './components/common/Navbar';
+import { EventSimulatorBar } from './components/debug/EventSimulatorBar';
 import './index.css';
 
 // ── Lazy page views ─────────────────────────────────────────
@@ -66,6 +67,7 @@ function AppShell() {
           </Suspense>
         </main>
       </div>
+      <EventSimulatorBar />
     </div>
   );
 }

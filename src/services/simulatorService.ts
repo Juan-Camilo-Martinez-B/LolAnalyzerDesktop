@@ -8,11 +8,13 @@
 // ============================================================
 
 import { eventBus } from './eventBus';
+import { deathsBeforeTiltAlert, loadSettings } from './settingsStore';
 import type { GamePhase, ChampSelectSession } from '../types/game';
 import type { TiltAlert, CoachMessage } from '../types/coach';
 
 let simInterval: ReturnType<typeof setInterval> | null = null;
 let gameTimeSec = 0;
+let simDeaths = 0;
 
 /** Simulated phases in order */
 const PHASE_SEQUENCE: GamePhase[] = [
@@ -28,6 +30,7 @@ export function startSimulator(): void {
   console.log('[SIM] Simulator started');
   let phaseIdx = 0;
   gameTimeSec = 0;
+  simDeaths = 0;
 
   // Phase progression
   const advancePhase = (): void => {
@@ -111,6 +114,102 @@ export function stopSimulator(): void {
 
 export function isSimulatorRunning(): boolean {
   return simInterval !== null;
+}
+
+export function getSimulatorClock(): number {
+  return gameTimeSec;
+}
+
+export function getSimulatorDeaths(): number {
+  return simDeaths;
+}
+
+/** Jump the desktop/overlay into a phase without the Riot client. */
+export function simulatePhase(phase: GamePhase): void {
+  if (phase === 'IN_GAME') simDeaths = 0;
+  eventBus.emit('game:phase_changed', { phase });
+
+  if (phase === 'CHAMP_SELECT') {
+    _emitMockChampSelect();
+  }
+  if (phase === 'NONE' || phase === 'LOBBY' || phase === 'END_OF_GAME') {
+    eventBus.emit('champ_select:ended');
+  }
+  if (phase === 'IN_GAME') {
+    eventBus.emit('game:event', { type: 'game_start', timestamp: gameTimeSec });
+    eventBus.emit('overlay:state_changed', { visible: true, mode: 'compact' });
+  }
+}
+
+export function advanceSimulatorClock(stepSec = 15): number {
+  gameTimeSec += stepSec;
+  eventBus.emit('game:time_update', { seconds: gameTimeSec });
+  return gameTimeSec;
+}
+
+export function simulateKill(): void {
+  eventBus.emit('game:event', { type: 'kill', timestamp: gameTimeSec, value: 1 });
+}
+
+/** A death counts toward the coach sensitivity threshold from Settings. */
+export function simulateDeath(): number {
+  simDeaths += 1;
+  eventBus.emit('game:event', { type: 'death', timestamp: gameTimeSec, value: simDeaths });
+
+  const needed = deathsBeforeTiltAlert(loadSettings().coachSensitivity);
+  if (simDeaths >= needed) {
+    _emitMockTiltAlert(Math.min(100, 36 + simDeaths * 16));
+  }
+  return simDeaths;
+}
+
+export function simulateTiltPing(): void {
+  _emitMockTiltAlert(84);
+}
+
+export function simulateClearTilt(): void {
+  eventBus.emit('coach:tilt_cleared');
+}
+
+export function simulateCoachAdvice(): void {
+  _emitMockCoachMessage('info', 'Dragón en 45s — asegura visión en río y guarda el Destello.');
+}
+
+export function simulateCsTick(): number {
+  if (gameTimeSec < 60) gameTimeSec = 60;
+  const cs = Math.round(7.4 * (gameTimeSec / 60));
+  eventBus.emit('game:time_update', { seconds: gameTimeSec });
+  eventBus.emit('game:event', { type: 'cs_update', timestamp: gameTimeSec, value: cs });
+  return cs;
+}
+
+export function simulateMatchEnd(win: boolean): void {
+  stopSimulator();
+  eventBus.emit('game:event', {
+    type: 'game_end',
+    timestamp: gameTimeSec,
+    value: win ? 1 : 0,
+    meta: { win },
+  });
+  eventBus.emit('game:phase_changed', { phase: 'END_OF_GAME' });
+  eventBus.emit('champ_select:ended');
+  if (win) {
+    eventBus.emit('coach:tilt_cleared');
+    _emitMockCoachMessage('positive', 'Partida ganada. El ritmo de CS se sostuvo en la fase media.');
+  } else {
+    _emitMockCoachMessage('warning', 'Derrota. Revisa las muertes seguidas antes del minuto 15.');
+  }
+}
+
+export function resetSimulator(): void {
+  stopSimulator();
+  gameTimeSec = 0;
+  simDeaths = 0;
+  eventBus.emit('game:phase_changed', { phase: 'NONE' });
+  eventBus.emit('game:time_update', { seconds: 0 });
+  eventBus.emit('champ_select:ended');
+  eventBus.emit('coach:tilt_cleared');
+  eventBus.emit('overlay:state_changed', { csPerMin: 0, gameTime: 0, tiltAlert: null });
 }
 
 /* ─────────────────────────────────────────────────────────

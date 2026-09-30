@@ -179,8 +179,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
       eventBus.on('game:phase_changed', ({ phase }) =>
         dispatch({ type: 'SET_GAME_PHASE', payload: phase })),
 
-      eventBus.on('game:time_update', ({ seconds }) =>
-        dispatch({ type: 'SET_GAME_TIME', payload: seconds })),
+      eventBus.on('game:time_update', ({ seconds }) => {
+        dispatch({ type: 'SET_GAME_TIME', payload: seconds });
+        dispatch({ type: 'SET_OVERLAY', payload: { gameTime: seconds } });
+      }),
+
+      eventBus.on('game:event', (event) => {
+        if (event.type === 'cs_update' && typeof event.value === 'number') {
+          const minutes = Math.max(event.timestamp / 60, 1 / 60);
+          dispatch({
+            type: 'SET_OVERLAY',
+            payload: {
+              csPerMin: Number((event.value / minutes).toFixed(2)),
+              gameTime: event.timestamp,
+            },
+          });
+        }
+      }),
 
       eventBus.on('champ_select:started',  session =>
         dispatch({ type: 'SET_CHAMP_SELECT', payload: session })),
@@ -191,10 +206,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       eventBus.on('coach:message',       msg =>
         dispatch({ type: 'SET_COACH_MESSAGE', payload: msg })),
-      eventBus.on('coach:tilt_alert',    alert =>
-        dispatch({ type: 'SET_TILT_ALERT', payload: alert })),
-      eventBus.on('coach:tilt_cleared',  () =>
-        dispatch({ type: 'SET_TILT_ALERT', payload: null })),
+      eventBus.on('coach:tilt_alert', alert => {
+        dispatch({ type: 'SET_TILT_ALERT', payload: alert });
+        dispatch({ type: 'SET_OVERLAY', payload: { tiltAlert: alert, visible: true } });
+      }),
+      eventBus.on('coach:tilt_cleared', () => {
+        dispatch({ type: 'SET_TILT_ALERT', payload: null });
+        dispatch({ type: 'SET_OVERLAY', payload: { tiltAlert: null } });
+      }),
 
       eventBus.on('overlay:state_changed', partial =>
         dispatch({ type: 'SET_OVERLAY', payload: partial })),

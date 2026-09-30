@@ -1,0 +1,79 @@
+.sim-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 6px 12px;
+  background: rgba(7, 10, 15, 0.96);
+  border-top: 1px solid var(--border-gold);
+  color: var(--slate-200);
+  font-family: var(--font-body);
+  z-index: var(--z-toast);
+}
+
+.sim-bar--float {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  pointer-events: auto;
+  box-shadow: var(--shadow-card);
+}
+
+.sim-bar__label {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--gold-300);
+}
+
+.sim-bar__status {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--cyan-400);
+  min-width: 148px;
+}
+
+.sim-bar__actions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.sim-bar__actions button {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-surface);
+  color: var(--slate-100);
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.sim-bar__actions button:hover {
+  border-color: var(--border-gold);
+  color: var(--gold-200);
+}
+
+.sim-bar__actions button.is-live {
+  border-color: var(--cyan-400);
+  color: var(--cyan-400);
+}
+
+.sim-bar__actions button.is-danger {
+  border-color: rgba(255, 70, 85, 0.55);
+  color: var(--red-300);
+}
+
+.sim-bar__actions button.is-win {
+  border-color: rgba(0, 214, 143, 0.5);
+  color: var(--green-400);
+}

@@ -12,6 +12,7 @@ import { OverlayControls } from './components/OverlayControls';
 import { useOverlay, useGamePhase } from '../hooks/useGameState';
 import { useUserSettings } from '../hooks/useUserSettings';
 import { registerHotkeys, overwolfService } from '../services/overwolfService';
+import { EventSimulatorBar } from '../components/debug/EventSimulatorBar';
 import { audioService } from '../services/audioService';
 import type { OverlayAnchor } from '../services/settingsStore';
 
@@ -31,6 +32,7 @@ const OverlayApp: React.FC = () => {
   const { timeSec } = useGamePhase();
   const [showTiltAlert, setShowTiltAlert] = useState(true);
   const [controlsOpen, setControlsOpen] = useState(false);
+  const [hiddenTiltAt, setHiddenTiltAt] = useState<number | null>(null);
 
   useEffect(() => {
     setVisible(true);
@@ -42,12 +44,14 @@ const OverlayApp: React.FC = () => {
     audioService.applyPreferences(settings.audio);
   }, [setOpacity, settings.overlayOpacity, settings.audio]);
 
-  if (!overlay.visible || overlay.mode === 'hidden') return null;
+  const hudVisible = overlay.visible && overlay.mode !== 'hidden';
 
   const gameTime = timeSec > 0 ? timeSec : overlay.gameTime > 0 ? overlay.gameTime : 872;
   const csPerMin = overlay.csPerMin > 0 ? overlay.csPerMin : 7.8;
   const csDelta = overlay.csVsChallenger !== 0 ? overlay.csVsChallenger : -1.2;
-  const tiltActive = showTiltAlert || overlay.tiltAlert !== null;
+  const tiltActive = overlay.tiltAlert
+    ? overlay.tiltAlert.timestamp !== hiddenTiltAt
+    : showTiltAlert;
   const tiltLabel = overlay.tiltAlert?.triggerReason ?? '2 muertes consecutivas en 3 minutos';
   const isExpanded = overlay.mode === 'expanded';
   const nativeWindow = overwolfService.isOverwolfAvailable();
@@ -58,6 +62,8 @@ const OverlayApp: React.FC = () => {
   };
 
   return (
+    <>
+    {hudVisible && (
     <div
       style={{
         width: '100%',
@@ -84,7 +90,10 @@ const OverlayApp: React.FC = () => {
                 tiltIndex={overlay.tiltAlert?.tiltIndex}
                 triggerReason={tiltLabel}
                 adviceMessage={overlay.tiltAlert?.coachMessage}
-                onDismiss={() => setShowTiltAlert(false)}
+                onDismiss={() => {
+                  if (overlay.tiltAlert) setHiddenTiltAt(overlay.tiltAlert.timestamp);
+                  setShowTiltAlert(false);
+                }}
               />
             )}
             <CsPacingWidget gameTimeSec={gameTime} currentCs={Math.round(csPerMin * (gameTime / 60))} />
@@ -122,6 +131,9 @@ const OverlayApp: React.FC = () => {
         </>
       )}
     </div>
+    )}
+    <EventSimulatorBar placement="float" />
+    </>
   );
 };
 
