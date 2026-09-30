@@ -12,8 +12,10 @@ import {
   ChevronRight,
   ChevronLeft,
   Gamepad2,
+  LogOut,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import type { AppState } from '../../context/AppContext';
 import './Navbar.css';
 
@@ -44,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
 
 export function Navbar() {
   const { state, setActiveTab } = useApp();
+  const { signOut } = useAuth();
   const [expanded, setExpanded] = useState(false);
 
   const { activeTab, gamePhase } = state;
@@ -108,6 +111,19 @@ export function Navbar() {
         </button>
         {!expanded && <span className="navbar__tooltip">Settings</span>}
       </div>
+      </div>
+
+      <div className="navbar__item">
+        <button
+          id="nav-btn-logout"
+          className="navbar__btn"
+          onClick={() => void signOut()}
+          aria-label="Cerrar sesión"
+        >
+          <LogOut className="navbar__icon" size={20} aria-hidden="true" />
+          {expanded && <span className="navbar__label">Salir</span>}
+        </button>
+        {!expanded && <span className="navbar__tooltip">Salir</span>}
       </div>
 
       {/* Expand / Collapse toggle */}

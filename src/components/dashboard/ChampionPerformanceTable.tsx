@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Trophy, ArrowUpDown, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useChampionPerformance } from '../../hooks/useGameState';
+import { useAuth } from '../../context/AuthContext';
 import { useChampionStream } from '../../hooks/useAnalyticsStream';
 import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Card, Badge } from '../ui';
@@ -18,11 +19,12 @@ const DEFAULT_CHAMPIONS: ChampionPerformance[] = [
 
 export const ChampionPerformanceTable: React.FC = () => {
   const { champions } = useChampionPerformance();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [sortField, setSortField] = useState<ChampionSortField>('games');
   const [sortAsc, setSortAsc] = useState(false);
 
-  const dataList = champions.length > 0 ? champions : DEFAULT_CHAMPIONS;
+  const dataList = champions.length > 0 ? champions : user ? [] : DEFAULT_CHAMPIONS;
   const { rows, streaming } = useChampionStream(dataList, searchQuery, sortField, sortAsc);
 
   const handleSort = (field: ChampionSortField) => {

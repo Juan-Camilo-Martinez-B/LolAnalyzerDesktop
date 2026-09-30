@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { History, Filter } from 'lucide-react';
 import { useMatchHistory } from '../../hooks/useGameState';
+import { useAuth } from '../../context/AuthContext';
 import { useMatchStream } from '../../hooks/useAnalyticsStream';
 import { MatchItem } from './MatchItem';
 import { Card, Badge } from '../ui';
@@ -20,9 +21,10 @@ export interface MatchHistoryListProps {
 
 export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatch }) => {
   const { matches } = useMatchHistory();
+  const { user } = useAuth();
   const [filterMode, setFilterMode] = useState<'ALL' | 'RANKED' | 'NORMAL'>('ALL');
 
-  const list = matches.length > 0 ? matches : DEFAULT_MATCHES;
+  const list = matches.length > 0 ? matches : user ? [] : DEFAULT_MATCHES;
   const { rows, summary, streaming } = useMatchStream(list, filterMode);
 
   return (
@@ -91,7 +93,9 @@ export const MatchHistoryList: React.FC<MatchHistoryListProps> = ({ onSelectMatc
       <div className="scroll-region" tabIndex={0} aria-label="Lista de partidas">
         {rows.length === 0 && (
           <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '8px 0' }}>
-            No hay partidas para este filtro.
+            {user && matches.length === 0
+              ? 'Vincula tu Riot ID en Ajustes para ver tus partidas reales.'
+              : 'No hay partidas para este filtro.'}
           </div>
         )}
         {rows.map((m) => (

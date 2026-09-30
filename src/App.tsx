@@ -5,9 +5,12 @@
 
 import React, { Suspense, lazy } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { TitleBar } from './components/common/TitleBar';
 import { Navbar }   from './components/common/Navbar';
 import { EventSimulatorBar } from './components/debug/EventSimulatorBar';
+import { AuthGate } from './components/auth/AuthGate';
+import { RiotDataBridge } from './components/riot/RiotDataBridge';
 import './index.css';
 
 // ── Lazy page views ─────────────────────────────────────────
@@ -46,6 +49,7 @@ function AppShell() {
 
         {/* Page area */}
         <main id="main-content" role="main">
+          <RiotDataBridge />
           <Suspense fallback={<PageSkeleton />}>
             {activeTab === 'dashboard'    && <DashboardView />}
             {activeTab === 'champ-select' && <ChampSelectView />}
@@ -60,10 +64,21 @@ function AppShell() {
 }
 
 // ── Root export ──────────────────────────────────────────────
-export default function App() {
+function AuthSwitch() {
+  const { status } = useAuth();
+  if (status === 'loading') return <div className="page-skeleton">Comprobando sesión…</div>;
+  if (status !== 'authenticated') return <AuthGate />;
   return (
     <AppProvider>
       <AppShell />
     </AppProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AuthSwitch />
+    </AuthProvider>
   );
 }

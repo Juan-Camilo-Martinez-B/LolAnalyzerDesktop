@@ -10,6 +10,9 @@ import { getLcuDiagnostics, reprobeLcu } from '../../services/lcuService';
 import { placeOverlay } from '../../services/overwolfService';
 import { deathsBeforeTiltAlert, type CoachSensitivity, type OverlayAnchor } from '../../services/settingsStore';
 import type { ConnectionStatus } from '../../types/game';
+import { PasswordCard } from '../auth/PasswordCard';
+import { RiotLinkCard } from '../riot/RiotLinkCard';
+import '../auth/auth.css';
 import './settings.css';
 
 const SENSITIVITY: { id: CoachSensitivity; label: string; hint: string }[] = [
@@ -109,6 +112,8 @@ export function SettingsView() {
       </header>
 
       <div className="settings-grid">
+        <RiotLinkCard />
+        <PasswordCard />
         <Card variant="flat" title="Sensibilidad del coach" subtitle="Cuándo el overlay emite una alerta de tilt">
           <div className="settings-segment" role="group" aria-label="Sensibilidad del coach">
             {SENSITIVITY.map((option) => (
