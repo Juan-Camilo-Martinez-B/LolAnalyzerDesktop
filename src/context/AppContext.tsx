@@ -20,6 +20,7 @@ import type { GamePhase, SummonerProfile, RankedInfo, MatchRecord, ChampSelectSe
 import type { KpiSummary, ChampionPerformance } from '../types/stats';
 import type { CoachAnalytics, CoachMessage, TiltAlert, OverlayState } from '../types/coach';
 import type { ConnectionStatus } from '../types/game';
+import { csPerMinute } from '../services/tiltCalculations';
 import { eventBus } from '../services/eventBus';
 import { checkBackendHealth } from '../services/apiClient';
 
@@ -73,7 +74,7 @@ const initialOverlayState: OverlayState = {
   objectiveTimers: [],
 };
 
-const initialState: AppState = {
+export const initialState: AppState = {
   lcuStatus:           'disconnected',
   backendStatus:       'disconnected',
   gamePhase:           'NONE',
@@ -117,7 +118,7 @@ type AppAction =
   | { type: 'SET_INITIALIZED';     payload: boolean }
   | { type: 'SET_ACTIVE_TAB';      payload: AppState['activeTab'] };
 
-function appReducer(state: AppState, action: AppAction): AppState {
+export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case 'SET_LCU_STATUS':      return { ...state, lcuStatus: action.payload };
     case 'SET_BACKEND_STATUS':  return { ...state, backendStatus: action.payload };
@@ -186,11 +187,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       eventBus.on('game:event', (event) => {
         if (event.type === 'cs_update' && typeof event.value === 'number') {
-          const minutes = Math.max(event.timestamp / 60, 1 / 60);
           dispatch({
             type: 'SET_OVERLAY',
             payload: {
-              csPerMin: Number((event.value / minutes).toFixed(2)),
+              csPerMin: Number(csPerMinute(event.value, event.timestamp).toFixed(2)),
               gameTime: event.timestamp,
             },
           });

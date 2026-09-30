@@ -9,6 +9,7 @@
 
 import { eventBus } from './eventBus';
 import { deathsBeforeTiltAlert, loadSettings } from './settingsStore';
+import { simulatorTiltIndex } from './tiltCalculations';
 import type { GamePhase, ChampSelectSession } from '../types/game';
 import type { TiltAlert, CoachMessage } from '../types/coach';
 
@@ -158,7 +159,7 @@ export function simulateDeath(): number {
 
   const needed = deathsBeforeTiltAlert(loadSettings().coachSensitivity);
   if (simDeaths >= needed) {
-    _emitMockTiltAlert(Math.min(100, 36 + simDeaths * 16));
+    _emitMockTiltAlert(simulatorTiltIndex(simDeaths));
   }
   return simDeaths;
 }

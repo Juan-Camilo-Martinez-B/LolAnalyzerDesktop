@@ -7,6 +7,7 @@ import { eventBus } from '../services/eventBus';
 import { overwolfService } from '../services/overwolfService';
 import { startLcuPolling } from '../services/lcuService';
 import { deathsBeforeTiltAlert, loadSettings } from '../services/settingsStore';
+import { backgroundTiltIndex, tiltLevelForSensitivity } from '../services/tiltCalculations';
 import type { GamePhase } from '../types/game';
 
 console.log('[LolAnalyzer] Background service worker initialized.');
@@ -43,10 +44,10 @@ class BackgroundCoordinator {
       const needed = deathsBeforeTiltAlert(sensitivity);
       if (this.deathsThisGame < needed) return;
 
-      const level = sensitivity === 'low' ? 'critical' : sensitivity === 'high' ? 'medium' : 'high';
+      const level = tiltLevelForSensitivity(sensitivity);
       eventBus.emit('coach:tilt_alert', {
         level,
-        tiltIndex: sensitivity === 'low' ? 88 : sensitivity === 'high' ? 55 : 75,
+        tiltIndex: backgroundTiltIndex(sensitivity),
         triggerReason: `${this.deathsThisGame} muerte${this.deathsThisGame === 1 ? '' : 's'} en la partida`,
         coachMessage: 'Mantén la calma. Juega defensivo cerca de tu torre.',
         timestamp: Date.now(),

@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { Brain, Flame, AlertOctagon, HeartPulse, RefreshCw } from 'lucide-react';
 import { useTilt } from '../../hooks/useGameState';
+import { tiltBand, tiltBandLabel, type TiltBand } from '../../services/tiltCalculations';
 import { Card, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
 
 export const TiltOMeterGauge: React.FC = () => {
-  const { tiltIndex, isTilted } = useTilt();
+  const { tiltIndex } = useTilt();
   const [testTilt, setTestTilt] = useState<number | null>(null);
 
   const displayTilt = testTilt !== null ? testTilt : tiltIndex;
 
-  // Calculate tilt category
-  const getTiltCategory = (val: number) => {
-    if (val <= 25) return { label: 'Zen Master', color: 'var(--accent-green)', icon: <Brain size={16} />, desc: 'Mindset óptimo. Enfoque mental perfecto.' };
-    if (val <= 50) return { label: 'Calmo & Enfocado', color: 'var(--hextech-cyan)', icon: <HeartPulse size={16} />, desc: 'Estado de concentración estable.' };
-    if (val <= 75) return { label: 'Frustración Leve', color: 'var(--hextech-gold)', icon: <Flame size={16} />, desc: 'Riesgo de decisiones impulsivas.' };
-    return { label: 'TILT CRÍTICO', color: 'var(--accent-red)', icon: <AlertOctagon size={16} />, desc: 'ALERTA: Se recomienda pausa de 15 min.' };
+  const band = tiltBand(displayTilt);
+  const categoryCopy: Record<TiltBand, { color: string; icon: React.ReactNode; desc: string }> = {
+    zen: { color: 'var(--accent-green)', icon: <Brain size={16} />, desc: 'Mindset óptimo. Enfoque mental perfecto.' },
+    focused: { color: 'var(--hextech-cyan)', icon: <HeartPulse size={16} />, desc: 'Estado de concentración estable.' },
+    frustrated: { color: 'var(--hextech-gold)', icon: <Flame size={16} />, desc: 'Riesgo de decisiones impulsivas.' },
+    critical: { color: 'var(--accent-red)', icon: <AlertOctagon size={16} />, desc: 'ALERTA: Se recomienda pausa de 15 min.' },
   };
-
-  const currentCategory = getTiltCategory(displayTilt);
+  const currentCategory = { label: tiltBandLabel(band), ...categoryCopy[band] };
 
   // SVG Semi-circle Arc math
   const size = 200;
