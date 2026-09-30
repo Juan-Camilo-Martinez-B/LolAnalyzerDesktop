@@ -28,6 +28,7 @@ export type AppEventMap = {
   'overlay:state_changed':  Partial<OverlayState>;
   'overlay:toggle':         void;
   'overlay:set_mode':       { mode: OverlayState['mode'] };
+  'overlay:cycle_mode':     void;
   // Backend / LCU sync
   'lcu:connected':          void;
   'lcu:disconnected':       void;

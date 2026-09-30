@@ -180,10 +180,26 @@ export function useOverlay() {
     dispatch({ type: 'SET_OVERLAY', payload: { visible } });
   }, [dispatch]);
 
+  const setOpacity = useCallback((opacity: number) => {
+    const clamped = Math.min(1, Math.max(0.35, opacity));
+    dispatch({ type: 'SET_OVERLAY', payload: { opacity: clamped } });
+  }, [dispatch]);
+
+  const toggleVisible = useCallback(() => {
+    dispatch({ type: 'TOGGLE_OVERLAY_VISIBLE' });
+  }, [dispatch]);
+
+  const cycleMode = useCallback(() => {
+    dispatch({ type: 'CYCLE_OVERLAY_MODE' });
+  }, [dispatch]);
+
   return {
     overlay:    state.overlayState,
     setMode,
     setVisible,
+    setOpacity,
+    toggleVisible,
+    cycleMode,
   };
 }
 

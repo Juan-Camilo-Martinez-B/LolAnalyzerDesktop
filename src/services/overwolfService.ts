@@ -88,13 +88,45 @@ export async function toggleOverlay(): Promise<void> {
 /* ─────────────────────────────────────────────────────────
    Overwolf Hotkeys
 ───────────────────────────────────────────────────────── */
-export function registerHotkeys(): void {
-  if (!isOverwolf()) return;
-  overwolf.settings.hotkeys.onPressed.addListener(event => {
-    if (event.name === 'toggle_overlay') {
-      toggleOverlay();
+/**
+ * Binds overlay hotkeys.
+ * Overwolf: manifest keys `toggle_overlay` (Ctrl+Tab) and `toggle_compact_mode` (Shift+F1).
+ * Browser: the same chords, plus Shift+` as an alternate visibility toggle.
+ * Must run inside the overlay window so compact-mode updates hit that window's state.
+ */
+export function registerHotkeys(): () => void {
+  if (isOverwolf()) {
+    const listener = (event: overwolf.settings.hotkeys.OnPressedEvent) => {
+      if (event.name === 'toggle_overlay') {
+        void toggleOverlay();
+      }
+      if (event.name === 'toggle_compact_mode') {
+        eventBus.emit('overlay:cycle_mode');
+      }
+    };
+    overwolf.settings.hotkeys.onPressed.addListener(listener);
+    return () => overwolf.settings.hotkeys.onPressed.removeListener(listener);
+  }
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    const toggleVisibility =
+      ((event.ctrlKey || event.metaKey) && event.key === 'Tab') ||
+      (event.shiftKey && !event.ctrlKey && !event.metaKey && event.code === 'Backquote');
+    const toggleCompact =
+      event.shiftKey && !event.ctrlKey && !event.altKey && !event.metaKey && event.code === 'F1';
+
+    if (!toggleVisibility && !toggleCompact) return;
+    event.preventDefault();
+
+    if (toggleVisibility) {
+      void toggleOverlay();
+      return;
     }
-  });
+    eventBus.emit('overlay:cycle_mode');
+  };
+
+  window.addEventListener('keydown', onKeyDown);
+  return () => window.removeEventListener('keydown', onKeyDown);
 }
 
 /* ─────────────────────────────────────────────────────────

@@ -64,6 +64,7 @@ export interface AppState {
 const initialOverlayState: OverlayState = {
   visible: false,
   mode: 'compact',
+  opacity: 0.92,
   tiltAlert: null,
   activeCoachMessage: null,
   csPerMin: 0,
@@ -110,6 +111,8 @@ type AppAction =
   | { type: 'SET_TILT_ALERT';      payload: TiltAlert | null }
   | { type: 'SET_CHAMP_SELECT';    payload: ChampSelectSession | null }
   | { type: 'SET_OVERLAY';         payload: Partial<OverlayState> }
+  | { type: 'TOGGLE_OVERLAY_VISIBLE' }
+  | { type: 'CYCLE_OVERLAY_MODE' }
   | { type: 'SET_LOADING';         payload: boolean }
   | { type: 'SET_INITIALIZED';     payload: boolean }
   | { type: 'SET_ACTIVE_TAB';      payload: AppState['activeTab'] };
@@ -130,6 +133,12 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_TILT_ALERT':      return { ...state, activeTiltAlert: action.payload };
     case 'SET_CHAMP_SELECT':    return { ...state, champSelectSession: action.payload };
     case 'SET_OVERLAY':         return { ...state, overlayState: { ...state.overlayState, ...action.payload } };
+    case 'TOGGLE_OVERLAY_VISIBLE':
+      return { ...state, overlayState: { ...state.overlayState, visible: !state.overlayState.visible } };
+    case 'CYCLE_OVERLAY_MODE': {
+      const nextMode = state.overlayState.mode === 'expanded' ? 'compact' : 'expanded';
+      return { ...state, overlayState: { ...state.overlayState, mode: nextMode, visible: true } };
+    }
     case 'SET_LOADING':         return { ...state, isLoading: action.payload };
     case 'SET_INITIALIZED':     return { ...state, dataInitialized: action.payload };
     case 'SET_ACTIVE_TAB':      return { ...state, activeTab: action.payload };
@@ -189,6 +198,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       eventBus.on('overlay:state_changed', partial =>
         dispatch({ type: 'SET_OVERLAY', payload: partial })),
+      eventBus.on('overlay:toggle', () =>
+        dispatch({ type: 'TOGGLE_OVERLAY_VISIBLE' })),
+      eventBus.on('overlay:set_mode', ({ mode }) =>
+        dispatch({ type: 'SET_OVERLAY', payload: { mode, visible: mode !== 'hidden' } })),
+      eventBus.on('overlay:cycle_mode', () =>
+        dispatch({ type: 'CYCLE_OVERLAY_MODE' })),
     ];
 
     return () => unsubs.forEach(fn => fn());

@@ -92,6 +92,8 @@ export interface TiltAlert {
 export interface OverlayState {
   visible: boolean;
   mode: 'compact' | 'expanded' | 'hidden';
+  /** 0.35–1. HUD opacity so the overlay stays readable without covering the game. */
+  opacity: number;
   tiltAlert: TiltAlert | null;
   activeCoachMessage: CoachMessage | null;
   csPerMin: number;
