@@ -8,7 +8,7 @@ import { audioService } from '../../services/audioService';
 import { checkBackendHealth } from '../../services/apiClient';
 import { getLcuDiagnostics, reprobeLcu } from '../../services/lcuService';
 import { placeOverlay } from '../../services/overwolfService';
-import { deathsBeforeTiltAlert, type CoachSensitivity, type OverlayAnchor } from '../../services/settingsStore';
+import { deathsBeforeTiltAlert, type CoachSensitivity, type OverlayAnchor, type ThemePreference } from '../../services/settingsStore';
 import type { ConnectionStatus } from '../../types/game';
 import { PasswordCard } from '../auth/PasswordCard';
 import { RiotLinkCard } from '../riot/RiotLinkCard';
@@ -19,6 +19,12 @@ const SENSITIVITY: { id: CoachSensitivity; label: string; hint: string }[] = [
   { id: 'low', label: 'Baja', hint: 'Solo tras 3 muertes' },
   { id: 'balanced', label: 'Equilibrada', hint: 'Tras 2 muertes seguidas' },
   { id: 'high', label: 'Alta', hint: 'Avisa en la primera muerte' },
+];
+
+const THEMES: { id: ThemePreference; label: string; hint: string; preview: string }[] = [
+  { id: 'light', label: 'Claro', hint: 'Pergamino opaco', preview: 'light' },
+  { id: 'system', label: 'Sistema', hint: 'Sigue al equipo', preview: 'system' },
+  { id: 'dark', label: 'Oscuro', hint: 'Hextech nocturno', preview: 'dark' },
 ];
 
 const ANCHORS: { id: OverlayAnchor; label: string; hint: string }[] = [
@@ -112,6 +118,31 @@ export function SettingsView() {
       </header>
 
       <div className="settings-grid">
+        <Card variant="gold" title="Apariencia" subtitle="El claro es el predeterminado. Las superficies se quedan opacas para no fatigar la vista.">
+          <div className="theme-picker" role="group" aria-label="Tema de la aplicación">
+            {THEMES.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                className={`theme-swatch theme-swatch--${option.preview}`}
+                aria-pressed={settings.theme === option.id}
+                onClick={() => {
+                  update({ theme: option.id });
+                  audioService.playClick();
+                }}
+              >
+                <span className="theme-swatch__preview" aria-hidden="true">
+                  <i className="theme-swatch__rail" />
+                  <b />
+                </span>
+                <span className="theme-swatch__copy">
+                  <strong>{option.label}</strong>
+                  <span>{option.hint}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </Card>
         <RiotLinkCard />
         <PasswordCard />
         <Card variant="flat" title="Sensibilidad del coach" subtitle="Cuándo el overlay emite una alerta de tilt">
