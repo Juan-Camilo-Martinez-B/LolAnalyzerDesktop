@@ -3,6 +3,7 @@ import { Zap, Check, Flame, Shield, Compass, ArrowRight } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { lcuService } from '../../services/lcuService';
 import { audioService } from '../../services/audioService';
+import './champSelect.css';
 
 export interface AutoRuneImporterProps {
   championName?: string;
@@ -49,9 +50,9 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({
   };
 
   return (
-    <Card variant="cyan">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
+    <Card variant="cyan" className="card--fit">
+      <div className="cs-head">
+        <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
           <Zap size={18} /> Optimal Runes & Spells Auto-Importer
         </div>
         <Badge variant={isImported ? 'win' : 'cyan'}>
@@ -60,7 +61,7 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({
       </div>
 
       {/* Main Grid Layout: Primary Tree, Secondary Tree, Spells & CTA */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', alignItems: 'center' }}>
+      <div className="cs-grid">
         {/* Primary Tree */}
         <div style={{ background: 'var(--bg-glass-heavy)', border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '12px' }}>
           <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-red)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -4,6 +4,7 @@ import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Card, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
 import type { ChampionRecommendation } from '../../types/coach';
+import './champSelect.css';
 
 export interface CounterPickPanelProps {
   recommendations?: ChampionRecommendation[];
@@ -53,52 +54,23 @@ export const CounterPickPanel: React.FC<CounterPickPanelProps> = ({
   };
 
   return (
-    <Card variant="gold">
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-gold)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
+    <Card variant="gold" className="card--fit">
+      <div className="cs-head">
+        <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-gold)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
           <Sparkles size={18} /> AI Counter-Pick & Synergy Recommendations
         </div>
         <Badge variant="gold">Matchup vs ZED (Enemy Mid)</Badge>
       </div>
 
       {/* Recommendations Cards Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+      <div className="cs-grid">
         {defaultRecs.map((rec, idx) => (
           <div
             key={rec.championId}
-            style={{
-              background: 'var(--bg-glass-heavy)',
-              border: idx === 0 ? '1px solid var(--hextech-gold)' : '1px solid var(--border-dark)',
-              borderRadius: '8px',
-              padding: '14px',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: '12px',
-              boxShadow: idx === 0 ? '0 0 12px rgba(200, 155, 60, 0.15)' : 'none',
-              position: 'relative',
-            }}
+            className={idx === 0 ? 'cs-panel cs-panel--gold' : 'cs-panel'}
+            style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
           >
-            {/* Top Match Rank Tag */}
-            {idx === 0 && (
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '-10px',
-                  right: '12px',
-                  background: 'var(--hextech-gold)',
-                  color: 'var(--hextech-black)',
-                  fontSize: '0.65rem',
-                  fontWeight: 800,
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                #1 Best Pick
-              </div>
-            )}
+            {idx === 0 && <div className="pick-flag">#1 Best Pick</div>}
 
             {/* Champion Info */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -114,7 +86,7 @@ export const CounterPickPanel: React.FC<CounterPickPanelProps> = ({
             </div>
 
             {/* Reason Description */}
-            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4, margin: 0 }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0, overflowWrap: 'anywhere' }}>
               {rec.reason}
             </p>
 

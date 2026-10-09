@@ -3,6 +3,7 @@ import { Ban, ShieldAlert, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Card, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
+import './champSelect.css';
 
 export interface BanRecommendation {
   championId: number;
@@ -59,17 +60,16 @@ export const BanRecommendationWidget: React.FC<BanRecommendationWidgetProps> = (
   };
 
   return (
-    <Card variant="danger">
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-red)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
+    <Card variant="danger" className="card--fit">
+      <div className="cs-head">
+        <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-red)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
           <Ban size={18} /> Recommended High-Priority Bans
         </div>
         <Badge variant="danger">Ban Phase Active</Badge>
       </div>
 
       {/* Ban Items Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
+      <div className="cs-grid">
         {recommendations.map((rec) => {
           const isCritical = rec.threatLevel === 'critical';
 
@@ -87,10 +87,10 @@ export const BanRecommendationWidget: React.FC<BanRecommendationWidgetProps> = (
                 gap: '10px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                   <ChampionAvatar championName={rec.championName} size="sm" variant="danger" />
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-primary)' }}>
                       {rec.championName}
                     </div>
@@ -105,7 +105,7 @@ export const BanRecommendationWidget: React.FC<BanRecommendationWidgetProps> = (
                 </Badge>
               </div>
 
-              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.35, margin: 0 }}>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.45, margin: 0, overflowWrap: 'anywhere' }}>
                 {rec.reason}
               </p>
 

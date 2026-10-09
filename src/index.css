@@ -137,8 +137,15 @@ html:not([data-theme="dark"]) body {
 
 .team-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
   gap: 20px;
+  min-width: 0;
+}
+
+.fit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
   min-width: 0;
 }
 
@@ -188,6 +195,10 @@ html:not([data-theme="dark"]) body {
   .settings-page {
     padding: 12px;
     gap: 12px;
+  }
+
+  .data-table {
+    min-width: 560px;
   }
 
   .navbar,

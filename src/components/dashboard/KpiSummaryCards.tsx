@@ -25,13 +25,7 @@ export const KpiSummaryCards: React.FC = () => {
   const kpHistory = [55, 60, 58, 62, 70, 64.5];
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: '16px',
-      }}
-    >
+    <div className="fit-grid">
       {/* CARD 1: KDA Ratio */}
       <Card variant="gold" className="kpi-card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>

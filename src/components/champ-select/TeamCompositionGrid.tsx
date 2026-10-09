@@ -4,6 +4,7 @@ import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Badge, Card } from '../ui';
 import { assetResolver } from '../../services/assetResolver';
 import type { ChampSelectMember } from '../../types/game';
+import './champSelect.css';
 
 export interface TeamCompositionGridProps {
   myTeam?: ChampSelectMember[];
@@ -47,14 +48,13 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       {/* Banned Champions Banner */}
-      <Card variant="default" style={{ padding: '12px 18px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-          {/* Ally Bans */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <Card variant="default" className="card--fit" style={{ padding: '12px 18px' }}>
+        <div className="ban-strip">
+          <div className="ban-strip__side">
             <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--hextech-cyan)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '4px' }}>
-              <Ban size={14} /> Ally Bans:
+              <Ban size={14} /> Ally Bans
             </div>
-            <div style={{ display: 'flex', gap: '6px' }}>
+            <div className="ban-strip__icons">
               {bans.myTeamBans.map((champId, idx) => (
                 <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)' }}>
                   <img
@@ -76,8 +76,8 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
           </div>
 
           {/* Enemy Bans */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ display: 'flex', gap: '6px' }}>
+          <div className="ban-strip__side">
+            <div className="ban-strip__icons">
               {bans.theirTeamBans.map((champId, idx) => (
                 <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)' }}>
                   <img
@@ -99,36 +99,30 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
       {/* Team Composition Grid (2 Columns: Ally vs Enemy) */}
       <div className="team-grid">
         {/* ALLY TEAM COLUMN */}
-        <Card variant="cyan">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
-            <Shield size={18} /> Ally Team
+        <Card variant="cyan" className="card--fit">
+          <div className="cs-head">
+            <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
+              <Shield size={18} /> Ally Team
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="draft-stack">
             {allyList.map((member, idx) => {
               const roleEmblem = assetResolver.getRoleEmblem(member.assignedPosition || 'MID');
 
               return (
                 <div
                   key={idx}
-                  style={{
-                    background: member.isLocalPlayer ? 'rgba(10, 200, 185, 0.12)' : 'var(--bg-glass-heavy)',
-                    border: member.isLocalPlayer ? '1px solid var(--hextech-cyan)' : '1px solid var(--border-dark)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
+                  className={member.isLocalPlayer ? 'draft-row draft-row--you' : 'draft-row'}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px' }} />
+                  <div className="draft-row__who">
+                    <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px', flexShrink: 0 }} />
                     <ChampionAvatar championName={member.championName || 'Unknown'} size="sm" variant={member.isLocalPlayer ? 'cyan' : 'gold'} />
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: member.isLocalPlayer ? 'var(--hextech-cyan)' : 'var(--text-primary)' }}>
+                    <div className="draft-row__copy">
+                      <div className="draft-row__name" style={{ color: member.isLocalPlayer ? 'var(--hextech-cyan)' : undefined }}>
                         {member.summonerName} {member.isLocalPlayer ? '(You)' : ''}
                       </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      <div className="draft-row__champ">
                         {member.championName || 'Selecting...'}
                       </div>
                     </div>
@@ -144,38 +138,25 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
         </Card>
 
         {/* ENEMY TEAM COLUMN */}
-        <Card variant="danger">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', color: 'var(--accent-red)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
-            <Swords size={18} /> Enemy Team
+        <Card variant="danger" className="card--fit">
+          <div className="cs-head">
+            <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-red)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
+              <Swords size={18} /> Enemy Team
+            </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="draft-stack">
             {enemyList.map((member, idx) => {
               const roleEmblem = assetResolver.getRoleEmblem(member.assignedPosition || 'MID');
 
               return (
-                <div
-                  key={idx}
-                  style={{
-                    background: 'var(--bg-glass-heavy)',
-                    border: '1px solid var(--border-dark)',
-                    borderRadius: '8px',
-                    padding: '10px 14px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px' }} />
+                <div key={idx} className="draft-row">
+                  <div className="draft-row__who">
+                    <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px', flexShrink: 0 }} />
                     <ChampionAvatar championName={member.championName || 'Unknown'} size="sm" variant="danger" />
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-primary)' }}>
-                        {member.summonerName}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        {member.championName || 'Selecting...'}
-                      </div>
+                    <div className="draft-row__copy">
+                      <div className="draft-row__name">{member.summonerName}</div>
+                      <div className="draft-row__champ">{member.championName || 'Selecting...'}</div>
                     </div>
                   </div>
 

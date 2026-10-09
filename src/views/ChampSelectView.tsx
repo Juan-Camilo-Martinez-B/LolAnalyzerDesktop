@@ -6,6 +6,7 @@ import { CounterPickPanel } from '../components/champ-select/CounterPickPanel';
 import { BanRecommendationWidget } from '../components/champ-select/BanRecommendationWidget';
 import { AutoRuneImporter } from '../components/champ-select/AutoRuneImporter';
 import { Badge, Card } from '../components/ui';
+import '../components/champ-select/champSelect.css';
 
 export function ChampSelectView() {
   const { session, isActive, myTeam, theirTeam } = useChampSelect();
@@ -22,9 +23,9 @@ export function ChampSelectView() {
       {/* Champ Select Phase Status Header Bar */}
       <Card
         variant="gold"
+        className="card--fit cs-phase"
         style={{
           padding: '14px 20px',
-          background: 'linear-gradient(135deg, rgba(200, 155, 60, 0.12) 0%, rgba(10, 14, 23, 0.95) 100%)',
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
@@ -32,11 +33,11 @@ export function ChampSelectView() {
           gap: '12px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div className="cs-phase__lead">
           <Radio size={20} color="var(--hextech-gold)" className="animate-pulse" />
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--hextech-gold)', textTransform: 'uppercase' }}>
+          <div className="cs-phase__title">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 800, color: 'var(--hextech-gold)', textTransform: 'uppercase' }}>
                 {phaseName.replace(/_/g, ' ')}
               </h3>
               <Badge variant={isChampSel ? 'win' : 'gold'}>
