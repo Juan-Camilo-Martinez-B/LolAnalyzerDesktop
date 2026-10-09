@@ -12,12 +12,27 @@ export function RiotDataBridge() {
   const { dispatch } = useApp();
 
   useEffect(() => {
-    if (!user?.riotLinked) return;
+    if (!user?.riotLinked || !user.riotGameName) return;
+    const region = (user.region || 'la1') as Region;
+    dispatch({
+      type: 'SET_SUMMONER',
+      payload: {
+        puuid: '',
+        summonerId: 0,
+        accountId: '',
+        displayName: `${user.riotGameName}#${user.riotTagLine ?? ''}`,
+        gameName: user.riotGameName,
+        tagLine: user.riotTagLine ?? undefined,
+        summonerLevel: 0,
+        profileIconId: user.summonerIconId ?? 29,
+        region,
+      },
+    });
     let active = true;
     fetchRiotBundle()
       .then((bundle) => {
         if (!active) return;
-        const region = (bundle.profile.region || 'la1') as Region;
+        const region = (bundle.profile.region || user.region || 'la1') as Region;
         const summoner: SummonerProfile = {
           puuid: bundle.profile.puuid,
           summonerId: 0,

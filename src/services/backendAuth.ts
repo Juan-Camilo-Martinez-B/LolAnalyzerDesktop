@@ -21,6 +21,7 @@ export interface AuthUser {
   riotLinked: boolean;
   riotGameName: string | null;
   riotTagLine: string | null;
+  summonerIconId: number | null;
   themePreference: 'light' | 'system' | 'dark';
 }
 
@@ -129,6 +130,7 @@ export async function currentUser(): Promise<AuthUser> {
     riot_linked: boolean;
     riot_game_name: string | null;
     riot_tag_line: string | null;
+    summoner_icon_id?: number | null;
     theme_preference?: string;
   }>('/api/auth/me');
   const theme = isThemePreference(user.theme_preference) ? user.theme_preference : 'light';
@@ -140,6 +142,7 @@ export async function currentUser(): Promise<AuthUser> {
     riotLinked: user.riot_linked,
     riotGameName: user.riot_game_name,
     riotTagLine: user.riot_tag_line,
+    summonerIconId: user.summoner_icon_id ?? null,
     themePreference: theme,
   };
 }

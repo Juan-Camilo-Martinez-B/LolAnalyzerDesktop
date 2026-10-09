@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { RefreshCw, Wifi, WifiOff, Shield, Award } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
+import { useAuth } from '../../context/AuthContext';
 import { assetResolver, ensureDdragonVersion } from '../../services/assetResolver';
 import { TierBadge, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
 
 export const ProfileHeader: React.FC = () => {
   const { summoner, rankInfo, connectionStatus, refreshState } = useGameState();
+  const { user } = useAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [iconVersion, setIconVersion] = useState(assetResolver.getVersion());
 
@@ -30,23 +32,25 @@ export const ProfileHeader: React.FC = () => {
     }, 600);
   };
 
+  const linkedName = user?.riotLinked && user.riotGameName
+    ? `${user.riotGameName}#${user.riotTagLine ?? ''}`
+    : '';
   const name = summoner?.gameName
-    ? `${summoner.gameName}#${summoner.tagLine || 'LAN'}`
-    : summoner?.displayName || 'Summoner';
+    ? `${summoner.gameName}#${summoner.tagLine || user?.riotTagLine || ''}`
+    : summoner?.displayName || linkedName || 'Sin Riot ID';
 
-  const level = summoner?.summonerLevel || 30;
-  const profileIconId = summoner?.profileIconId ?? 29;
+  const level = summoner?.summonerLevel && summoner.summonerLevel > 0 ? summoner.summonerLevel : null;
+  const profileIconId = summoner?.profileIconId ?? user?.summonerIconId ?? 29;
   const iconUrl = assetResolver.getProfileIcon(profileIconId, iconVersion);
 
-  const tier = rankInfo?.tier || 'GOLD';
-  const division = rankInfo?.division || 'I';
-  const lp = rankInfo?.leaguePoints ?? 75;
-  const wins = rankInfo?.wins ?? 84;
-  const losses = rankInfo?.losses ?? 62;
+  const tier = rankInfo?.tier || '';
+  const division = rankInfo?.division || '';
+  const lp = rankInfo?.leaguePoints ?? 0;
+  const wins = rankInfo?.wins ?? 0;
+  const losses = rankInfo?.losses ?? 0;
   const totalGames = wins + losses;
-  const winRate = totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : '50.0';
-
-  const rankEmblemUrl = assetResolver.getRankEmblem(tier);
+  const winRate = totalGames > 0 ? ((wins / totalGames) * 100).toFixed(1) : null;
+  const rankEmblemUrl = tier ? assetResolver.getRankEmblem(tier) : '';
 
   return (
     <div className="profile-header-card">
@@ -98,7 +102,7 @@ export const ProfileHeader: React.FC = () => {
               whiteSpace: 'nowrap',
             }}
           >
-            Lvl {level}
+            {level ? `Lvl ${level}` : 'Lvl —'}
           </div>
         </div>
 
@@ -132,34 +136,45 @@ export const ProfileHeader: React.FC = () => {
       <div className="profile-rank">
         {/* Rank Badge Emblem */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <img
-            src={rankEmblemUrl}
-            alt={tier}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-            style={{
-              width: '64px',
-              height: '64px',
-              filter: 'drop-shadow(0 0 10px rgba(200, 155, 60, 0.4))',
-            }}
-          />
+          {rankEmblemUrl && (
+            <img
+              src={rankEmblemUrl}
+              alt={tier}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+              style={{
+                width: '64px',
+                height: '64px',
+                filter: 'drop-shadow(0 0 10px rgba(200, 155, 60, 0.4))',
+              }}
+            />
+          )}
 
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <TierBadge tier={tier} division={division} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--hextech-gold)' }}>
-                {lp} LP
-              </span>
-            </div>
-
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
-              <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{wins}W</span>{' '}
-              <span style={{ color: 'var(--accent-red)', fontWeight: 600 }}>{losses}L</span>{' '}
-              <span style={{ color: 'var(--hextech-cyan)', fontWeight: 700, marginLeft: '4px' }}>
-                ({winRate}% WR)
-              </span>
-            </div>
+            {tier ? (
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <TierBadge tier={tier} division={division} />
+                  <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--hextech-gold)' }}>
+                    {lp} LP
+                  </span>
+                </div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                  <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{wins}W</span>{' '}
+                  <span style={{ color: 'var(--accent-red)', fontWeight: 600 }}>{losses}L</span>{' '}
+                  {winRate && (
+                    <span style={{ color: 'var(--hextech-cyan)', fontWeight: 700, marginLeft: '4px' }}>
+                      ({winRate}% WR)
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {linkedName ? 'Sin clasificar' : 'Vincula tu Riot ID en Ajustes'}
+              </div>
+            )}
           </div>
         </div>
 

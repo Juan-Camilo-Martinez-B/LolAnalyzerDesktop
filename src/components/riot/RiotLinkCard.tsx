@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card } from '../ui';
 import { useAuth } from '../../context/AuthContext';
 
@@ -11,6 +11,15 @@ export function RiotLinkCard() {
   const [region, setRegion] = useState(auth.user?.region || 'la1');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const linkedName = auth.user?.riotLinked && auth.user.riotGameName
+    ? `${auth.user.riotGameName}#${auth.user.riotTagLine ?? ''}`
+    : '';
+
+  useEffect(() => {
+    setGameName(auth.user?.riotGameName ?? '');
+    setTagLine(auth.user?.riotTagLine ?? '');
+    setRegion(auth.user?.region || 'la1');
+  }, [auth.user]);
 
   const submit = async () => {
     setBusy(true);
@@ -27,6 +36,9 @@ export function RiotLinkCard() {
 
   return (
     <Card variant="gold" title="Cuenta de Riot" subtitle="Se usa la API oficial. No pedimos tu contraseña de Riot.">
+      {linkedName && (
+        <p className="auth-ok">{linkedName} queda vinculada a esta cuenta. Al volver a entrar sigue aquí.</p>
+      )}
       <div className="auth-form">
         <label>
           Nombre de Riot
