@@ -1,0 +1,25 @@
+.live-coach {
+  flex: 0 0 auto;
+  margin: 16px 24px 0;
+}
+
+.live-coach__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-primary);
+}
+
+.live-coach__detail {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.live-coach__text {
+  margin: 8px 0 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.4;
+}

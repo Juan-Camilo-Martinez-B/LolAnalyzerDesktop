@@ -12,6 +12,7 @@ import { EventSimulatorBar } from './components/debug/EventSimulatorBar';
 import { AuthGate } from './components/auth/AuthGate';
 import { RiotDataBridge } from './components/riot/RiotDataBridge';
 import { ThemeRoot } from './components/theme/ThemeRoot';
+import { LiveCoachCard } from './components/coach/LiveCoachCard';
 import './index.css';
 
 // ── Lazy page views ─────────────────────────────────────────
@@ -51,6 +52,7 @@ function AppShell() {
         {/* Page area */}
         <main id="main-content" role="main">
           <RiotDataBridge />
+          <LiveCoachCard />
           <Suspense fallback={<PageSkeleton />}>
             {activeTab === 'dashboard'    && <DashboardView />}
             {activeTab === 'champ-select' && <ChampSelectView />}

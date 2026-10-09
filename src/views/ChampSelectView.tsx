@@ -64,7 +64,7 @@ export function ChampSelectView() {
         <Card className="cs-wait">
           <h2 className="cs-wait__title">{waiting ? 'Leyendo el cliente…' : 'Entra en cola'}</h2>
           <p className="cs-wait__copy">
-            Abre League of Legends y entra a una partida. Esta pantalla muestra el draft en vivo cuando el cliente está en selección de campeón.
+            Abre League of Legends y entra a una partida. Esta pantalla muestra el draft. Si la partida ya empezó, el coach de arriba lee el juego en vivo.
           </p>
         </Card>
       )}
