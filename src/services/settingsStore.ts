@@ -8,6 +8,7 @@
 
 export type CoachSensitivity = 'low' | 'balanced' | 'high';
 export type OverlayAnchor = 'top-left' | 'top-center' | 'bottom-left';
+export type ThemePreference = 'light' | 'system' | 'dark';
 
 export interface AudioPreferences {
   muted: boolean;
@@ -20,6 +21,7 @@ export interface UserSettings {
   coachSensitivity: CoachSensitivity;
   overlayAnchor: OverlayAnchor;
   overlayOpacity: number;
+  theme: ThemePreference;
   audio: AudioPreferences;
 }
 
@@ -30,6 +32,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
   coachSensitivity: 'balanced',
   overlayAnchor: 'top-left',
   overlayOpacity: 0.92,
+  theme: 'light',
   audio: {
     muted: false,
     tiltAlerts: true,
@@ -54,6 +57,10 @@ function isSensitivity(value: unknown): value is CoachSensitivity {
   return value === 'low' || value === 'balanced' || value === 'high';
 }
 
+function isTheme(value: unknown): value is ThemePreference {
+  return value === 'light' || value === 'system' || value === 'dark';
+}
+
 function isAnchor(value: unknown): value is OverlayAnchor {
   return value === 'top-left' || value === 'top-center' || value === 'bottom-left';
 }
@@ -68,6 +75,7 @@ export function loadSettings(): UserSettings {
       coachSensitivity: isSensitivity(parsed.coachSensitivity) ? parsed.coachSensitivity : DEFAULT_SETTINGS.coachSensitivity,
       overlayAnchor: isAnchor(parsed.overlayAnchor) ? parsed.overlayAnchor : DEFAULT_SETTINGS.overlayAnchor,
       overlayOpacity: clampOpacity(parsed.overlayOpacity ?? DEFAULT_SETTINGS.overlayOpacity),
+      theme: isTheme(parsed.theme) ? parsed.theme : DEFAULT_SETTINGS.theme,
       audio: {
         muted: parsed.audio?.muted ?? DEFAULT_SETTINGS.audio.muted,
         tiltAlerts: parsed.audio?.tiltAlerts ?? DEFAULT_SETTINGS.audio.tiltAlerts,
@@ -90,6 +98,7 @@ export function patchSettings(patch: {
   coachSensitivity?: CoachSensitivity;
   overlayAnchor?: OverlayAnchor;
   overlayOpacity?: number;
+  theme?: ThemePreference;
   audio?: Partial<AudioPreferences>;
 }): UserSettings {
   const current = loadSettings();

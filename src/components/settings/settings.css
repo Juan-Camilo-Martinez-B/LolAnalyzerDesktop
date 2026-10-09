@@ -46,7 +46,7 @@
 .settings-segment button {
   flex: 1;
   min-width: 120px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--segment-bg);
   border: 1px solid var(--border-surface);
   color: var(--slate-200);
   border-radius: var(--radius-md);
@@ -139,7 +139,7 @@
 }
 
 .settings-diag-item {
-  background: rgba(0, 0, 0, 0.25);
+  background: var(--inset-bg);
   border: 1px solid var(--border-surface);
   border-radius: var(--radius-md);
   padding: 10px 12px;
@@ -194,8 +194,82 @@
   line-height: 1.45;
 }
 
-.settings-slider {
-  width: 100%;
-  accent-color: var(--gold-500);
-  margin-top: 8px;
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.theme-swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--border-surface);
+  background: var(--segment-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.theme-swatch__copy strong {
+  display: block;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.theme-swatch__copy span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.theme-swatch[aria-pressed='true'] {
+  border-color: var(--border-gold-lg);
+  box-shadow: var(--shadow-gold);
+}
+
+.theme-swatch__preview {
+  height: 52px;
+  border-radius: 8px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  border: 1px solid rgba(70, 56, 36, 0.18);
+}
+
+.theme-swatch__preview i,
+.theme-swatch__preview b {
+  display: block;
+}
+
+.theme-swatch__preview b {
+  margin: 8px;
+  height: 8px;
+  border-radius: 99px;
+  opacity: 0.9;
+}
+
+.theme-swatch--light .theme-swatch__preview { background: #EBE6DA; }
+.theme-swatch--light .theme-swatch__rail { background: #D9D0C0; }
+.theme-swatch--light .theme-swatch__preview b { background: #8C6A2E; }
+
+.theme-swatch--system .theme-swatch__preview {
+  background: linear-gradient(135deg, #EBE6DA 0 50%, #0B0E14 50% 100%);
+}
+.theme-swatch--system .theme-swatch__rail { background: linear-gradient(#D9D0C0, #121826); }
+.theme-swatch--system .theme-swatch__preview b { background: linear-gradient(90deg, #8C6A2E, #C89B3C); }
+
+.theme-swatch--dark .theme-swatch__preview { background: #0B0E14; }
+.theme-swatch--dark .theme-swatch__rail { background: #070A0F; }
+.theme-swatch--dark .theme-swatch__preview b { background: #C89B3C; }
+
+@media (max-width: 720px) {
+  .theme-picker {
+    grid-template-columns: 1fr;
+  }
 }

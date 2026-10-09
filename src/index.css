@@ -27,13 +27,19 @@ body {
   font-family: var(--font-body);
   font-size: var(--text-base);
   line-height: 1.55;
-  color: var(--slate-100);
+  color: var(--text-primary);
   background-color: var(--bg-slate);
   overflow: hidden;
   user-select: none;
   height: 100%;
   height: 100dvh;
   min-width: 0;
+}
+
+html:not([data-theme="dark"]) body {
+  background-image:
+    radial-gradient(980px 420px at -8% -20%, rgba(156, 122, 52, 0.14), transparent 58%),
+    radial-gradient(760px 380px at 110% -10%, rgba(78, 112, 100, 0.10), transparent 52%);
 }
 
 /* ── App Root ── */
@@ -70,7 +76,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  background: var(--bg-slate);
+  background: transparent;
 }
 
 .page-view {

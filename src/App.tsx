@@ -11,6 +11,7 @@ import { Navbar }   from './components/common/Navbar';
 import { EventSimulatorBar } from './components/debug/EventSimulatorBar';
 import { AuthGate } from './components/auth/AuthGate';
 import { RiotDataBridge } from './components/riot/RiotDataBridge';
+import { ThemeRoot } from './components/theme/ThemeRoot';
 import './index.css';
 
 // ── Lazy page views ─────────────────────────────────────────
@@ -78,6 +79,7 @@ function AuthSwitch() {
 export default function App() {
   return (
     <AuthProvider>
+      <ThemeRoot />
       <AuthSwitch />
     </AuthProvider>
   );

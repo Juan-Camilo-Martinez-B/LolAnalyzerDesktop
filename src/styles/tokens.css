@@ -1,74 +1,79 @@
 /* ============================================================
-   LolAnalyzer - Hextech Cyber-Dark Design System Tokens
-   src/styles/tokens.css
+   LolAnalyzer - Theme tokens
+   Light is the default. Dark lives on [data-theme="dark"].
+   Surfaces stay opaque so the screen does not glow through the UI.
    ============================================================ */
 
 :root {
-  /* ── Backgrounds & Surfaces ── */
-  --bg-void:          #070A0F;
-  --bg-slate:         #0B0E14;
-  --bg-surface-1:     #0E1520;
-  --bg-surface-2:     #121826;
-  --bg-surface-3:     #1A2336;
-  --bg-surface-glass: rgba(14, 21, 32, 0.82);
-  --bg-card:          rgba(18, 24, 38, 0.90);
-  --bg-card-hover:    rgba(26, 35, 54, 0.95);
-  --bg-overlay:       rgba(7, 10, 15, 0.55);
+  color-scheme: light;
 
-  /* ── Hextech Gold (Primary Accent) ── */
-  --gold-900:   #3D2A00;
-  --gold-700:   #7A5200;
-  --gold-500:   #C89B3C;
-  --gold-400:   #D4AA4E;
-  --gold-300:   #E8C96A;
-  --gold-200:   #F0E6D2;
-  --gold-100:   #FBF5E5;
+  /* Warm parchment. Nothing here is pure white. */
+  --bg-void:          #E4DDD0;
+  --bg-slate:         #EBE6DA;
+  --bg-surface-1:     #F3EEE4;
+  --bg-surface-2:     #E7E1D4;
+  --bg-surface-3:     #DDD6C8;
+  --bg-surface-glass: #F4F0E6;
+  --bg-card:          #F7F3EB;
+  --bg-card-hover:    #EFE9DC;
+  --bg-overlay:       rgba(62, 52, 38, 0.28);
+  --chrome-bg:        #E3DCCE;
+  --field-bg:         #F8F5EE;
+  --inset-bg:         #E6DFD2;
+  --segment-bg:       #EFE9DC;
+  --overlay-panel:    #F3EEE4;
+  --glass-gold-bg:    #F6F1E6;
+  --glass-cyan-bg:    #EEF3F0;
+  --glass-danger-bg:  #F6EEEA;
 
-  /* ── Cyan Pulse (Live Data / Telemetry) ── */
-  --cyan-600:   #006E79;
-  --cyan-400:   #0AC8B9;
-  --cyan-300:   #00E5D5;
-  --cyan-200:   #80F0E8;
-  --cyan-glow:  rgba(0, 240, 255, 0.35);
+  --gold-900:   #3F3012;
+  --gold-700:   #6E5220;
+  --gold-500:   #8C6A2E;
+  --gold-400:   #7A5A24;
+  --gold-300:   #6A4E1E;
+  --gold-200:   #4E3914;
+  --gold-100:   #F4EFE4;
 
-  /* ── Crimson Tilt (Danger / Alerts) ── */
-  --red-700:    #8B0000;
-  --red-500:    #E84057;
-  --red-400:    #FF4655;
-  --red-300:    #FF6B78;
-  --red-glow:   rgba(255, 70, 85, 0.35);
+  --cyan-600:   #1E6468;
+  --cyan-400:   #2A7572;
+  --cyan-300:   #1D5E5C;
+  --cyan-200:   #E4F1EF;
+  --cyan-glow:  rgba(42, 117, 114, 0.16);
 
-  /* ── Emerald Victory (Wins / Success) ── */
-  --green-600:  #00855A;
-  --green-400:  #00D68F;
-  --green-300:  #2FEEA5;
-  --green-glow: rgba(0, 214, 143, 0.30);
+  --red-700:    #7A2C36;
+  --red-500:    #A33B48;
+  --red-400:    #8E3440;
+  --red-300:    #8E3440;
+  --red-glow:   rgba(142, 52, 64, 0.14);
 
-  /* ── Sapphire (Info / Secondary) ── */
-  --blue-600:   #0A3D62;
-  --blue-400:   #1A7EC8;
-  --blue-300:   #3FA6E0;
-  --blue-200:   #89CCEF;
+  --green-600:  #1C6B48;
+  --green-400:  #2A7352;
+  --green-300:  #1E6244;
+  --green-glow: rgba(42, 115, 82, 0.14);
 
-  /* ── Neutrals ── */
-  --slate-900:  #0D1117;
-  --slate-800:  #161D2B;
-  --slate-700:  #1F2A3D;
-  --slate-600:  #2B3A52;
-  --slate-500:  #3D4F6A;
-  --slate-400:  #567198;
-  --slate-300:  #7A9CC4;
-  --slate-200:  #A8C0D6;
-  --slate-100:  #CBD8E8;
-  --slate-50:   #E8EFF7;
-  --white:      #FFFFFF;
+  --blue-600:   #2A4E72;
+  --blue-400:   #3B6790;
+  --blue-300:   #2E567C;
+  --blue-200:   #E4EDF4;
 
-  /* ── Borders ── */
-  --border-gold:    rgba(200, 155, 60, 0.30);
-  --border-gold-lg: rgba(200, 155, 60, 0.55);
-  --border-cyan:    rgba(10, 200, 185, 0.25);
-  --border-surface: rgba(43, 58, 82, 0.60);
-  --border-red:     rgba(255, 70, 85, 0.40);
+  --slate-900:  #2A261F;
+  --slate-800:  #3A342C;
+  --slate-700:  #D4CDBF;
+  --slate-600:  #C9C1B2;
+  --slate-500:  #7A7268;
+  --slate-400:  #6A6258;
+  --slate-300:  #5A534A;
+  --slate-200:  #3E3830;
+  --slate-100:  #2A261F;
+  --slate-50:   #F7F3EB;
+  --white:      #FBF8F2;
+  --ink:        #241F18;
+
+  --border-gold:    rgba(110, 82, 32, 0.32);
+  --border-gold-lg: rgba(110, 82, 32, 0.55);
+  --border-cyan:    rgba(42, 117, 114, 0.28);
+  --border-surface: rgba(90, 78, 60, 0.20);
+  --border-red:     rgba(142, 52, 64, 0.32);
 
   /* ── Typography ── */
   --font-display:  'Cinzel', serif;
@@ -105,13 +110,13 @@
   --radius-2xl:  24px;
   --radius-full: 9999px;
 
-  /* ── Shadows & Glows ── */
-  --shadow-card:       0 4px 24px rgba(0, 0, 0, 0.55);
-  --shadow-gold:       0 0 20px rgba(200, 155, 60, 0.25), 0 0 40px rgba(200, 155, 60, 0.10);
-  --shadow-cyan:       0 0 20px rgba(10, 200, 185, 0.30), 0 0 40px rgba(10, 200, 185, 0.12);
-  --shadow-red:        0 0 20px rgba(255, 70, 85, 0.35), 0 0 50px rgba(255, 70, 85, 0.15);
-  --shadow-green:      0 0 16px rgba(0, 214, 143, 0.28), 0 0 32px rgba(0, 214, 143, 0.10);
-  --shadow-inset:      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  /* Soft, short shadows. No neon bloom on the light theme. */
+  --shadow-card:       0 10px 28px rgba(74, 58, 36, 0.08);
+  --shadow-gold:       0 8px 18px rgba(110, 82, 32, 0.08);
+  --shadow-cyan:       0 8px 18px rgba(42, 117, 114, 0.08);
+  --shadow-red:        0 8px 18px rgba(142, 52, 64, 0.08);
+  --shadow-green:      0 8px 18px rgba(42, 115, 82, 0.08);
+  --shadow-inset:      inset 0 1px 0 rgba(255, 252, 246, 0.85);
 
   /* ── Transitions ── */
   --transition-fast:   all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -127,17 +132,97 @@
   --z-overlay: 900;
   --z-toast:   1000;
 
-  /* Aliases used across dashboard, champ select and overlay */
-  --hextech-gold:   var(--gold-500);
-  --hextech-cyan:   var(--cyan-400);
-  --hextech-black:  var(--bg-void);
-  --text-primary:   var(--slate-100);
-  --text-secondary: var(--slate-300);
-  --text-muted:     var(--slate-400);
-  --font-heading:   var(--font-display);
-  --bg-glass-heavy: rgba(14, 21, 32, 0.92);
+  --hextech-gold:    var(--gold-500);
+  --hextech-cyan:    var(--cyan-400);
+  --hextech-black:   var(--ink);
+  --text-primary:    var(--slate-100);
+  --text-secondary:  var(--slate-300);
+  --text-muted:      var(--slate-400);
+  --font-heading:    var(--font-display);
+  --bg-glass-heavy:  #F4F0E6;
+  --bg-glass-medium: #EBE6DA;
+  --border-dark:     var(--border-surface);
+  --accent-green:    var(--green-400);
+  --accent-red:      var(--red-400);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-void:          #070A0F;
+  --bg-slate:         #0B0E14;
+  --bg-surface-1:     #0E1520;
+  --bg-surface-2:     #121826;
+  --bg-surface-3:     #1A2336;
+  --bg-surface-glass: rgba(14, 21, 32, 0.82);
+  --bg-card:          rgba(18, 24, 38, 0.90);
+  --bg-card-hover:    rgba(26, 35, 54, 0.95);
+  --bg-overlay:       rgba(7, 10, 15, 0.55);
+  --chrome-bg:        rgba(7, 10, 15, 0.97);
+  --field-bg:         rgba(255, 255, 255, 0.04);
+  --inset-bg:         rgba(0, 0, 0, 0.25);
+  --segment-bg:       rgba(255, 255, 255, 0.03);
+  --overlay-panel:    rgba(5, 8, 14, 0.92);
+  --glass-gold-bg:    rgba(14, 21, 32, 0.88);
+  --glass-cyan-bg:    rgba(10, 20, 32, 0.86);
+  --glass-danger-bg:  rgba(20, 8, 10, 0.90);
+
+  --gold-900:   #3D2A00;
+  --gold-700:   #7A5200;
+  --gold-500:   #C89B3C;
+  --gold-400:   #D4AA4E;
+  --gold-300:   #E8C96A;
+  --gold-200:   #F0E6D2;
+  --gold-100:   #FBF5E5;
+
+  --cyan-600:   #006E79;
+  --cyan-400:   #0AC8B9;
+  --cyan-300:   #00E5D5;
+  --cyan-200:   #80F0E8;
+  --cyan-glow:  rgba(0, 240, 255, 0.35);
+
+  --red-700:    #8B0000;
+  --red-500:    #E84057;
+  --red-400:    #FF4655;
+  --red-300:    #FF6B78;
+  --red-glow:   rgba(255, 70, 85, 0.35);
+
+  --green-600:  #00855A;
+  --green-400:  #00D68F;
+  --green-300:  #2FEEA5;
+  --green-glow: rgba(0, 214, 143, 0.30);
+
+  --blue-600:   #0A3D62;
+  --blue-400:   #1A7EC8;
+  --blue-300:   #3FA6E0;
+  --blue-200:   #89CCEF;
+
+  --slate-900:  #0D1117;
+  --slate-800:  #161D2B;
+  --slate-700:  #1F2A3D;
+  --slate-600:  #2B3A52;
+  --slate-500:  #3D4F6A;
+  --slate-400:  #567198;
+  --slate-300:  #7A9CC4;
+  --slate-200:  #A8C0D6;
+  --slate-100:  #CBD8E8;
+  --slate-50:   #E8EFF7;
+  --white:      #FFFFFF;
+  --ink:        #070A0F;
+
+  --border-gold:    rgba(200, 155, 60, 0.30);
+  --border-gold-lg: rgba(200, 155, 60, 0.55);
+  --border-cyan:    rgba(10, 200, 185, 0.25);
+  --border-surface: rgba(43, 58, 82, 0.60);
+  --border-red:     rgba(255, 70, 85, 0.40);
+
+  --shadow-card:  0 4px 24px rgba(0, 0, 0, 0.55);
+  --shadow-gold:  0 0 20px rgba(200, 155, 60, 0.25), 0 0 40px rgba(200, 155, 60, 0.10);
+  --shadow-cyan:  0 0 20px rgba(10, 200, 185, 0.30), 0 0 40px rgba(10, 200, 185, 0.12);
+  --shadow-red:   0 0 20px rgba(255, 70, 85, 0.35), 0 0 50px rgba(255, 70, 85, 0.15);
+  --shadow-green: 0 0 16px rgba(0, 214, 143, 0.28), 0 0 32px rgba(0, 214, 143, 0.10);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+  --bg-glass-heavy:  rgba(14, 21, 32, 0.92);
   --bg-glass-medium: rgba(14, 21, 32, 0.72);
-  --border-dark:    var(--border-surface);
-  --accent-green:   var(--green-400);
-  --accent-red:     var(--red-400);
 }

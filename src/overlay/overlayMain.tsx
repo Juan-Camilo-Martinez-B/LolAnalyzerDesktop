@@ -14,6 +14,7 @@ import { useUserSettings } from '../hooks/useUserSettings';
 import { registerHotkeys, overwolfService } from '../services/overwolfService';
 import { EventSimulatorBar } from '../components/debug/EventSimulatorBar';
 import { audioService } from '../services/audioService';
+import { ThemeRoot } from '../components/theme/ThemeRoot';
 import type { OverlayAnchor } from '../services/settingsStore';
 
 function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
@@ -69,12 +70,12 @@ const OverlayApp: React.FC = () => {
         width: '100%',
         maxWidth: isExpanded ? '360px' : '340px',
         maxHeight: 'calc(100vh - 24px)',
-        background: 'rgba(5, 8, 14, 0.90)',
+        background: 'var(--overlay-panel)',
         border: '1px solid var(--border-gold)',
         borderRadius: '10px',
         overflowX: 'hidden',
         overflowY: 'auto',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8), 0 0 15px rgba(200, 155, 60, 0.2)',
+        boxShadow: 'var(--shadow-card)',
         fontFamily: 'var(--font-body)',
         color: 'var(--slate-100)',
         opacity: overlay.opacity,
@@ -142,6 +143,7 @@ const OverlayApp: React.FC = () => {
 ReactDOM.createRoot(document.getElementById('overlay-root')!).render(
   <React.StrictMode>
     <AppProvider>
+      <ThemeRoot />
       <OverlayApp />
     </AppProvider>
   </React.StrictMode>

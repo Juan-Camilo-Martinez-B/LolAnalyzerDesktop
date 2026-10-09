@@ -9,7 +9,7 @@
   width: 64px;
   height: 100%;
   min-height: 0;
-  background: rgba(7, 10, 15, 0.97);
+  background: var(--chrome-bg);
   border-right: 1px solid var(--border-gold);
   flex-shrink: 0;
   padding: var(--space-3) 0;
