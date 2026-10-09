@@ -2,7 +2,7 @@ import { clearAuthToken, setAuthToken } from './apiClient';
 import { clearRefreshToken, readRefreshToken, saveRefreshToken } from './secureSession';
 import { isThemePreference, type ThemePreference } from './theme';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 export class BackendError extends Error {
   status: number;
@@ -55,10 +55,11 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
     response = await fetch(`${BASE_URL}${path}`, {
       ...options,
       headers,
-      signal: AbortSignal.timeout(8000),
+      signal: AbortSignal.timeout(30000),
     });
-  } catch {
-    throw new BackendError(0, 'No hay conexión con el backend.');
+  } catch (error) {
+    const timedOut = error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError');
+    throw new BackendError(0, timedOut ? 'El backend tardó demasiado en responder.' : 'No hay conexión con el backend.');
   }
 
   if (response.status === 401 && retryAuth && path !== '/api/auth/refresh' && path !== '/api/auth/login') {
