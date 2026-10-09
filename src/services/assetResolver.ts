@@ -21,6 +21,13 @@ export class AssetResolver {
    * Champion Square Icon
    * @param championName Name or Key (e.g. "Ahri", "MonkeyKing" for Wukong)
    */
+  public getChampionIconById(championId: number): string {
+    if (!Number.isInteger(championId) || championId <= 0) {
+      return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';
+    }
+    return `https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/${championId}.png`;
+  }
+
   public getChampionSquare(championName: string): string {
     if (!championName || championName === 'Unknown') {
       return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';

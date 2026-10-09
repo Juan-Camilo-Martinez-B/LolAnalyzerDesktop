@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Swords, Ban, CheckCircle, Lock, UserCheck } from 'lucide-react';
+import { Ban, Shield, Swords } from 'lucide-react';
 import { ChampionAvatar } from '../common/ChampionAvatar';
 import { Badge, Card } from '../ui';
 import { assetResolver } from '../../services/assetResolver';
@@ -15,35 +15,10 @@ export interface TeamCompositionGridProps {
 export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
   myTeam = [],
   theirTeam = [],
-  bans = { myTeamBans: [122, 157, 238, 84, 555], theirTeamBans: [103, 64, 222, 11, 268] },
+  bans = { myTeamBans: [], theirTeamBans: [] },
 }) => {
-  // Default mock slots for 5 positions if empty
-  const defaultRoles = ['TOP', 'JUNGLE', 'MID', 'ADC', 'SUPPORT'];
-  
-  const mockMyTeam: ChampSelectMember[] = defaultRoles.map((role, idx) => ({
-    cellId: idx,
-    championId: [266, 64, 103, 222, 412][idx],
-    championName: ['Aatrox', 'LeeSin', 'Ahri', 'Jinx', 'Thresh'][idx],
-    assignedPosition: role,
-    spell1Id: 4,
-    spell2Id: 12,
-    summonerName: ['Summoner 1', 'Summoner 2', 'You (Ahri)', 'Summoner 4', 'Summoner 5'][idx],
-    isLocalPlayer: idx === 2,
-  }));
-
-  const mockTheirTeam: ChampSelectMember[] = defaultRoles.map((role, idx) => ({
-    cellId: idx + 5,
-    championId: [83, 121, 238, 145, 111][idx],
-    championName: ['Yorick', 'Khazix', 'Zed', 'Kaisa', 'Nautilus'][idx],
-    assignedPosition: role,
-    spell1Id: 4,
-    spell2Id: 14,
-    summonerName: `Enemy ${idx + 1}`,
-    isLocalPlayer: false,
-  }));
-
-  const allyList = myTeam.length > 0 ? myTeam : mockMyTeam;
-  const enemyList = theirTeam.length > 0 ? theirTeam : mockTheirTeam;
+  const allyList = myTeam;
+  const enemyList = theirTeam;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -56,13 +31,10 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
             </div>
             <div className="ban-strip__icons">
               {bans.myTeamBans.map((champId, idx) => (
-                <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)' }}>
+                <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)', background: 'var(--item-slot-bg)' }}>
                   <img
-                    src={assetResolver.getItemIcon(champId)} // Fallback item if champ ID mapped
+                    src={assetResolver.getChampionIconById(champId)}
                     alt={`Ban ${champId}`}
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png';
-                    }}
                     style={{ width: '100%', height: '100%', filter: 'grayscale(100%) opacity(0.6)' }}
                   />
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-red)', fontWeight: 900, fontSize: '0.9rem' }}>✕</div>
@@ -79,9 +51,9 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
           <div className="ban-strip__side">
             <div className="ban-strip__icons">
               {bans.theirTeamBans.map((champId, idx) => (
-                <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)' }}>
+                <div key={idx} style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border-dark)', background: 'var(--item-slot-bg)' }}>
                   <img
-                    src="https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/champion-icons/-1.png"
+                    src={assetResolver.getChampionIconById(champId)}
                     alt={`Enemy Ban ${champId}`}
                     style={{ width: '100%', height: '100%', filter: 'grayscale(100%) opacity(0.6)' }}
                   />
@@ -117,13 +89,13 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
                 >
                   <div className="draft-row__who">
                     <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px', flexShrink: 0 }} />
-                    <ChampionAvatar championName={member.championName || 'Unknown'} size="sm" variant={member.isLocalPlayer ? 'cyan' : 'gold'} />
+                    <ChampionAvatar championId={member.championId} championName={member.championName || 'Unknown'} size="sm" variant={member.isLocalPlayer ? 'cyan' : 'gold'} />
                     <div className="draft-row__copy">
                       <div className="draft-row__name" style={{ color: member.isLocalPlayer ? 'var(--hextech-cyan)' : undefined }}>
                         {member.summonerName} {member.isLocalPlayer ? '(You)' : ''}
                       </div>
                       <div className="draft-row__champ">
-                        {member.championName || 'Selecting...'}
+                        {member.championName || 'Eligiendo'}
                       </div>
                     </div>
                   </div>
@@ -153,10 +125,10 @@ export const TeamCompositionGrid: React.FC<TeamCompositionGridProps> = ({
                 <div key={idx} className="draft-row">
                   <div className="draft-row__who">
                     <img src={roleEmblem} alt={member.assignedPosition} style={{ width: '20px', height: '20px', flexShrink: 0 }} />
-                    <ChampionAvatar championName={member.championName || 'Unknown'} size="sm" variant="danger" />
+                    <ChampionAvatar championId={member.championId} championName={member.championName || 'Unknown'} size="sm" variant="danger" />
                     <div className="draft-row__copy">
                       <div className="draft-row__name">{member.summonerName}</div>
-                      <div className="draft-row__champ">{member.championName || 'Selecting...'}</div>
+                      <div className="draft-row__champ">{member.championName || 'Eligiendo'}</div>
                     </div>
                   </div>
 

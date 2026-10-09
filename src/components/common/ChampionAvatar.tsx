@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { assetResolver } from '../../services/assetResolver';
 
 export interface ChampionAvatarProps {
   championName: string;
+  championId?: number;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   variant?: 'gold' | 'cyan' | 'danger' | 'neutral';
   masteryLevel?: number;
@@ -11,8 +12,14 @@ export interface ChampionAvatarProps {
   showBorder?: boolean;
 }
 
+function portrait(championName: string, championId?: number): string {
+  if (championId && championId > 0) return assetResolver.getChampionIconById(championId);
+  return assetResolver.getChampionSquare(championName);
+}
+
 export const ChampionAvatar: React.FC<ChampionAvatarProps> = ({
   championName,
+  championId,
   size = 'md',
   variant = 'gold',
   masteryLevel,
@@ -20,7 +27,11 @@ export const ChampionAvatar: React.FC<ChampionAvatarProps> = ({
   className = '',
   showBorder = true,
 }) => {
-  const [imgSrc, setImgSrc] = useState<string>(() => assetResolver.getChampionSquare(championName));
+  const [imgSrc, setImgSrc] = useState<string>(() => portrait(championName, championId));
+
+  useEffect(() => {
+    setImgSrc(portrait(championName, championId));
+  }, [championName, championId]);
 
   const sizePixels = {
     sm: 36,

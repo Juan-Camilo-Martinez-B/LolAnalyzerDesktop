@@ -29,6 +29,11 @@ describe('AssetResolver', () => {
     expect(resolver.getChampionSquare('Nunu & Willump')).toContain('/Nunu.png');
   });
 
+  it('builds a champion icon from the numeric id', () => {
+    expect(resolver.getChampionIconById(103)).toContain('/champion-icons/103.png');
+    expect(resolver.getChampionIconById(0)).toContain('champion-icons/-1.png');
+  });
+
   it('uses a placeholder when the champion is unknown', () => {
     expect(resolver.getChampionSquare('')).toContain('champion-icons/-1.png');
     expect(resolver.getChampionSquare('Unknown')).toContain('champion-icons/-1.png');

@@ -1,75 +1,73 @@
-import React from 'react';
-import { Clock, ShieldAlert, Zap, Radio } from 'lucide-react';
-import { useChampSelect, useGamePhase } from '../hooks/useGameState';
+import React, { useEffect, useState } from 'react';
+import { Swords } from 'lucide-react';
 import { TeamCompositionGrid } from '../components/champ-select/TeamCompositionGrid';
-import { CounterPickPanel } from '../components/champ-select/CounterPickPanel';
-import { BanRecommendationWidget } from '../components/champ-select/BanRecommendationWidget';
-import { AutoRuneImporter } from '../components/champ-select/AutoRuneImporter';
-import { Badge, Card } from '../components/ui';
+import { Card } from '../components/ui';
+import { useApp } from '../context/AppContext';
+import { fetchLiveChampSelect } from '../services/champSelectClient';
 import '../components/champ-select/champSelect.css';
 
 export function ChampSelectView() {
-  const { session, isActive, myTeam, theirTeam } = useChampSelect();
-  const { isChampSel } = useGamePhase();
+  const { state, dispatch } = useApp();
+  const [waiting, setWaiting] = useState(true);
+  const session = state.champSelectSession;
 
-  const phaseTimer = session?.timer?.adjustedTimeLeftInPhase
-    ? Math.max(0, Math.floor(session.timer.adjustedTimeLeftInPhase / 1000))
-    : 27;
+  useEffect(() => {
+    let cancelled = false;
 
-  const phaseName = session?.timer?.phase || 'BAN_PICK_PHASE';
+    const pull = async () => {
+      try {
+        const live = await fetchLiveChampSelect();
+        if (cancelled) return;
+        dispatch({ type: 'SET_CHAMP_SELECT', payload: live });
+      } catch {
+        if (cancelled) return;
+        dispatch({ type: 'SET_CHAMP_SELECT', payload: null });
+      } finally {
+        if (!cancelled) setWaiting(false);
+      }
+    };
+
+    pull();
+    const timer = window.setInterval(pull, 2000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, [dispatch]);
+
+  const secondsLeft = Math.max(0, Math.ceil((session?.timer.adjustedTimeLeftInPhase ?? 0) / 1000));
+  const phaseLabel = session?.timer.phase?.replace(/_/g, ' ') || 'Selección';
 
   return (
     <div className="page-view">
-      {/* Champ Select Phase Status Header Bar */}
-      <Card
-        variant="gold"
-        className="card--fit cs-phase"
-        style={{
-          padding: '14px 20px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '12px',
-        }}
-      >
+      <div className="cs-phase card" style={{ padding: 16, marginBottom: 16 }}>
         <div className="cs-phase__lead">
-          <Radio size={20} color="var(--hextech-gold)" className="animate-pulse" />
-          <div className="cs-phase__title">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-              <h3 style={{ margin: 0, fontFamily: 'var(--font-heading)', fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 800, color: 'var(--hextech-gold)', textTransform: 'uppercase' }}>
-                {phaseName.replace(/_/g, ' ')}
-              </h3>
-              <Badge variant={isChampSel ? 'win' : 'gold'}>
-                {isChampSel ? 'LCU Live Sync' : 'Simulated Session'}
-              </Badge>
+          <Swords size={22} color="var(--hextech-gold)" />
+          <div>
+            <div className="cs-phase__title" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+              Selección de campeón
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
-              Real-time AI draft guidance & counter-pick suggestions active
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              {session ? `${phaseLabel} · ${secondsLeft}s` : 'Esperando al cliente de League'}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Phase Timer */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-glass-heavy)', border: '1px solid var(--border-gold)', padding: '6px 14px', borderRadius: '8px' }}>
-          <Clock size={16} color="var(--hextech-gold)" />
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 800, color: phaseTimer <= 5 ? 'var(--accent-red)' : 'var(--hextech-gold)' }}>
-            {phaseTimer}s
-          </span>
-        </div>
-      </Card>
-
-      {/* Team Composition Grid */}
-      <TeamCompositionGrid myTeam={myTeam} theirTeam={theirTeam} />
-
-      {/* Auto Runes & Spells Importer */}
-      <AutoRuneImporter championName="Ahri" />
-
-      {/* AI Ban Recommendation Widget */}
-      <BanRecommendationWidget />
-
-      {/* AI Counter-Pick & Synergy Recommendation Panel */}
-      <CounterPickPanel />
+      {session ? (
+        <TeamCompositionGrid
+          myTeam={session.myTeam}
+          theirTeam={session.theirTeam}
+          bans={session.bans}
+        />
+      ) : (
+        <Card className="cs-wait">
+          <h2 className="cs-wait__title">{waiting ? 'Leyendo el cliente…' : 'Entra en cola'}</h2>
+          <p className="cs-wait__copy">
+            Abre League of Legends y entra a una partida. Esta pantalla muestra el draft en vivo cuando el cliente está en selección de campeón.
+          </p>
+        </Card>
+      )}
     </div>
   );
 }

@@ -134,6 +134,20 @@
   gap: 6px;
 }
 
+.cs-wait__title {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  color: var(--text-primary);
+}
+
+.cs-wait__copy {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
 @media (max-width: 720px) {
   .cs-phase__title {
     font-size: 0.95rem;
