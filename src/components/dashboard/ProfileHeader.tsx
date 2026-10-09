@@ -38,29 +38,7 @@ export const ProfileHeader: React.FC = () => {
   const rankEmblemUrl = assetResolver.getRankEmblem(tier);
 
   return (
-    <div
-      className="profile-header-card"
-      style={{
-        background: 'linear-gradient(135deg, rgba(16, 26, 42, 0.85) 0%, rgba(10, 14, 23, 0.95) 100%)',
-        border: '1px solid var(--border-gold)',
-        borderRadius: '12px',
-        padding: '16px 20px',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(200, 155, 60, 0.1)',
-      }}
-    >
-      {/* Hextech Background Glow Accent */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '-50%',
-          left: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(10, 200, 185, 0.08) 0%, rgba(0,0,0,0) 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
+    <div className="profile-header-card">
       <div className="profile-identity">
         {/* Profile Icon with Level Badge */}
         <div style={{ position: 'relative' }}>

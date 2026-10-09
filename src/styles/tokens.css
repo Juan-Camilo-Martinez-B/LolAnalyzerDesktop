@@ -144,6 +144,9 @@
   --border-dark:     var(--border-surface);
   --accent-green:    var(--green-400);
   --accent-red:      var(--red-400);
+  --profile-bg:      linear-gradient(145deg, #F7F3EB 0%, #EFE6D4 100%);
+  --profile-glow:    radial-gradient(circle, rgba(140, 106, 46, 0.16) 0%, transparent 68%);
+  --phase-bg:        linear-gradient(135deg, rgba(140, 106, 46, 0.16) 0%, #F7F3EB 100%);
 }
 
 [data-theme="dark"] {
@@ -225,4 +228,7 @@
 
   --bg-glass-heavy:  rgba(14, 21, 32, 0.92);
   --bg-glass-medium: rgba(14, 21, 32, 0.72);
+  --profile-bg:      linear-gradient(135deg, rgba(16, 26, 42, 0.92) 0%, rgba(10, 14, 23, 0.96) 100%);
+  --profile-glow:    radial-gradient(circle, rgba(10, 200, 185, 0.10) 0%, transparent 70%);
+  --phase-bg:        linear-gradient(135deg, rgba(200, 155, 60, 0.14) 0%, rgba(10, 14, 23, 0.96) 100%);
 }
