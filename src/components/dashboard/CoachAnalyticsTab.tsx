@@ -1,127 +1,134 @@
-import React from 'react';
-import { Bot, CheckCircle2, AlertTriangle, Lightbulb, Target } from 'lucide-react';
-import { useCoachAnalytics } from '../../hooks/useGameState';
-import { Card, Badge, ProgressBar } from '../ui';
-import { RadarChart, type RadarDataPoint } from '../ui/RadarChart';
+import React, { useEffect, useState } from 'react';
+import { Bot, Sparkles } from 'lucide-react';
+import { apiRequest } from '../../services/backendAuth';
+import { Badge, Card } from '../ui';
+import './coachMetrics.css';
+
+interface CoachTip {
+  id: number;
+  text: string;
+  trigger: string;
+  champion: string;
+  role: string;
+  gameTime: number;
+  source: string;
+  createdAt: string | null;
+}
+
+interface CoachMetrics {
+  total: number;
+  fromGemini: number;
+  fromHeuristic: number;
+  byTrigger: { trigger: string; count: number }[];
+  recent: CoachTip[];
+}
+
+const TRIGGER_LABELS: Record<string, string> = {
+  TILT_RISK: 'Riesgo de tilt',
+  CS_CRASH: 'Farmeo',
+  FORCED_FIGHT_NO_SUMMONERS: 'Pelea sin destello',
+  OBJECTIVE_CONTEST_RISK: 'Objetivo',
+  GENERAL_TACTICAL: 'Lectura general',
+};
+
+function clock(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  return `${Math.floor(total / 60)}:${(total % 60).toString().padStart(2, '0')}`;
+}
+
+function when(value: string | null): string {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
 
 export const CoachAnalyticsTab: React.FC = () => {
-  const { analytics } = useCoachAnalytics();
+  const [metrics, setMetrics] = useState<CoachMetrics | null>(null);
+  const [error, setError] = useState('');
 
-  const complianceRate = analytics?.complianceRate ?? analytics?.overallComplianceRate ?? 78.4;
-  const totalInterventions = analytics?.totalInterventions ?? analytics?.totalAdvicesGiven ?? 42;
-  const focusAreas: string[] = analytics?.frequentMistakes ?? [
-    'Rotaciones tardías a objetivos neutrales (Dragón/Barón) después del min 20.',
-    'Overextending en línea lateral sin visión previa en la jungla enemiga.',
-    'Falta de sincronización en tiempos de back antes de peleas de dragón.',
-  ];
+  useEffect(() => {
+    let active = true;
+    const pull = () => {
+      apiRequest<CoachMetrics>('/api/coach/metrics')
+        .then((body) => {
+          if (active) {
+            setMetrics(body);
+            setError('');
+          }
+        })
+        .catch((err: unknown) => {
+          if (active) setError(err instanceof Error ? err.message : 'No se pudieron cargar las métricas.');
+        });
+    };
+    pull();
+    const timer = window.setInterval(pull, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+    };
+  }, []);
 
-  const radarData: RadarDataPoint[] = [
-    { axis: 'Fighting', value: 85, benchmarkValue: 70 },
-    { axis: 'Farming', value: 78, benchmarkValue: 72 },
-    { axis: 'Vision', value: 62, benchmarkValue: 75 },
-    { axis: 'Objectives', value: 74, benchmarkValue: 68 },
-    { axis: 'Survival', value: 80, benchmarkValue: 65 },
-    { axis: 'Utility', value: 68, benchmarkValue: 60 },
-  ];
+  const total = metrics?.total ?? 0;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {/* Top Banner: Coach Compliance & Overview */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '16px',
-        }}
-      >
-        {/* Compliance Score Card */}
+    <div className="coach-metrics">
+      <div className="coach-metrics__grid">
         <Card variant="gold">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--hextech-gold)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>
-                <Bot size={16} /> AI Coach Compliance Rate
-              </div>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--hextech-gold)', fontFamily: 'var(--font-heading)', marginTop: '4px' }}>
-                {complianceRate.toFixed(1)}%
-              </div>
-            </div>
-            <Badge variant="win">Optimal Learner</Badge>
-          </div>
-
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '10px' }}>
-            Aceptaste <span style={{ color: 'var(--text-primary)', fontWeight: 700 }}>33 de {totalInterventions}</span> recomendaciones in-game.
-          </div>
-          <ProgressBar value={complianceRate} variant="gold" height={6} />
+          <div className="coach-metrics__label"><Bot size={16} /> Consejos guardados</div>
+          <div className="coach-metrics__value">{total}</div>
+          <p className="coach-metrics__note">
+            Quedan en tu cuenta. Al volver a entrar siguen aquí.
+          </p>
         </Card>
-
-        {/* Tactical Recommendation Card */}
         <Card variant="cyan">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '10px' }}>
-            <Lightbulb size={18} /> Focus Strategic Goal
-          </div>
-          <p style={{ fontSize: '0.82rem', color: 'var(--text-primary)', lineHeight: 1.5, margin: 0 }}>
-            <strong style={{ color: 'var(--hextech-cyan)' }}>Objetivo de la Semana:</strong> Incrementar el marcador de visión en la jungla enemiga antes del minuto 15 para prevenir emboscadas.
+          <div className="coach-metrics__label"><Sparkles size={16} /> Origen</div>
+          <p className="coach-metrics__note">
+            Gemini: <strong>{metrics?.fromGemini ?? 0}</strong>
+            {' · '}
+            Motor local: <strong>{metrics?.fromHeuristic ?? 0}</strong>
           </p>
         </Card>
       </div>
 
-      {/* Main Grid: Hextech Skill Radar & Recurring Focus Areas */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-          gap: '20px',
-        }}
-      >
-        {/* Radar Chart Card */}
-        <Card variant="default">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <Target size={18} color="var(--hextech-cyan)" />
-            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
-              Skill Profile Radar
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '10px 0' }}>
-            <RadarChart data={radarData} size={280} showBenchmark={true} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', fontSize: '0.75rem', marginTop: '10px' }}>
-            <span style={{ color: 'var(--hextech-cyan)', fontWeight: 600 }}>● Tus Métricas</span>
-            <span style={{ color: 'var(--hextech-gold)', fontWeight: 600 }}>- - Rango Promedio</span>
-          </div>
-        </Card>
-
-        {/* Frequent Mistakes & Drills */}
-        <Card variant="default">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <AlertTriangle size={18} color="var(--hextech-gold)" />
-            <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
-              Recurring Areas to Improve
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {focusAreas.map((mistake: string, idx: number) => (
-              <div
-                key={idx}
-                style={{
-                  background: 'var(--bg-glass-heavy)',
-                  border: '1px solid var(--border-dark)',
-                  borderRadius: '8px',
-                  padding: '12px 14px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '10px',
-                }}
-              >
-                <CheckCircle2 size={16} color="var(--hextech-gold)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{mistake}</span>
-              </div>
+      <Card>
+        <div className="coach-metrics__label">Por tipo de aviso</div>
+        {total === 0 ? (
+          <p className="coach-metrics__note">Entra a una partida para que el coach empiece a guardar consejos.</p>
+        ) : (
+          <ul className="coach-metrics__triggers">
+            {metrics?.byTrigger.map((item) => (
+              <li key={item.trigger}>
+                <span>{TRIGGER_LABELS[item.trigger] ?? item.trigger}</span>
+                <strong>{item.count}</strong>
+              </li>
             ))}
-          </div>
-        </Card>
-      </div>
+          </ul>
+        )}
+        {error && <p className="coach-metrics__note">{error}</p>}
+      </Card>
+
+      <Card>
+        <div className="coach-metrics__label">Últimos consejos</div>
+        {total === 0 ? (
+          <p className="coach-metrics__note">Todavía no hay consejos en esta cuenta.</p>
+        ) : (
+          <ul className="coach-metrics__list">
+            {metrics?.recent.map((tip) => (
+              <li key={tip.id}>
+                <div className="coach-metrics__tip-head">
+                  <strong>{tip.champion} · {tip.role} · {clock(tip.gameTime)}</strong>
+                  <Badge variant={tip.source === 'gemini' ? 'gold' : 'neutral'}>
+                    {tip.source === 'gemini' ? 'Gemini' : 'Motor local'}
+                  </Badge>
+                </div>
+                <p>{tip.text}</p>
+                <span>{TRIGGER_LABELS[tip.trigger] ?? tip.trigger}{tip.createdAt ? ` · ${when(tip.createdAt)}` : ''}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
     </div>
   );
 };

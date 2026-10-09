@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Badge, Card } from '../ui';
+import { apiRequest } from '../../services/backendAuth';
 import './liveCoach.css';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 interface LivePlayer {
   champion: string;
@@ -47,9 +46,7 @@ export function LiveCoachCard() {
 
     const pull = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/coach/live`, { signal: AbortSignal.timeout(20000) });
-        if (!response.ok) return;
-        const body = await response.json() as LiveCoachState;
+        const body = await apiRequest<LiveCoachState>('/api/coach/live');
         if (!cancelled) setState(body);
       } catch {
         if (!cancelled) setState(null);
