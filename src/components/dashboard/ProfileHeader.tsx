@@ -1,13 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { RefreshCw, Wifi, WifiOff, Shield, Award } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
-import { assetResolver } from '../../services/assetResolver';
+import { assetResolver, ensureDdragonVersion } from '../../services/assetResolver';
 import { TierBadge, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
 
 export const ProfileHeader: React.FC = () => {
   const { summoner, rankInfo, connectionStatus, refreshState } = useGameState();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [iconVersion, setIconVersion] = useState(assetResolver.getVersion());
+
+  useEffect(() => {
+    let active = true;
+    ensureDdragonVersion().then(() => {
+      if (active) setIconVersion(assetResolver.getVersion());
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleRefresh = async () => {
     audioService.playClick();
@@ -24,8 +35,8 @@ export const ProfileHeader: React.FC = () => {
     : summoner?.displayName || 'Summoner';
 
   const level = summoner?.summonerLevel || 30;
-  const profileIconId = summoner?.profileIconId || 1;
-  const iconUrl = `https://ddragon.leagueoflegends.com/cdn/${assetResolver.getVersion()}/img/profileicon/${profileIconId}.png`;
+  const profileIconId = summoner?.profileIconId ?? 29;
+  const iconUrl = assetResolver.getProfileIcon(profileIconId, iconVersion);
 
   const tier = rankInfo?.tier || 'GOLD';
   const division = rankInfo?.division || 'I';
@@ -55,9 +66,11 @@ export const ProfileHeader: React.FC = () => {
             <img
               src={iconUrl}
               alt="Profile Icon"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src =
-                  'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/profile-icons/0.png';
+              onError={(event) => {
+                const img = event.currentTarget;
+                if (img.dataset.fallback === '1') return;
+                img.dataset.fallback = '1';
+                img.src = `https://raw.communitydragon.org/latest/game/assets/ux/summonericons/profileicon${profileIconId}.png`;
               }}
               style={{
                 width: '100%',

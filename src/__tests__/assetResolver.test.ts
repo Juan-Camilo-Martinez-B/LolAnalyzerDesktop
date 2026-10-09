@@ -7,13 +7,19 @@ describe('AssetResolver', () => {
   const resolver = new AssetResolver();
 
   it('starts on the pinned Data Dragon version', () => {
-    expect(resolver.getVersion()).toBe('14.5.1');
+    expect(resolver.getVersion()).toBe('16.20.1');
+  });
+
+  it('builds a profile icon on the active patch', () => {
+    expect(resolver.getProfileIcon(7128)).toBe(`${CDN}/16.20.1/img/profileicon/7128.png`);
+    expect(resolver.getProfileIcon(7128, '16.19.1')).toBe(`${CDN}/16.19.1/img/profileicon/7128.png`);
+    expect(resolver.getProfileIcon(Number.NaN)).toContain('/profileicon/29.png');
   });
 
   it('builds a champion square and applies the version', () => {
     resolver.setVersion('15.1.1');
     expect(resolver.getChampionSquare('Ahri')).toBe(`${CDN}/15.1.1/img/champion/Ahri.png`);
-    resolver.setVersion('14.5.1');
+    resolver.setVersion('16.20.1');
   });
 
   it('maps special champion names to Data Dragon keys', () => {

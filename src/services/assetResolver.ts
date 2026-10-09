@@ -3,7 +3,7 @@
 // src/services/assetResolver.ts
 // ============================================================
 
-const DEFAULT_DDRAGON_VERSION = '14.5.1';
+const DEFAULT_DDRAGON_VERSION = '16.20.1';
 const DDRAGON_BASE = 'https://ddragon.leagueoflegends.com/cdn';
 
 export class AssetResolver {
@@ -54,6 +54,14 @@ export class AssetResolver {
       return 'https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/default/v1/item-icons/0.png';
     }
     return `${DDRAGON_BASE}/${this.version}/img/item/${itemId}.png`;
+  }
+
+  /**
+   * Summoner profile icon. Newer icons only exist on the current Data Dragon patch.
+   */
+  public getProfileIcon(iconId: number, version = this.version): string {
+    const id = Number.isInteger(iconId) && iconId >= 0 ? iconId : 29;
+    return `${DDRAGON_BASE}/${version}/img/profileicon/${id}.png`;
   }
 
   /**
@@ -131,3 +139,25 @@ export class AssetResolver {
 }
 
 export const assetResolver = new AssetResolver();
+
+let versionRequest: Promise<string> | null = null;
+
+/** Loads the newest Data Dragon patch once and keeps the previous one if the request fails. */
+export function ensureDdragonVersion(): Promise<string> {
+  if (!versionRequest) {
+    versionRequest = fetch('https://ddragon.leagueoflegends.com/api/versions.json')
+      .then((response) => {
+        if (!response.ok) throw new Error('versions unavailable');
+        return response.json() as Promise<unknown>;
+      })
+      .then((versions) => {
+        const latest = Array.isArray(versions)
+          ? versions.find((item) => typeof item === 'string' && /^\d+\.\d+\.\d+$/.test(item))
+          : null;
+        if (typeof latest === 'string') assetResolver.setVersion(latest);
+        return assetResolver.getVersion();
+      })
+      .catch(() => assetResolver.getVersion());
+  }
+  return versionRequest;
+}
