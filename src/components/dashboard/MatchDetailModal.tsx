@@ -1,137 +1,113 @@
-import React, { useEffect, useState } from 'react';
-import { ShieldCheck, ShieldAlert, Sparkles, Activity, Award, X } from 'lucide-react';
-import { Modal, Badge, ProgressBar } from '../ui';
-import { TelemetryTimelineChart } from './TelemetryTimelineChart';
+import React from 'react';
+import { Activity, Clock, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Badge, Modal } from '../ui';
 import { ChampionAvatar } from '../common/ChampionAvatar';
-import { useMatchTelemetry } from '../../hooks/useGameState';
-import type { MatchTelemetry } from '../../types/stats';
+import { assetResolver } from '../../services/assetResolver';
+import type { MatchRecord } from '../../types/game';
+import './matchHistory.css';
 
 export interface MatchDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  matchId: string | null;
+  match: MatchRecord | null;
+}
+
+function formatNumber(value: number): string {
+  return new Intl.NumberFormat('es').format(value);
 }
 
 export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({
   isOpen,
   onClose,
-  matchId,
+  match,
 }) => {
-  const { fetchTelemetry } = useMatchTelemetry();
-  const [telemetry, setTelemetry] = useState<MatchTelemetry | null>(null);
-  const [loading, setLoading] = useState(false);
+  if (!isOpen || !match) return null;
 
-  useEffect(() => {
-    if (isOpen && matchId) {
-      setLoading(true);
-      fetchTelemetry(matchId).then((data) => {
-        setTelemetry(data);
-        setLoading(false);
-      });
-    }
-  }, [isOpen, matchId, fetchTelemetry]);
-
-  if (!isOpen) return null;
-
-  // Mock match telemetry if backend detail is pending
-  const isWin = telemetry?.isWin ?? true;
-  const championName = telemetry?.championName ?? 'Ahri';
-  const kills = telemetry?.kills ?? 11;
-  const deaths = telemetry?.deaths ?? 2;
-  const assists = telemetry?.assists ?? 9;
-  const durationMin = 28;
-  const durationSec = 44;
-
-  const coachInsights = telemetry?.aiCoachInsights ?? [
-    'Dominio absoluto en fase de líneas: Mantuviste una ventaja de +1,250 de oro al minuto 15.',
-    'Gran rotación a Heraldo y Dragón: Participación en el 75% de los objetivos neutrales del equipo.',
-    'Sugerencia de mejora: Se colocaron solo 8 centinelas de visión; busca comprar más Wards de Control en mid-game.',
+  const isWin = Boolean(match.isWin ?? match.win ?? match.localParticipant?.win);
+  const championName = match.championName ?? match.localParticipant?.championName ?? 'Unknown';
+  const kills = match.kills ?? match.localParticipant?.kills ?? 0;
+  const deaths = match.deaths ?? match.localParticipant?.deaths ?? 0;
+  const assists = match.assists ?? match.localParticipant?.assists ?? 0;
+  const durationSecTotal = match.durationSec ?? match.gameDuration ?? 0;
+  const durationMin = Math.floor(durationSecTotal / 60);
+  const durationSec = durationSecTotal % 60;
+  const kda = match.kda ?? (deaths > 0 ? (kills + assists) / deaths : kills + assists);
+  const items = (match.items ?? match.localParticipant?.items ?? []).filter((itemId) => itemId > 0);
+  const stats = [
+    { label: 'Rol', value: match.role ?? match.localParticipant?.role ?? '—' },
+    { label: 'CS', value: `${match.cs ?? match.localParticipant?.totalCS ?? 0} (${(match.csPerMin ?? 0).toFixed(1)}/min)` },
+    { label: 'Oro', value: formatNumber(match.goldEarned ?? match.localParticipant?.goldEarned ?? 0) },
+    { label: 'Visión', value: formatNumber(match.visionScore ?? match.localParticipant?.visionScore ?? 0) },
+    { label: 'Daño a campeones', value: formatNumber(match.damageDealt ?? match.localParticipant?.damageDealtToChampions ?? 0) },
   ];
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size="xl"
+      size="lg"
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Activity size={18} color="var(--hextech-gold)" />
-          <span>Match Analysis & Telemetry Drilldown</span>
+          <span>Detalle de la partida</span>
         </div>
       }
     >
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {/* Banner Section */}
-        <div
-          style={{
-            background: isWin
-              ? 'linear-gradient(135deg, rgba(10, 200, 185, 0.15) 0%, rgba(11, 14, 20, 0.95) 100%)'
-              : 'linear-gradient(135deg, rgba(255, 70, 85, 0.15) 0%, rgba(11, 14, 20, 0.95) 100%)',
-            border: `1px solid ${isWin ? 'var(--hextech-cyan)' : 'var(--accent-red)'}`,
-            borderRadius: '10px',
-            padding: '16px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <ChampionAvatar championName={championName} size="lg" variant={isWin ? 'cyan' : 'danger'} />
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <Badge variant={isWin ? 'win' : 'loss'} icon={isWin ? <ShieldCheck size={12} /> : <ShieldAlert size={12} />}>
-                  {isWin ? 'VICTORY' : 'DEFEAT'}
-                </Badge>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  {durationMin}m {durationSec}s • Ranked Solo/Duo
-                </span>
+      <div className="match-detail__body" style={{ padding: 0 }}>
+        <div className={isWin ? 'match-detail__banner match-detail__banner--win' : 'match-detail__banner'} style={{ position: 'relative', height: 'auto', padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <ChampionAvatar championName={championName} size="lg" variant={isWin ? 'cyan' : 'danger'} />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <Badge variant={isWin ? 'win' : 'loss'} icon={isWin ? <ShieldCheck size={12} /> : <ShieldAlert size={12} />}>
+                    {isWin ? 'VICTORY' : 'DEFEAT'}
+                  </Badge>
+                  <span className="match-detail__duration">
+                    <Clock size={14} /> {durationMin}m {durationSec}s • {match.gameMode || 'Partida'}
+                  </span>
+                </div>
+                <h2 className="match-detail__title">{championName}</h2>
+                <p className="match-detail__sub">{match.matchId}</p>
               </div>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 0 0' }}>
-                {championName}
-              </h2>
             </div>
-          </div>
-
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-primary)' }}>
-              <span style={{ color: 'var(--accent-green)' }}>{kills}</span> /{' '}
-              <span style={{ color: 'var(--accent-red)' }}>{deaths}</span> /{' '}
-              <span style={{ color: 'var(--hextech-cyan)' }}>{assists}</span>
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--hextech-gold)', fontWeight: 700, marginTop: '2px' }}>
-              {deaths > 0 ? ((kills + assists) / deaths).toFixed(2) : kills + assists} KDA
+            <div style={{ textAlign: 'right' }}>
+              <div className="match-detail__kda" style={{ fontSize: '1.5rem' }}>
+                <span style={{ color: 'var(--accent-green)' }}>{kills}</span>
+                {' / '}
+                <span style={{ color: 'var(--accent-red)' }}>{deaths}</span>
+                {' / '}
+                <span style={{ color: 'var(--hextech-cyan)' }}>{assists}</span>
+              </div>
+              <div className="match-row__meta">{kda.toFixed(2)} KDA</div>
             </div>
           </div>
         </div>
 
-        {/* Telemetry Gold Curve Section */}
+        <div className="match-detail__stats">
+          {stats.map((stat) => (
+            <div key={stat.label} className="match-detail__stat">
+              <span>{stat.label}</span>
+              <strong>{stat.value}</strong>
+            </div>
+          ))}
+        </div>
+
         <div>
-          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--hextech-gold)', textTransform: 'uppercase', marginBottom: '8px' }}>
-            Team Gold Difference Timeline (+ / - Gold)
+          <div className="match-row__mode" style={{ marginBottom: 8 }}>Objetos</div>
+          <div className="match-row__items">
+            {items.length > 0 ? items.map((itemId, index) => (
+              <img
+                key={`${itemId}-${index}`}
+                src={assetResolver.getItemIcon(itemId)}
+                alt={`Item ${itemId}`}
+                className="match-row__item"
+                style={{ width: 36, height: 36 }}
+              />
+            )) : (
+              <span className="match-detail__sub">Esta partida no trajo objetos.</span>
+            )}
           </div>
-          <div style={{ background: 'var(--bg-glass-heavy)', border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '12px' }}>
-            <TelemetryTimelineChart telemetry={telemetry?.timeline ?? []} />
-          </div>
-        </div>
-
-        {/* AI Coach Insights Box */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, rgba(200, 155, 60, 0.08) 0%, rgba(11, 14, 20, 0.95) 100%)',
-            border: '1px solid var(--border-gold)',
-            borderRadius: '10px',
-            padding: '16px',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-gold)', fontWeight: 700, fontSize: '0.9rem', marginBottom: '10px' }}>
-            <Sparkles size={16} /> AI Coach Post-Match Diagnosis
-          </div>
-
-          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-secondary)', fontSize: '0.8rem', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {coachInsights.map((insight, idx) => (
-              <li key={idx}>{insight}</li>
-            ))}
-          </ul>
         </div>
       </div>
     </Modal>

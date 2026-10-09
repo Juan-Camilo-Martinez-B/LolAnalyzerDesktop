@@ -110,6 +110,9 @@ export interface MatchRecord {
   timestamp?: string;
   items?: number[];
   trinketId?: number;
+  goldEarned?: number;
+  visionScore?: number;
+  damageDealt?: number;
 }
 
 /** ── Live game state (broadcasted from background) ── */

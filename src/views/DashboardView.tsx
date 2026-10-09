@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import type { MatchRecord } from '../types/game';
 import { ProfileHeader } from '../components/dashboard/ProfileHeader';
 import { KpiSummaryCards } from '../components/dashboard/KpiSummaryCards';
 import { TiltOMeterGauge } from '../components/dashboard/TiltOMeterGauge';
@@ -8,10 +9,10 @@ import { MatchDetailModal } from '../components/dashboard/MatchDetailModal';
 import '../components/dashboard/dashboardHero.css';
 
 export function DashboardView() {
-  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<MatchRecord | null>(null);
 
-  const handleSelectMatch = useCallback((matchId: string) => {
-    setSelectedMatchId(matchId);
+  const handleSelectMatch = useCallback((match: MatchRecord) => {
+    setSelectedMatch(match);
   }, []);
 
   return (
@@ -31,9 +32,9 @@ export function DashboardView() {
 
       {/* Match Detail Modal */}
       <MatchDetailModal
-        isOpen={selectedMatchId !== null}
-        onClose={() => setSelectedMatchId(null)}
-        matchId={selectedMatchId}
+        isOpen={selectedMatch !== null}
+        onClose={() => setSelectedMatch(null)}
+        match={selectedMatch}
       />
     </div>
   );
