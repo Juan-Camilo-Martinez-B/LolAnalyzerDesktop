@@ -7,8 +7,8 @@
     "minimum-overwolf-version": "0.230.0",
     "author": "Juan Camilo Martinez",
     "description": "Real-time League of Legends Tilt Coach, Champion Pool Assistant and Performance Telemetry Analyzer.",
-    "icon": "favicon.svg",
-    "icon_gray": "favicon.svg"
+    "icon": "icon.png",
+    "icon_gray": "icon_gray.png"
   },
   "permissions": [
     "GameInfo",
