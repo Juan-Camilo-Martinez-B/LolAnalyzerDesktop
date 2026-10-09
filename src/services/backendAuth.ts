@@ -1,5 +1,6 @@
 import { clearAuthToken, setAuthToken } from './apiClient';
 import { clearRefreshToken, readRefreshToken, saveRefreshToken } from './secureSession';
+import { isThemePreference, type ThemePreference } from './theme';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -20,6 +21,7 @@ export interface AuthUser {
   riotLinked: boolean;
   riotGameName: string | null;
   riotTagLine: string | null;
+  themePreference: 'light' | 'system' | 'dark';
 }
 
 export interface TokenPair {
@@ -126,7 +128,9 @@ export async function currentUser(): Promise<AuthUser> {
     riot_linked: boolean;
     riot_game_name: string | null;
     riot_tag_line: string | null;
+    theme_preference?: string;
   }>('/api/auth/me');
+  const theme = isThemePreference(user.theme_preference) ? user.theme_preference : 'light';
   return {
     id: user.id,
     email: user.email,
@@ -135,6 +139,7 @@ export async function currentUser(): Promise<AuthUser> {
     riotLinked: user.riot_linked,
     riotGameName: user.riot_game_name,
     riotTagLine: user.riot_tag_line,
+    themePreference: theme,
   };
 }
 
@@ -200,6 +205,13 @@ export async function resetPassword(payload: {
       new_password_confirm: payload.newPasswordConfirm,
     }),
   }, false);
+}
+
+export async function saveThemePreference(theme: ThemePreference): Promise<void> {
+  await apiRequest('/api/profile', {
+    method: 'PUT',
+    body: JSON.stringify({ theme_preference: theme }),
+  });
 }
 
 export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {

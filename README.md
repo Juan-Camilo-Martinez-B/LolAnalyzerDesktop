@@ -32,6 +32,8 @@ Vite abre el escritorio en `http://localhost:5173/`. El overlay está en `http:/
 
 El backend esperado es `http://localhost:8000` (`VITE_API_BASE_URL` lo cambia). El acceso pide cuenta local: registro, inicio de sesión y recuperación con tres preguntas. El token de acceso queda en memoria; el de refresco se cifra en el navegador. La cuenta de Riot se vincula en Ajustes con el Riot ID. La clave de Riot no sale del servidor. Sin sesión, el dashboard de demostración sigue disponible. Con sesión, las partidas vacías piden vincular la cuenta en lugar de mostrar datos ficticios.
 
+La apariencia predeterminada es clara, con superficies opacas. En Ajustes se elige claro, sistema u oscuro. Con sesión iniciada, esa elección se guarda en la cuenta.
+
 ## Probar sin el cliente de League
 
 La barra **SIM**, al pie del escritorio y del overlay, solo aparece fuera de Overwolf. Desde ahí se dispara lobby, selección, partida, tiempo, CS, kill, muerte, tilt, consejo, victoria, derrota, una simulación de 40 segundos y reset.

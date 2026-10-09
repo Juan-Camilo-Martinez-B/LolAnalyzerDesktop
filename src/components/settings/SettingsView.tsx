@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Activity, AudioLines, Brain, Crosshair, RefreshCw } from 'lucide-react';
 import { Card, Badge } from '../ui';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { useConnectionStatus, useGamePhase, useSummoner } from '../../hooks/useGameState';
 import { useUserSettings } from '../../hooks/useUserSettings';
 import { audioService } from '../../services/audioService';
@@ -71,6 +72,7 @@ function Switch({
 
 export function SettingsView() {
   const { dispatch } = useApp();
+  const auth = useAuth();
   const { settings, update } = useUserSettings();
   const { lcu, backend } = useConnectionStatus();
   const { phase } = useGamePhase();
@@ -129,6 +131,9 @@ export function SettingsView() {
                 onClick={() => {
                   update({ theme: option.id });
                   audioService.playClick();
+                  if (auth.status === 'authenticated') {
+                    void auth.saveTheme(option.id);
+                  }
                 }}
               >
                 <span className="theme-swatch__preview" aria-hidden="true">

@@ -9,9 +9,12 @@ import {
   registerAccount,
   resetPassword,
   restoreSession,
+  saveThemePreference,
   type AuthUser,
   type ChampionOption,
 } from '../services/backendAuth';
+import { patchSettings, loadSettings } from '../services/settingsStore';
+import type { ThemePreference } from '../services/theme';
 
 type AuthStatus = 'loading' | 'anonymous' | 'authenticated';
 
@@ -26,10 +29,18 @@ interface AuthContextValue {
   loadRecoveryOptions: () => Promise<{ elos: string[]; champions: ChampionOption[] }>;
   recover: (payload: Parameters<typeof resetPassword>[0]) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  saveTheme: (theme: ThemePreference) => Promise<void>;
   linkRiot: (gameName: string, tagLine: string, region: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function adoptAccountTheme(user: AuthUser | null) {
+  if (!user) return;
+  if (loadSettings().theme !== user.themePreference) {
+    patchSettings({ theme: user.themePreference });
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading');
@@ -41,6 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     restoreSession()
       .then((restored) => {
         if (!active) return;
+        adoptAccountTheme(restored);
         setUser(restored);
         setStatus(restored ? 'authenticated' : 'anonymous');
       })
@@ -62,6 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       try {
         const next = await login(email, password);
+        adoptAccountTheme(next);
         setUser(next);
         setStatus('authenticated');
       } catch (err) {
@@ -73,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
       try {
         const next = await registerAccount(payload);
+        adoptAccountTheme(next);
         setUser(next);
         setStatus('authenticated');
       } catch (err) {
@@ -107,11 +121,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw err;
       }
     },
+    saveTheme: async (theme) => {
+      await saveThemePreference(theme);
+      setUser((current) => (current ? { ...current, themePreference: theme } : current));
+    },
     linkRiot: async (gameName, tagLine, region) => {
       setError(null);
       try {
         await connectRiot(gameName, tagLine, region);
-        setUser(await currentUser());
+        const next = await currentUser();
+        adoptAccountTheme(next);
+        setUser(next);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudo vincular Riot.');
         throw err;
