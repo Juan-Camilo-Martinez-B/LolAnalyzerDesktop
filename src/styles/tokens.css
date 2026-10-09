@@ -147,6 +147,14 @@
   --profile-bg:      linear-gradient(145deg, #F7F3EB 0%, #EFE6D4 100%);
   --profile-glow:    radial-gradient(circle, rgba(140, 106, 46, 0.16) 0%, transparent 68%);
   --phase-bg:        linear-gradient(135deg, rgba(140, 106, 46, 0.16) 0%, #F7F3EB 100%);
+  --match-win-bg:    linear-gradient(90deg, rgba(42, 115, 82, 0.16) 0%, #F7F3EB 46%);
+  --match-loss-bg:   linear-gradient(90deg, rgba(142, 52, 64, 0.14) 0%, #F7F3EB 46%);
+  --detail-win-bg:   linear-gradient(135deg, rgba(42, 115, 82, 0.18) 0%, #F7F3EB 72%);
+  --detail-loss-bg:  linear-gradient(135deg, rgba(142, 52, 64, 0.16) 0%, #F7F3EB 72%);
+  --item-slot-bg:    #E6DFD2;
+  --modal-scrim:     rgba(62, 52, 38, 0.46);
+  --modal-header-bg: #E7E1D4;
+  --modal-shadow:    0 16px 40px rgba(62, 52, 38, 0.22);
 }
 
 [data-theme="dark"] {
@@ -231,4 +239,12 @@
   --profile-bg:      linear-gradient(135deg, rgba(16, 26, 42, 0.92) 0%, rgba(10, 14, 23, 0.96) 100%);
   --profile-glow:    radial-gradient(circle, rgba(10, 200, 185, 0.10) 0%, transparent 70%);
   --phase-bg:        linear-gradient(135deg, rgba(200, 155, 60, 0.14) 0%, rgba(10, 14, 23, 0.96) 100%);
+  --match-win-bg:    linear-gradient(90deg, rgba(10, 200, 185, 0.14) 0%, rgba(11, 14, 20, 0.96) 46%);
+  --match-loss-bg:   linear-gradient(90deg, rgba(255, 70, 85, 0.14) 0%, rgba(11, 14, 20, 0.96) 46%);
+  --detail-win-bg:   linear-gradient(135deg, rgba(10, 200, 185, 0.16) 0%, rgba(11, 14, 20, 0.96) 72%);
+  --detail-loss-bg:  linear-gradient(135deg, rgba(255, 70, 85, 0.16) 0%, rgba(11, 14, 20, 0.96) 72%);
+  --item-slot-bg:    rgba(0, 0, 0, 0.45);
+  --modal-scrim:     rgba(5, 8, 14, 0.82);
+  --modal-header-bg: rgba(11, 14, 20, 0.6);
+  --modal-shadow:    0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(200, 155, 60, 0.15);
 }

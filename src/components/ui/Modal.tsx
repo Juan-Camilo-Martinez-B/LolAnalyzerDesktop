@@ -56,7 +56,7 @@ export const Modal: React.FC<ModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(5, 8, 14, 0.82)',
+        backgroundColor: 'var(--modal-scrim)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
@@ -81,7 +81,7 @@ export const Modal: React.FC<ModalProps> = ({
           background: 'var(--bg-glass-heavy)',
           border: '1px solid var(--border-gold)',
           borderRadius: '12px',
-          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.85), 0 0 20px rgba(200, 155, 60, 0.15)',
+          boxShadow: 'var(--modal-shadow)',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -97,7 +97,7 @@ export const Modal: React.FC<ModalProps> = ({
               justifyContent: 'space-between',
               padding: '16px 20px',
               borderBottom: '1px solid var(--border-dark)',
-              background: 'rgba(11, 14, 20, 0.6)',
+              background: 'var(--modal-header-bg)',
             }}
           >
             <div
@@ -153,7 +153,7 @@ export const Modal: React.FC<ModalProps> = ({
             style={{
               padding: '14px 20px',
               borderTop: '1px solid var(--border-dark)',
-              background: 'rgba(11, 14, 20, 0.8)',
+              background: 'var(--modal-header-bg)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'flex-end',
