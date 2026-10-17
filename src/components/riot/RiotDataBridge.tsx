@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { BackendError, fetchRiotBundle } from '../../services/backendAuth';
+import { fetchRiotBundle } from '../../services/backendAuth';
+import { publishAppError } from '../../services/userErrors';
 import type { ChampionPerformance, KpiSummary } from '../../types/stats';
 import type { MatchRecord, RankedInfo, Region, SummonerProfile, Tier } from '../../types/game';
 
@@ -77,8 +78,7 @@ export function RiotDataBridge() {
       })
       .catch((error: unknown) => {
         if (!active) return;
-        const message = error instanceof BackendError ? error.message : 'Riot API no está disponible.';
-        console.warn('[RiotDataBridge]', message);
+        publishAppError(error);
       });
     return () => {
       active = false;

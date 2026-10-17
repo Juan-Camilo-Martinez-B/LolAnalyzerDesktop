@@ -42,7 +42,7 @@ function statusVariant(status: ConnectionStatus): 'win' | 'loss' | 'gold' {
 
 function statusLabel(status: ConnectionStatus): string {
   if (status === 'connected') return 'Conectado';
-  if (status === 'error') return 'Error';
+  if (status === 'error') return 'No disponible';
   if (status === 'reconnecting') return 'Reconectando';
   return 'Sin conexión';
 }

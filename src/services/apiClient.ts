@@ -9,6 +9,7 @@
 import type { KpiSummary, ChampionPerformance, MatchTelemetry } from '../types/stats';
 import type { CoachAnalytics, CoachSession, ChampionRecommendation } from '../types/coach';
 import type { MatchRecord, SummonerProfile } from '../types/game';
+import { toUserMessage } from './userErrors';
 
 /* ─────────────────────────────────────────────────────────
    Configuration
@@ -68,7 +69,7 @@ async function apiFetch<T>(
         const body = await res.json().catch(() => ({})) as { detail?: unknown };
         throw new ApiClientError({
           status:  res.status,
-          message: `API error ${res.status} on ${path}`,
+          message: toUserMessage(res.status, body.detail),
           detail:  body.detail,
         });
       }
@@ -76,6 +77,12 @@ async function apiFetch<T>(
     } catch (err) {
       lastError = err;
       if (err instanceof ApiClientError && err.status < 500) break; // don't retry 4xx
+      if (!(err instanceof ApiClientError)) {
+        lastError = new ApiClientError({
+          status: 0,
+          message: toUserMessage(0, null, 'network'),
+        });
+      }
       if (attempt < retries) await _delay(500 * (attempt + 1));
     }
   }

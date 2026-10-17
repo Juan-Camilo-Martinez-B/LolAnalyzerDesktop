@@ -1,6 +1,7 @@
 import { clearAuthToken, setAuthToken } from './apiClient';
 import { clearRefreshToken, readRefreshToken, saveRefreshToken } from './secureSession';
 import { isThemePreference, type ThemePreference } from './theme';
+import { toUserMessage } from './userErrors';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
@@ -36,15 +37,6 @@ export interface ChampionOption {
   name: string;
 }
 
-function detailMessage(detail: unknown, fallback: string): string {
-  if (typeof detail === 'string') return detail;
-  if (Array.isArray(detail) && detail.length > 0) {
-    const first = detail[0] as { msg?: string };
-    return first.msg || fallback;
-  }
-  return fallback;
-}
-
 export async function apiRequest<T>(path: string, options: RequestInit = {}, retryAuth = true): Promise<T> {
   const headers = new Headers(options.headers);
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
@@ -60,7 +52,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
     });
   } catch (error) {
     const timedOut = error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError');
-    throw new BackendError(0, timedOut ? 'El backend tardó demasiado en responder.' : 'No hay conexión con el backend.');
+    throw new BackendError(0, toUserMessage(0, null, timedOut ? 'timeout' : 'network'));
   }
 
   if (response.status === 401 && retryAuth && path !== '/api/auth/refresh' && path !== '/api/auth/login') {
@@ -70,7 +62,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({})) as { detail?: unknown };
-    throw new BackendError(response.status, detailMessage(body.detail, `Error ${response.status}`));
+    throw new BackendError(response.status, toUserMessage(response.status, body.detail));
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;

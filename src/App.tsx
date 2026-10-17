@@ -13,6 +13,8 @@ import { AuthGate } from './components/auth/AuthGate';
 import { RiotDataBridge } from './components/riot/RiotDataBridge';
 import { ThemeRoot } from './components/theme/ThemeRoot';
 import { LiveCoachCard } from './components/coach/LiveCoachCard';
+import { AppErrorBoundary } from './components/common/AppErrorBoundary';
+import { AppErrorNotice } from './components/common/AppErrorNotice';
 import './index.css';
 
 // ── Lazy page views ─────────────────────────────────────────
@@ -80,9 +82,12 @@ function AuthSwitch() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ThemeRoot />
-      <AuthSwitch />
-    </AuthProvider>
+    <AppErrorBoundary>
+      <AuthProvider>
+        <ThemeRoot />
+        <AppErrorNotice />
+        <AuthSwitch />
+      </AuthProvider>
+    </AppErrorBoundary>
   );
 }

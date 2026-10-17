@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Badge, Card } from '../ui';
 import { apiRequest } from '../../services/backendAuth';
+import { publishAppError } from '../../services/userErrors';
 import './liveCoach.css';
 
 interface LivePlayer {
@@ -48,8 +49,8 @@ export function LiveCoachCard() {
       try {
         const body = await apiRequest<LiveCoachState>('/api/coach/live');
         if (!cancelled) setState(body);
-      } catch {
-        if (!cancelled) setState(null);
+      } catch (error) {
+        if (!cancelled) publishAppError(error);
       }
     };
 
