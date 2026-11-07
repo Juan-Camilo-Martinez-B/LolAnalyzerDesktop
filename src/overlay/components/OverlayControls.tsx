@@ -6,6 +6,8 @@ export interface OverlayControlsProps {
   onOpacityChange: (opacity: number) => void;
   onResetPosition: () => void;
   onHide: () => void;
+  editShortcut: string;
+  hideShortcut: string;
 }
 
 /** Shown only while the HUD is unlocked: opacity, position reset and the hotkey legend. */
@@ -14,6 +16,8 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
   onOpacityChange,
   onResetPosition,
   onHide,
+  editShortcut,
+  hideShortcut,
 }) => {
   const percent = Math.round(opacity * 100);
 
@@ -36,15 +40,15 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       <div className="overlay-controls-row">
         <span className="overlay-controls-keys">
           <Keyboard size={12} color="var(--gold-500)" />
-          <span className="overlay-hotkey">Ctrl+Shift+L</span> fijar
-          <span className="overlay-hotkey">Ctrl+Shift+O</span> ocultar
+          <span className="overlay-hotkey">{editShortcut}</span> fijar
+          <span className="overlay-hotkey">{hideShortcut}</span> ocultar
         </span>
         <span style={{ display: 'inline-flex', gap: 6 }}>
           <button type="button" className="overlay-text-btn" onClick={onResetPosition} title="Volver a la esquina de Ajustes">
             <RotateCcw size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             Posición
           </button>
-          <button type="button" className="overlay-text-btn" onClick={onHide} title="Ocultar overlay (Ctrl+Shift+O)">
+          <button type="button" className="overlay-text-btn" onClick={onHide} title={`Ocultar overlay (${hideShortcut})`}>
             <EyeOff size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             Ocultar
           </button>

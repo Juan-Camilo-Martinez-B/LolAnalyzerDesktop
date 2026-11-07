@@ -19,6 +19,8 @@ export interface LiveHudPanelProps {
   expanded: boolean;
   editMode: boolean;
   onToggleExpanded: () => void;
+  /** Readable shortcut for compact/expanded, e.g. Ctrl+Shift+M. */
+  cycleShortcut: string;
 }
 
 /** Header, live numbers, tilt and the latest coach tip. No placeholder numbers. */
@@ -30,6 +32,7 @@ export const LiveHudPanel: React.FC<LiveHudPanelProps> = ({
   expanded,
   editMode,
   onToggleExpanded,
+  cycleShortcut,
 }) => {
   const clock = stats ? stats.gameTime : gameTimeSec;
   const perMinute = stats ? csPerMinute(stats.creepScore, stats.gameTime) : 0;
@@ -55,7 +58,7 @@ export const LiveHudPanel: React.FC<LiveHudPanelProps> = ({
             type="button"
             className="overlay-icon-btn"
             onClick={onToggleExpanded}
-            title={expanded ? 'Compactar (Ctrl+Shift+M)' : 'Expandir (Ctrl+Shift+M)'}
+            title={`${expanded ? 'Compactar' : 'Expandir'} (${cycleShortcut})`}
             aria-label={expanded ? 'Compactar overlay' : 'Expandir overlay'}
           >
             {expanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}

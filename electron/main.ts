@@ -1,7 +1,8 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { GameDataAgent } from './agent/gameDataAgent.js';
 import { IpcChannel, canonicalWindowName, eventChannels } from './ipcChannels.js';
-import { registerGlobalHotkeys, unregisterGlobalHotkeys } from './hotkeys.js';
+import { HotkeyManager } from './hotkeys.js';
+import { DEFAULT_HOTKEYS } from './hotkeyRules.js';
 import { OverlayController, type GamePhaseName } from './overlayController.js';
 import { createAppWindows, type AppWindows } from './windows.js';
 
@@ -17,6 +18,7 @@ const PHASES = new Set<GamePhaseName>([
 let windows: AppWindows | null = null;
 let overlayController: OverlayController | null = null;
 let agent: GameDataAgent | null = null;
+let hotkeys: HotkeyManager | null = null;
 let quitting = false;
 
 function broadcast(channel: string, payload: unknown): void {
@@ -88,6 +90,21 @@ function registerIpc(): void {
     return true;
   });
 
+  ipcMain.handle(IpcChannel.hotkeysGet, () => ({
+    config: hotkeys?.current() ?? DEFAULT_HOTKEYS,
+    defaults: DEFAULT_HOTKEYS,
+  }));
+
+  // Only the desktop window (Settings) may change the global shortcuts.
+  ipcMain.handle(IpcChannel.hotkeysSet, (event, config: unknown) => {
+    if (!windows || !hotkeys || event.sender !== windows.desktop.webContents) {
+      return { ok: false, config: hotkeys?.current() ?? DEFAULT_HOTKEYS, error: 'No disponible.' };
+    }
+    const result = hotkeys.apply(config);
+    if (result.ok) broadcast(IpcChannel.hotkeysChanged, { config: result.config });
+    return result;
+  });
+
   ipcMain.handle(IpcChannel.overlaySetEditMode, (_event, enabled: unknown) => {
     if (typeof enabled !== 'boolean') return false;
     return overlayController?.setEditMode(enabled) ?? false;
@@ -132,7 +149,7 @@ if (!app.requestSingleInstanceLock()) {
     agent = new GameDataAgent(publish);
     agent.start();
     registerIpc();
-    registerGlobalHotkeys({
+    hotkeys = new HotkeyManager({
       toggleOverlay: () => {
         overlayController?.toggleUserVisibility();
         broadcast(IpcChannel.hotkey, { action: 'toggle' });
@@ -145,6 +162,7 @@ if (!app.requestSingleInstanceLock()) {
         if (controller) controller.setEditMode(!controller.isEditMode());
       },
     });
+    hotkeys.start();
 
     // A locked overlay must never keep the keyboard (shop, abilities, chat).
     windows.overlay.on('focus', () => {
@@ -166,7 +184,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('before-quit', () => {
     quitting = true;
-    unregisterGlobalHotkeys();
+    hotkeys?.dispose();
     agent?.stop();
     overlayController?.stop();
   });

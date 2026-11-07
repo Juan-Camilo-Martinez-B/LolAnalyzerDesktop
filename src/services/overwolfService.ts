@@ -36,6 +36,9 @@ interface LolAnalyzerBridge {
   minimizeWindow(name: string): Promise<boolean>;
   setOverlayEditMode(enabled: boolean): Promise<boolean>;
   publishCoachAdvice(payload: OverlayCoachAdvice): Promise<boolean>;
+  getHotkeys(): Promise<unknown>;
+  setHotkeys(config: unknown): Promise<unknown>;
+  onHotkeysChanged(listener: (payload: unknown) => void): () => void;
   toggleOverlay(): Promise<boolean>;
   getOverlayStatus(): Promise<ElectronStatus | null>;
   onGameTime(listener: (payload: { seconds: number }) => void): () => void;
@@ -238,6 +241,51 @@ const OVERLAY_ANCHORS: Record<OverlayAnchor, { left: number; top: number }> = {
   'top-center':  { left: 760, top: 24 },
   'bottom-left': { left: 20, top: 640 },
 };
+
+export type HotkeyAction = 'toggleOverlay' | 'cycleMode' | 'toggleEditMode';
+export type HotkeyConfig = Record<HotkeyAction, string>;
+
+export const DEFAULT_HOTKEYS: HotkeyConfig = {
+  toggleOverlay: 'CommandOrControl+Shift+O',
+  cycleMode: 'CommandOrControl+Shift+M',
+  toggleEditMode: 'CommandOrControl+Shift+L',
+};
+
+export type HotkeySaveResult = { ok: boolean; config: HotkeyConfig; error?: string; action?: HotkeyAction };
+
+function isHotkeyConfig(value: unknown): value is HotkeyConfig {
+  if (!value || typeof value !== 'object') return false;
+  const config = value as Partial<HotkeyConfig>;
+  return (['toggleOverlay', 'cycleMode', 'toggleEditMode'] as const).every((key) => typeof config[key] === 'string');
+}
+
+/** Current global shortcuts from the main process; the defaults outside Electron. */
+export async function getHotkeys(): Promise<HotkeyConfig> {
+  const api = electronBridge();
+  if (!api) return DEFAULT_HOTKEYS;
+  const body = await api.getHotkeys().catch(() => null) as { config?: unknown } | null;
+  return isHotkeyConfig(body?.config) ? body.config : DEFAULT_HOTKEYS;
+}
+
+/** Asks main to register new shortcuts. Main validates them and keeps the old set on failure. */
+export async function saveHotkeys(config: HotkeyConfig): Promise<HotkeySaveResult> {
+  const api = electronBridge();
+  if (!api) return { ok: false, config, error: 'Los atajos solo se pueden cambiar en la app de escritorio.' };
+  const body = await api.setHotkeys(config).catch(() => null) as Partial<HotkeySaveResult> | null;
+  if (!body || !isHotkeyConfig(body.config)) {
+    return { ok: false, config, error: 'No se pudieron guardar los atajos.' };
+  }
+  return { ok: Boolean(body.ok), config: body.config, error: body.error, action: body.action };
+}
+
+export function subscribeHotkeys(listener: (config: HotkeyConfig) => void): () => void {
+  const api = electronBridge();
+  if (!api) return () => {};
+  return api.onHotkeysChanged((payload) => {
+    const config = (payload as { config?: unknown } | null)?.config;
+    if (isHotkeyConfig(config)) listener(config);
+  });
+}
 
 /** True inside the Electron app (desktop or overlay window). */
 export function isElectronApp(): boolean {

@@ -273,3 +273,77 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Overlay shortcuts and champion select imports */
+
+.hotkey-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 128px;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-gold);
+  background: transparent;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.hotkey-chip.is-recording {
+  border-style: dashed;
+  color: var(--gold-500);
+  animation: hotkeyBlink 1.2s ease-in-out infinite;
+}
+
+.hotkey-chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes hotkeyBlink {
+  50% { opacity: 0.6; }
+}
+
+.settings-note {
+  margin: 8px 0 0;
+  font-size: 0.72rem;
+  color: var(--slate-400);
+}
+
+.settings-note--ok { color: var(--green-400); }
+.settings-note--error { color: var(--red-400); }
+
+.loadout-pref-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flash-key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  color: var(--slate-400);
+}
+
+.flash-key__option {
+  width: 28px;
+  height: 24px;
+  border-radius: 5px;
+  border: 1px solid var(--border-surface);
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.flash-key__option.is-active {
+  border-color: var(--gold-500);
+  background: rgba(200, 155, 60, 0.18);
+  color: var(--gold-500);
+}

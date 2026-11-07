@@ -10,6 +10,8 @@ const windowClose = 'lol:window-close';
 const windowMinimize = 'lol:window-minimize';
 const overlaySetEditMode = 'lol:overlay-set-edit-mode';
 const coachPublish = 'lol:coach-publish';
+const hotkeysGet = 'lol:hotkeys-get';
+const hotkeysSet = 'lol:hotkeys-set';
 const overlayToggle = 'lol:overlay-toggle';
 const overlayGetStatus = 'lol:overlay-get-status';
 const gameTime = 'lol:game-time';
@@ -20,6 +22,7 @@ const overlayNotice = 'lol:overlay-notice';
 const overlayEditMode = 'lol:overlay-edit-mode';
 const playerStats = 'lol:player-stats';
 const coachAdvice = 'lol:coach-advice';
+const hotkeysChanged = 'lol:hotkeys-changed';
 
 const allowedEvents = new Set([
   gameTime,
@@ -30,6 +33,7 @@ const allowedEvents = new Set([
   overlayEditMode,
   playerStats,
   coachAdvice,
+  hotkeysChanged,
 ]);
 
 function subscribe(channel: string, listener: (payload: unknown) => void): () => void {
@@ -60,6 +64,15 @@ const api = {
   },
   publishCoachAdvice(payload: unknown): Promise<boolean> {
     return ipcRenderer.invoke(coachPublish, payload);
+  },
+  getHotkeys(): Promise<unknown> {
+    return ipcRenderer.invoke(hotkeysGet);
+  },
+  setHotkeys(config: unknown): Promise<unknown> {
+    return ipcRenderer.invoke(hotkeysSet, config);
+  },
+  onHotkeysChanged(listener: (payload: unknown) => void): () => void {
+    return subscribe(hotkeysChanged, listener);
   },
   toggleOverlay(): Promise<boolean> {
     return ipcRenderer.invoke(overlayToggle);

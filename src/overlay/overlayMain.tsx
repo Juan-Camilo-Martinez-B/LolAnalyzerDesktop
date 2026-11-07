@@ -17,6 +17,8 @@ import { ThemeRoot } from '../components/theme/ThemeRoot';
 import { csTargetForPosition, readTilt } from './hudMetrics';
 import { useOverlayLive } from './useOverlayLive';
 import { useDraggablePanel } from './useDraggablePanel';
+import { useHotkeys } from '../hooks/useHotkeys';
+import { formatShortcut } from '../services/hotkeyFormat';
 
 function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
   if (anchor === 'top-center') {
@@ -35,6 +37,7 @@ const OverlayApp: React.FC = () => {
   const live = useOverlayLive();
   const { panelRef, style: dragStyle, dragging, handleProps, reset } = useDraggablePanel(live.editMode);
   const electron = isElectronApp();
+  const [hotkeys] = useHotkeys();
 
   useEffect(() => {
     setVisible(true);
@@ -82,6 +85,7 @@ const OverlayApp: React.FC = () => {
         expanded={expanded}
         editMode={live.editMode && electron}
         onToggleExpanded={() => setMode(expanded ? 'compact' : 'expanded')}
+        cycleShortcut={formatShortcut(hotkeys.cycleMode)}
       />
 
       {expanded && live.stats && (
@@ -105,12 +109,14 @@ const OverlayApp: React.FC = () => {
 
       {live.editMode && electron && (
         <>
-          <p className="hud-edit-hint">Arrastra el panel. Pulsa Ctrl+Shift+L para fijarlo y volver al juego.</p>
+          <p className="hud-edit-hint">Arrastra el panel. Pulsa {formatShortcut(hotkeys.toggleEditMode)} para fijarlo y volver al juego.</p>
           <OverlayControls
             opacity={overlay.opacity}
             onOpacityChange={changeOpacity}
             onResetPosition={reset}
             onHide={hide}
+            editShortcut={formatShortcut(hotkeys.toggleEditMode)}
+            hideShortcut={formatShortcut(hotkeys.toggleOverlay)}
           />
         </>
       )}
