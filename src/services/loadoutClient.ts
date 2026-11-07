@@ -43,6 +43,8 @@ export interface Loadout {
   summonerSpellIds?: number[];
   skillOrder?: string[];
   tip?: string | null;
+  /** Lane plan for the known opponent (Groq or rules). Null without a rival. */
+  matchupPlan?: { lane: string; fight: string; avoid: string; source: 'groq' | 'rules' } | null;
   notice?: string | null;
 }
 

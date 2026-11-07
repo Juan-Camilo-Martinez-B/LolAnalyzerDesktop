@@ -286,7 +286,21 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, 
         </div>
       )}
 
-      {loadout?.tip && (
+      {loadout?.matchupPlan && loadout.opponent ? (
+        <div className="loadout__plan">
+          <h3 className="loadout__heading"><Lightbulb size={14} /> Plan de línea vs {loadout.opponent.name}</h3>
+          <dl>
+            <dt>En línea</dt><dd>{loadout.matchupPlan.lane}</dd>
+            <dt>Cuándo pelear</dt><dd>{loadout.matchupPlan.fight}</dd>
+            <dt>Qué evitar</dt><dd>{loadout.matchupPlan.avoid}</dd>
+          </dl>
+          <p className="loadout__plan-source">
+            {loadout.matchupPlan.source === 'groq'
+              ? 'Plan redactado con IA (Groq) a partir de los datos de OP.GG.'
+              : 'Plan generado con los datos de OP.GG.'}
+          </p>
+        </div>
+      ) : loadout?.tip && (
         <p className="loadout__tip"><Lightbulb size={14} /> {loadout.tip}</p>
       )}
     </Card>

@@ -372,3 +372,37 @@
   font-size: 0.7rem;
   font-weight: 800;
 }
+
+.loadout__plan {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid var(--hextech-gold);
+  background: var(--bg-glass-heavy);
+}
+
+.loadout__plan dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 12px;
+  margin: 8px 0 0;
+}
+
+.loadout__plan dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.loadout__plan dd {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.loadout__plan-source {
+  margin: 8px 0 0;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}

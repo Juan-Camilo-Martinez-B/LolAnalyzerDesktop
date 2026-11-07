@@ -97,3 +97,11 @@ Los sonidos se sintetizan con Web Audio y suenan en el overlay cuando llega un c
 | Campanilla suave | Consejos normales (oro sin gastar, visión) | Consejos del coach |
 
 Ajustes tiene un botón de prueba para cada uno, y el silencio general los apaga todos. El overlay puede sonar sin que hagas clic (`autoplayPolicy`), y la ventana de escritorio no se frena en segundo plano porque es la que consulta al coach y le reenvía cada consejo al overlay.
+
+## Análisis post-partida y plan de línea
+
+Al salir de una partida, el escritorio pide el análisis de esa partida a `POST /api/analysis/latest`. Lo intenta a los 15, 45, 90 y 150 segundos, porque el cliente de League tarda un poco en guardar la partida en su historial. Usa el resumen final de la partida, no la telemetría en vivo, así que es una sola llamada corta a la IA por partida. Cuando llega, aparece la tarjeta **Análisis de tu última partida** con tres bloques (lo que salió bien, qué mejorar y un foco para la próxima) y las métricas frente a la referencia del rol. La tarjeta se cierra con la X.
+
+El mismo análisis aparece en el detalle de cada partida del dashboard. Las partidas antiguas muestran **Analizar esta partida**, así solo se gastan tokens en las que abres. Cada análisis se guarda y no se vuelve a generar.
+
+En la selección, cuando se conoce al rival de línea, la tarjeta de runas y objetos muestra un **Plan de línea**: en línea, cuándo pelear y qué evitar. Se arma con los datos del matchup de OP.GG y se genera una sola vez por matchup. Sin Groq, se usan textos generados con reglas.
