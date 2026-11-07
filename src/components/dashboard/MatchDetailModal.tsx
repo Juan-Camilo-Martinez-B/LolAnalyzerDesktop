@@ -2,6 +2,7 @@ import React from 'react';
 import { Activity, Clock, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { Badge, Modal } from '../ui';
 import { ChampionAvatar } from '../common/ChampionAvatar';
+import { MatchAnalysisPanel } from './MatchAnalysisPanel';
 import { assetResolver } from '../../services/assetResolver';
 import type { MatchRecord } from '../../types/game';
 import './matchHistory.css';
@@ -109,6 +110,8 @@ export const MatchDetailModal: React.FC<MatchDetailModalProps> = ({
             )}
           </div>
         </div>
+
+        {match.matchId && <MatchAnalysisPanel matchId={String(match.matchId)} />}
       </div>
     </Modal>
   );

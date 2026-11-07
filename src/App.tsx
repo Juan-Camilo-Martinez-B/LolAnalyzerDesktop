@@ -13,6 +13,7 @@ import { AuthGate } from './components/auth/AuthGate';
 import { RiotDataBridge } from './components/riot/RiotDataBridge';
 import { ThemeRoot } from './components/theme/ThemeRoot';
 import { LiveCoachCard } from './components/coach/LiveCoachCard';
+import { PostGameAnalysisCard } from './components/coach/PostGameAnalysisCard';
 import { AppErrorBoundary } from './components/common/AppErrorBoundary';
 import { AppErrorNotice } from './components/common/AppErrorNotice';
 import './index.css';
@@ -55,6 +56,7 @@ function AppShell() {
         <main id="main-content" role="main">
           <RiotDataBridge />
           <LiveCoachCard />
+          <PostGameAnalysisCard />
           <Suspense fallback={<PageSkeleton />}>
             {activeTab === 'dashboard'    && <DashboardView />}
             {activeTab === 'champ-select' && <ChampSelectView />}

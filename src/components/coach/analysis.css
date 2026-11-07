@@ -1,0 +1,140 @@
+/* Post-match analysis (dashboard modal and the card after a game) */
+
+.analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.analysis__sections {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px;
+}
+
+.analysis__section {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-dark);
+  border-left-width: 3px;
+  background: var(--bg-glass-heavy);
+}
+
+.analysis__section h4 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 0.74rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.analysis__section p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.analysis__section--good { border-left-color: var(--accent-green, var(--green-400)); }
+.analysis__section--bad { border-left-color: var(--accent-red); }
+.analysis__section--focus { border-left-color: var(--hextech-gold); }
+
+.analysis__metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analysis-metric {
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border-dark);
+}
+
+.analysis-metric strong {
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.analysis-metric__label,
+.analysis-metric__unit {
+  font-size: 0.66rem;
+  color: var(--text-secondary);
+}
+
+.analysis-metric--good { border-color: var(--accent-green, var(--green-400)); }
+.analysis-metric--good strong { color: var(--accent-green, var(--green-400)); }
+.analysis-metric--bad { border-color: var(--accent-red); }
+.analysis-metric--bad strong { color: var(--accent-red); }
+
+.analysis__source {
+  margin: 0;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+.post-game {
+  margin-bottom: 16px;
+}
+
+.post-game__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.post-game__close {
+  margin-left: auto;
+  display: inline-flex;
+  padding: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.match-analysis {
+  margin-top: 16px;
+}
+
+.match-analysis__empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.match-analysis__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--hextech-gold);
+  background: transparent;
+  color: var(--hextech-gold);
+  font-weight: 700;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.match-analysis__action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.match-analysis__error {
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  color: var(--accent-red);
+}
