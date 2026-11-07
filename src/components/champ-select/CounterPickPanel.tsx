@@ -66,7 +66,7 @@ export const CounterPickPanel: React.FC<CounterPickPanelProps> = ({
       <div className="cs-grid">
         {defaultRecs.map((rec, idx) => (
           <div
-            key={rec.championId}
+            key={`${rec.championId}-${rec.championName}-${idx}`}
             className={idx === 0 ? 'cs-panel cs-panel--gold' : 'cs-panel'}
             style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
           >

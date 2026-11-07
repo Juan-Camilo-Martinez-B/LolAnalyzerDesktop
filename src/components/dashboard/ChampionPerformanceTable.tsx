@@ -153,7 +153,7 @@ export const ChampionPerformanceTable: React.FC = () => {
 
               return (
                 <tr
-                  key={c.championId}
+                  key={`${c.championId}-${c.championName}-${c.role}`}
                   style={{
                     borderBottom: '1px solid rgba(255,255,255,0.05)',
                     transition: 'background 0.15s ease',

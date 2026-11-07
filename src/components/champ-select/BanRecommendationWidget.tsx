@@ -75,7 +75,7 @@ export const BanRecommendationWidget: React.FC<BanRecommendationWidgetProps> = (
 
           return (
             <div
-              key={rec.championId}
+              key={`${rec.championId}-${rec.championName}`}
               style={{
                 background: 'var(--bg-glass-heavy)',
                 border: isCritical ? '1px solid var(--accent-red)' : '1px solid var(--border-dark)',
