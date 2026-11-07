@@ -62,3 +62,36 @@ describe('mapLiveClientSnapshot', () => {
     expect(mapLiveClientSnapshot(data, state).events.map((event) => event.type)).toEqual([]);
   });
 });
+
+describe('local player stats', () => {
+  it('summarizes champion, level, KDA, CS and gold for the HUD', () => {
+    const data = snapshot({
+      activePlayer: { riotId: 'Local#LAN', riotIdGameName: 'Local', riotIdTagLine: 'LAN', currentGold: 1250.7, level: 9 },
+      allPlayers: [
+        {
+          riotIdGameName: 'Local',
+          riotIdTagLine: 'LAN',
+          championName: 'Ahri',
+          position: 'MIDDLE',
+          scores: { creepScore: 96, kills: 4, deaths: 1, assists: 6 },
+        },
+      ],
+    });
+    expect(mapLiveClientSnapshot(data, createMapperState()).player).toEqual({
+      championName: 'Ahri',
+      position: 'MIDDLE',
+      level: 9,
+      kills: 4,
+      deaths: 1,
+      assists: 6,
+      creepScore: 96,
+      currentGold: 1250,
+      gameTime: 180,
+    });
+  });
+
+  it('returns no stats when the local player is not listed yet', () => {
+    const data = snapshot({ allPlayers: [{ summonerName: 'Enemy', scores: { creepScore: 12 } }] });
+    expect(mapLiveClientSnapshot(data, createMapperState()).player).toBeNull();
+  });
+});

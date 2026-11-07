@@ -1,6 +1,6 @@
 import type { BrowserWindow } from 'electron';
 import { IpcChannel } from './ipcChannels.js';
-import { findLeagueWindow, type LeagueWindowBounds } from './gameWindow.js';
+import { findLeagueWindow, focusLeagueWindow, isLeagueForeground, type LeagueWindowBounds } from './gameWindow.js';
 import { readWindowMode, type WindowModeReading } from './windowMode.js';
 import { decideOverlayVisibility } from './overlayVisibility.js';
 import { toDipBounds } from './windows.js';
@@ -29,6 +29,7 @@ export interface OverlayStatus {
   windowMode: 0 | 1 | 2 | null;
   configFound: boolean;
   visible: boolean;
+  editMode: boolean;
   notice: OverlayNotice;
 }
 
@@ -48,6 +49,7 @@ export class OverlayController {
   private lastMode: WindowModeReading = { windowMode: null, configFound: false, configPath: null };
   private lastNotice = '';
   private modeTick = 0;
+  private editMode = false;
 
   constructor(
     private readonly overlay: BrowserWindow,
@@ -95,13 +97,34 @@ export class OverlayController {
     return this.visible;
   }
 
-  setInteractive(interactive: boolean): void {
-    if (this.overlay.isDestroyed()) return;
-    if (interactive) {
+  isEditMode(): boolean {
+    return this.editMode;
+  }
+
+  /**
+   * Edit mode is the only time the overlay takes the mouse. Leaving it makes the
+   * window click-through again and hands keyboard focus back to League.
+   */
+  setEditMode(enabled: boolean): boolean {
+    if (this.overlay.isDestroyed()) return false;
+    const next = enabled && this.visible;
+    if (next === this.editMode) return this.editMode;
+    this.editMode = next;
+    if (next) {
       this.overlay.setIgnoreMouseEvents(false);
-      return;
+    } else {
+      this.overlay.setIgnoreMouseEvents(true);
+      this.returnFocusToGame();
     }
-    this.overlay.setIgnoreMouseEvents(true, { forward: true });
+    this.emit(IpcChannel.overlayEditMode, { enabled: next });
+    return next;
+  }
+
+  /** Called when the overlay window gains focus while locked. */
+  returnFocusToGame(): void {
+    if (this.editMode || !this.lastGame) return;
+    if (isLeagueForeground(this.lastGame)) return;
+    focusLeagueWindow(this.lastGame);
   }
 
   status(): OverlayStatus {
@@ -115,6 +138,7 @@ export class OverlayController {
       windowMode: this.lastMode.windowMode,
       configFound: this.lastMode.configFound,
       visible: this.visible,
+      editMode: this.editMode,
       notice: this.notice(decision.blockedByExclusiveFullscreen),
     };
   }
@@ -183,6 +207,7 @@ export class OverlayController {
 
   private hide(): void {
     if (this.overlay.isDestroyed()) return;
+    if (this.editMode) this.setEditMode(false);
     if (this.overlay.isVisible()) this.overlay.hide();
     this.visible = false;
   }

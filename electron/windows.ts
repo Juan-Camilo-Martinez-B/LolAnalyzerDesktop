@@ -93,7 +93,8 @@ export function createAppWindows(): AppWindows {
     webPreferences: webPreferences(),
   });
   overlay.setAlwaysOnTop(true, 'screen-saver');
-  overlay.setIgnoreMouseEvents(true, { forward: true });
+  // Click-through from the start. Only the edit mode (Ctrl+Shift+L) takes the mouse.
+  overlay.setIgnoreMouseEvents(true);
   hardenContents(overlay.webContents);
   loadPage(overlay, 'overlay.html');
 

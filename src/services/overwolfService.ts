@@ -34,14 +34,38 @@ interface LolAnalyzerBridge {
   openWindow(name: string): Promise<boolean>;
   closeWindow(name: string): Promise<boolean>;
   minimizeWindow(name: string): Promise<boolean>;
-  setOverlayInteractive(interactive: boolean): Promise<void>;
+  setOverlayEditMode(enabled: boolean): Promise<boolean>;
+  publishCoachAdvice(payload: OverlayCoachAdvice): Promise<boolean>;
   toggleOverlay(): Promise<boolean>;
   getOverlayStatus(): Promise<ElectronStatus | null>;
   onGameTime(listener: (payload: { seconds: number }) => void): () => void;
   onGameEvent(listener: (payload: unknown) => void): () => void;
   onGamePhase(listener: (payload: { phase: string }) => void): () => void;
-  onHotkey(listener: (payload: { action: 'toggle' | 'cycle-mode' }) => void): () => void;
+  onHotkey(listener: (payload: { action: 'toggle' | 'cycle-mode' | 'edit-mode' }) => void): () => void;
   onOverlayNotice(listener: (payload: unknown) => void): () => void;
+  onOverlayEditMode(listener: (payload: { enabled: boolean }) => void): () => void;
+  onPlayerStats(listener: (payload: unknown) => void): () => void;
+  onCoachAdvice(listener: (payload: unknown) => void): () => void;
+}
+
+/** Local player summary sent by the Electron live-client agent. */
+export interface OverlayPlayerStats {
+  championName: string | null;
+  position: string | null;
+  level: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  creepScore: number;
+  currentGold: number;
+  gameTime: number;
+}
+
+/** Coach tip relayed from the desktop window, which owns the session. */
+export interface OverlayCoachAdvice {
+  text: string;
+  severity: string;
+  at: number;
 }
 
 declare global {
@@ -212,10 +236,54 @@ const OVERLAY_ANCHORS: Record<OverlayAnchor, { left: number; top: number }> = {
   'bottom-left': { left: 20, top: 640 },
 };
 
-export async function setOverlayInteractive(interactive: boolean): Promise<void> {
-  if (!isElectronRuntime()) return;
-  ensureElectronBridge();
-  await electronBridge()!.setOverlayInteractive(interactive);
+/** True inside the Electron app (desktop or overlay window). */
+export function isElectronApp(): boolean {
+  return isElectronRuntime();
+}
+
+/** Locks or unlocks the HUD. Unlocked, the overlay takes the mouse so it can be dragged. */
+export async function setOverlayEditMode(enabled: boolean): Promise<boolean> {
+  const api = electronBridge();
+  if (!api) return false;
+  return api.setOverlayEditMode(enabled);
+}
+
+/** Desktop window only: forwards the latest coach tip to the overlay. */
+export function publishCoachToOverlay(advice: OverlayCoachAdvice | null): void {
+  const api = electronBridge();
+  if (!api) return;
+  void api.publishCoachAdvice(advice as OverlayCoachAdvice).catch(() => {});
+}
+
+function isPlayerStats(value: unknown): value is OverlayPlayerStats {
+  if (!value || typeof value !== 'object') return false;
+  const stats = value as Partial<OverlayPlayerStats>;
+  return ['level', 'kills', 'deaths', 'assists', 'creepScore', 'currentGold', 'gameTime']
+    .every((key) => typeof stats[key as keyof OverlayPlayerStats] === 'number');
+}
+
+function isCoachAdvice(value: unknown): value is OverlayCoachAdvice {
+  if (!value || typeof value !== 'object') return false;
+  const advice = value as Partial<OverlayCoachAdvice>;
+  return typeof advice.text === 'string' && typeof advice.at === 'number';
+}
+
+export interface OverlayLiveListeners {
+  onStats(stats: OverlayPlayerStats | null): void;
+  onAdvice(advice: OverlayCoachAdvice | null): void;
+  onEditMode(enabled: boolean): void;
+}
+
+/** Subscribes the overlay to live stats, relayed advice and edit mode. No-op outside Electron. */
+export function subscribeOverlayLive(listeners: OverlayLiveListeners): () => void {
+  const api = electronBridge();
+  if (!api) return () => {};
+  const stops = [
+    api.onPlayerStats((payload) => listeners.onStats(isPlayerStats(payload) ? payload : null)),
+    api.onCoachAdvice((payload) => listeners.onAdvice(isCoachAdvice(payload) ? payload : null)),
+    api.onOverlayEditMode(({ enabled }) => listeners.onEditMode(Boolean(enabled))),
+  ];
+  return () => stops.forEach((stop) => stop());
 }
 
 export function placeOverlay(anchor: OverlayAnchor): void {

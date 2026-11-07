@@ -20,7 +20,23 @@ export interface LivePlayer {
   riotId?: string;
   riotIdGameName?: string;
   riotIdTagLine?: string;
-  scores?: { creepScore?: number };
+  championName?: string;
+  level?: number;
+  position?: string;
+  scores?: { creepScore?: number; kills?: number; deaths?: number; assists?: number };
+}
+
+/** What the HUD shows about the local player, rebuilt from every snapshot. */
+export interface PlayerStats {
+  championName: string | null;
+  position: string | null;
+  level: number;
+  kills: number;
+  deaths: number;
+  assists: number;
+  creepScore: number;
+  currentGold: number;
+  gameTime: number;
 }
 
 export interface LiveClientSnapshot {
@@ -30,6 +46,7 @@ export interface LiveClientSnapshot {
     riotIdGameName?: string;
     riotIdTagLine?: string;
     currentGold?: number;
+    level?: number;
   };
   allPlayers?: LivePlayer[];
   events?: {
@@ -54,6 +71,7 @@ export interface MapperState {
 export interface MappedLiveUpdate {
   seconds: number | null;
   events: MappedGameEvent[];
+  player: PlayerStats | null;
 }
 
 export function createMapperState(): MapperState {
@@ -89,6 +107,47 @@ function matchesLocal(candidate: string | undefined, local: string[]): boolean {
   if (local.includes(value)) return true;
   const hash = value.indexOf('#');
   return hash > 0 && local.includes(value.slice(0, hash));
+}
+
+function playerNames(player: LivePlayer): Set<string> {
+  const names = new Set<string>();
+  addIdentity(names, player.summonerName);
+  addIdentity(names, player.riotId);
+  addIdentity(names, player.riotIdGameName);
+  if (player.riotIdGameName && player.riotIdTagLine) {
+    addIdentity(names, `${player.riotIdGameName}#${player.riotIdTagLine}`);
+  }
+  return names;
+}
+
+function localPlayer(snapshot: LiveClientSnapshot, local: string[]): LivePlayer | null {
+  if (local.length === 0) return null;
+  for (const player of snapshot.allPlayers ?? []) {
+    if ([...playerNames(player)].some((name) => local.includes(name))) return player;
+  }
+  return null;
+}
+
+function count(value: unknown): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.floor(value) : 0;
+}
+
+/** Local player summary for the HUD, or null when the client has not listed them yet. */
+export function localPlayerStats(snapshot: LiveClientSnapshot, local: string[], gameTime: number): PlayerStats | null {
+  const player = localPlayer(snapshot, local);
+  if (!player) return null;
+  const position = typeof player.position === 'string' && player.position.trim() ? player.position.trim().toUpperCase() : null;
+  return {
+    championName: typeof player.championName === 'string' && player.championName.trim() ? player.championName.trim() : null,
+    position: position === 'NONE' ? null : position,
+    level: count(snapshot.activePlayer?.level ?? player.level),
+    kills: count(player.scores?.kills),
+    deaths: count(player.scores?.deaths),
+    assists: count(player.scores?.assists),
+    creepScore: count(player.scores?.creepScore),
+    currentGold: count(snapshot.activePlayer?.currentGold),
+    gameTime: Math.max(0, gameTime),
+  };
 }
 
 function localCreepScore(snapshot: LiveClientSnapshot, local: string[]): number | null {
@@ -152,5 +211,5 @@ export function mapLiveClientSnapshot(snapshot: LiveClientSnapshot, state: Mappe
     events.push({ type: 'gold_update', timestamp: clock, value: gold });
   }
 
-  return { seconds, events };
+  return { seconds, events, player: localPlayerStats(snapshot, local, clock) };
 }

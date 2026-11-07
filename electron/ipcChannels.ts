@@ -4,7 +4,8 @@ export const IpcChannel = {
   windowOpen: 'lol:window-open',
   windowClose: 'lol:window-close',
   windowMinimize: 'lol:window-minimize',
-  overlaySetInteractive: 'lol:overlay-set-interactive',
+  overlaySetEditMode: 'lol:overlay-set-edit-mode',
+  coachPublish: 'lol:coach-publish',
   overlayToggle: 'lol:overlay-toggle',
   overlayGetStatus: 'lol:overlay-get-status',
   gameTime: 'lol:game-time',
@@ -12,6 +13,9 @@ export const IpcChannel = {
   gamePhase: 'lol:game-phase',
   hotkey: 'lol:hotkey',
   overlayNotice: 'lol:overlay-notice',
+  overlayEditMode: 'lol:overlay-edit-mode',
+  playerStats: 'lol:player-stats',
+  coachAdvice: 'lol:coach-advice',
 } as const;
 
 export type IpcChannelName = (typeof IpcChannel)[keyof typeof IpcChannel];
@@ -20,7 +24,8 @@ export const invokeChannels = new Set<string>([
   IpcChannel.windowOpen,
   IpcChannel.windowClose,
   IpcChannel.windowMinimize,
-  IpcChannel.overlaySetInteractive,
+  IpcChannel.overlaySetEditMode,
+  IpcChannel.coachPublish,
   IpcChannel.overlayToggle,
   IpcChannel.overlayGetStatus,
 ]);
@@ -31,6 +36,9 @@ export const eventChannels = new Set<string>([
   IpcChannel.gamePhase,
   IpcChannel.hotkey,
   IpcChannel.overlayNotice,
+  IpcChannel.overlayEditMode,
+  IpcChannel.playerStats,
+  IpcChannel.coachAdvice,
 ]);
 
 export const windowNames = ['background', 'desktop', 'in_game_overlay'] as const;

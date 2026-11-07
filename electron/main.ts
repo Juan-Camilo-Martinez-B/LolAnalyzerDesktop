@@ -40,6 +40,18 @@ function publish(channel: string, payload: unknown): void {
   broadcast(channel, payload);
 }
 
+/** Only short plain fields cross into the overlay. */
+function sanitizeAdvice(payload: unknown): { text: string; severity: string; at: number } | null {
+  if (typeof payload !== 'object' || payload === null) return null;
+  const raw = payload as { text?: unknown; severity?: unknown; at?: unknown };
+  if (typeof raw.text !== 'string' || !raw.text.trim()) return null;
+  return {
+    text: raw.text.trim().slice(0, 240),
+    severity: typeof raw.severity === 'string' ? raw.severity.slice(0, 20) : 'info',
+    at: typeof raw.at === 'number' && Number.isFinite(raw.at) ? raw.at : Date.now(),
+  };
+}
+
 function registerIpc(): void {
   ipcMain.handle(IpcChannel.windowOpen, (_event, name: unknown) => {
     const canonical = canonicalWindowName(name);
@@ -75,9 +87,17 @@ function registerIpc(): void {
     return true;
   });
 
-  ipcMain.handle(IpcChannel.overlaySetInteractive, (_event, interactive: unknown) => {
-    if (typeof interactive !== 'boolean') return false;
-    overlayController?.setInteractive(interactive);
+  ipcMain.handle(IpcChannel.overlaySetEditMode, (_event, enabled: unknown) => {
+    if (typeof enabled !== 'boolean') return false;
+    return overlayController?.setEditMode(enabled) ?? false;
+  });
+
+  // The desktop window owns the session; it relays coach advice to the overlay.
+  ipcMain.handle(IpcChannel.coachPublish, (event, payload: unknown) => {
+    if (!windows || event.sender !== windows.desktop.webContents) return false;
+    if (!windows.overlay.isDestroyed()) {
+      windows.overlay.webContents.send(IpcChannel.coachAdvice, sanitizeAdvice(payload));
+    }
     return true;
   });
 
@@ -117,6 +137,15 @@ if (!app.requestSingleInstanceLock()) {
       cycleMode: () => {
         broadcast(IpcChannel.hotkey, { action: 'cycle-mode' });
       },
+      toggleEditMode: () => {
+        const controller = overlayController;
+        if (controller) controller.setEditMode(!controller.isEditMode());
+      },
+    });
+
+    // A locked overlay must never keep the keyboard (shop, abilities, chat).
+    windows.overlay.on('focus', () => {
+      overlayController?.returnFocusToGame();
     });
 
     windows.overlay.on('close', (event) => {

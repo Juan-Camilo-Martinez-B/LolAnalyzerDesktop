@@ -52,6 +52,7 @@ export class GameDataAgent {
     }
     this.sawGameEnd = false;
     this.emit(IpcChannel.gamePhase, { phase: 'END_OF_GAME' });
+    this.emit(IpcChannel.playerStats, null);
   }
 
   private async tick(): Promise<void> {
@@ -72,6 +73,9 @@ export class GameDataAgent {
       for (const event of mapped.events) {
         this.emit(IpcChannel.gameEvent, event);
         if (event.type === 'game_end') this.sawGameEnd = true;
+      }
+      if (mapped.player) {
+        this.emit(IpcChannel.playerStats, mapped.player);
       }
     } catch (error) {
       if (isCertificateError(error) && !this.allowUnverifiedLocalCert) {

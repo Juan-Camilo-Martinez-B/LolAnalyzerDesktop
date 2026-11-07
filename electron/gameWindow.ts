@@ -12,6 +12,8 @@ export interface LeagueWindowBounds {
   minimized: boolean;
   title: string;
   executablePath: string | null;
+  /** Native HWND, only used to hand keyboard focus back to the game. */
+  handle: unknown;
 }
 
 interface Candidate extends LeagueWindowBounds {
@@ -45,6 +47,8 @@ const IsWindowVisible = user32.func('int __stdcall IsWindowVisible(void *hwnd)')
 const IsIconic = user32.func('int __stdcall IsIconic(void *hwnd)');
 const GetWindowTextW = user32.func('int __stdcall GetWindowTextW(void *hwnd, void *buf, int max)');
 const GetWindowRect = user32.func('int __stdcall GetWindowRect(void *hwnd, _Out_ RECT *rect)');
+const SetForegroundWindow = user32.func('int __stdcall SetForegroundWindow(void *hwnd)');
+const GetForegroundWindow = user32.func('void * __stdcall GetForegroundWindow()');
 const GetWindowThreadProcessId = user32.func('uint32 __stdcall GetWindowThreadProcessId(void *hwnd, _Out_ uint32 *pid)');
 const OpenProcess = kernel32.func('void * __stdcall OpenProcess(uint32 access, int inherit, uint32 pid)');
 const CloseHandle = kernel32.func('int __stdcall CloseHandle(void *handle)');
@@ -112,6 +116,7 @@ function inspect(hwnd: unknown, found: Candidate[]): void {
     minimized,
     title,
     executablePath,
+    handle: hwnd,
     area: Math.max(0, width) * Math.max(0, height),
     processMatched,
   });
@@ -153,5 +158,28 @@ export function findLeagueWindow(): LeagueWindowBounds | null {
     minimized: choice.minimized || choice.width <= 0 || choice.height <= 0,
     title: choice.title,
     executablePath: choice.executablePath,
+    handle: choice.handle,
   };
+}
+
+/** True when League already owns the keyboard. */
+export function isLeagueForeground(window: LeagueWindowBounds | null): boolean {
+  if (!window?.handle || !markReady()) return false;
+  try {
+    const foreground = GetForegroundWindow();
+    return koffi.address(foreground) === koffi.address(window.handle);
+  } catch {
+    return false;
+  }
+}
+
+/** Gives keyboard focus back to League so its keys (shop, abilities) keep working. */
+export function focusLeagueWindow(window: LeagueWindowBounds | null): boolean {
+  if (!window?.handle || window.minimized || !markReady()) return false;
+  try {
+    return Number(SetForegroundWindow(window.handle)) !== 0;
+  } catch (error) {
+    console.warn('[electron] no se pudo devolver el foco a League', error);
+    return false;
+  }
 }
