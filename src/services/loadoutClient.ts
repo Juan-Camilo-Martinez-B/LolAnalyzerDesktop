@@ -6,7 +6,7 @@
 // (lockfile, 127.0.0.1 only). This window never sees client credentials.
 // ============================================================
 
-import { apiRequest } from './backendAuth';
+import { agentRequest } from './backendAuth';
 
 export interface RunePerk {
   id: number;
@@ -67,11 +67,11 @@ export function runeIconUrl(iconPath: string): string | null {
 export function fetchLoadout(championId: number, position?: string): Promise<Loadout> {
   const query = new URLSearchParams({ champion_id: String(championId) });
   if (position && position !== 'FILL') query.set('position', position);
-  return apiRequest<Loadout>(`/api/champ-select/loadout?${query.toString()}`);
+  return agentRequest<Loadout>(`/api/champ-select/loadout?${query.toString()}`);
 }
 
 export function importRunes(championName: string, page: RunePage): Promise<unknown> {
-  return apiRequest('/api/champ-select/loadout/runes', {
+  return agentRequest('/api/champ-select/loadout/runes', {
     method: 'POST',
     body: JSON.stringify({
       champion_name: championName,
@@ -84,14 +84,14 @@ export function importRunes(championName: string, page: RunePage): Promise<unkno
 
 /** Sends [D, F]; the order is kept, so Flash lands on the key the player chose. */
 export function importSpells(spellIds: [number, number]): Promise<unknown> {
-  return apiRequest('/api/champ-select/loadout/spells', {
+  return agentRequest('/api/champ-select/loadout/spells', {
     method: 'POST',
     body: JSON.stringify({ spell_ids: spellIds }),
   });
 }
 
 export function importItems(championId: number, championName: string, blocks: ItemBlock[]): Promise<unknown> {
-  return apiRequest('/api/champ-select/loadout/items', {
+  return agentRequest('/api/champ-select/loadout/items', {
     method: 'POST',
     body: JSON.stringify({
       champion_id: championId,

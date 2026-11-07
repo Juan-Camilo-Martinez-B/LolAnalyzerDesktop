@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { eventBus } from '../services/eventBus';
 import { mapGameflowPhase } from '../services/lcuService';
 import type { GamePhase } from '../types/game';
+import { agentHeaders, getAgentEndpoint } from '../services/endpoints';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 export const CLIENT_PHASE_POLL_MS = 3000;
 
 /** Should the app jump to the champion select tab for this phase change? */
@@ -24,7 +24,11 @@ export function useClientPhase(): void {
 
     const pull = async () => {
       try {
-        const response = await fetch(`${BASE_URL}/api/champ-select/gameflow`, { signal: AbortSignal.timeout(4000) });
+        const agent = await getAgentEndpoint();
+        const response = await fetch(`${agent.url}/api/champ-select/gameflow`, {
+          headers: agentHeaders(agent),
+          signal: AbortSignal.timeout(4000),
+        });
         if (!response.ok) return;
         const body = await response.json() as { phase?: unknown };
         const phase = mapGameflowPhase(typeof body.phase === 'string' ? body.phase : 'None');

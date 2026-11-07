@@ -2,8 +2,9 @@ import { clearAuthToken, setAuthToken } from './apiClient';
 import { clearRefreshToken, readRefreshToken, saveRefreshToken } from './secureSession';
 import { isThemePreference, type ThemePreference } from './theme';
 import { toUserMessage } from './userErrors';
+import { CLOUD_API_URL, agentHeaders, getAgentEndpoint } from './endpoints';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const BASE_URL = CLOUD_API_URL;
 
 export class BackendError extends Error {
   status: number;
@@ -38,14 +39,26 @@ export interface ChampionOption {
 }
 
 export async function apiRequest<T>(path: string, options: RequestInit = {}, retryAuth = true): Promise<T> {
-  const headers = new Headers(options.headers);
+  return send<T>(BASE_URL, path, options, retryAuth, new Headers(options.headers));
+}
+
+/**
+ * Local agent request (champion select, imports, live coach). Carries the
+ * agent's launch token and the player's JWT, which the agent forwards to the cloud.
+ */
+export async function agentRequest<T>(path: string, options: RequestInit = {}, retryAuth = true): Promise<T> {
+  const endpoint = await getAgentEndpoint();
+  return send<T>(endpoint.url, path, options, retryAuth, agentHeaders(endpoint, new Headers(options.headers)));
+}
+
+async function send<T>(base: string, path: string, options: RequestInit, retryAuth: boolean, headers: Headers): Promise<T> {
   if (!headers.has('Content-Type') && options.body) headers.set('Content-Type', 'application/json');
   const token = accessToken;
   if (token) headers.set('Authorization', `Bearer ${token}`);
 
   let response: Response;
   try {
-    response = await fetch(`${BASE_URL}${path}`, {
+    response = await fetch(`${base}${path}`, {
       ...options,
       headers,
       signal: AbortSignal.timeout(30000),
@@ -57,7 +70,7 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}, ret
 
   if (response.status === 401 && retryAuth && path !== '/api/auth/refresh' && path !== '/api/auth/login') {
     const refreshed = await refreshSession();
-    if (refreshed) return apiRequest<T>(path, options, false);
+    if (refreshed) return send<T>(base, path, options, false, headers);
   }
 
   if (!response.ok) {
@@ -261,10 +274,34 @@ export async function fetchRiotBundle(): Promise<{
   matches: unknown[];
   stats: RiotStatsPayload;
 }> {
+  // The cloud cannot read the League client: the agent copies recent games first.
+  await syncClientHistory();
   const [profile, matches, stats] = await Promise.all([
-    apiRequest<RiotProfilePayload>('/api/riot/profile'),
+    clientProfileOrCloud(),
     apiRequest<unknown[]>('/api/riot/matches?count=10'),
     apiRequest<RiotStatsPayload>('/api/riot/stats'),
   ]);
   return { profile, matches, stats };
+}
+
+/** Copies the client's recent games to the account. Silent when the client is closed. */
+export async function syncClientHistory(): Promise<void> {
+  try {
+    await agentRequest('/api/local/history/sync', { method: 'POST' });
+  } catch {
+    // Client closed, agent not ready or another account open: the stored history still loads.
+  }
+}
+
+/** Level and rank straight from the open client; the cloud (Riot API) when it is closed. */
+async function clientProfileOrCloud(): Promise<RiotProfilePayload> {
+  try {
+    const local = await agentRequest<RiotProfilePayload>('/api/local/profile');
+    const cloud = await apiRequest<RiotProfilePayload>('/api/riot/profile').catch(() => null);
+    // Same linked account: keep the client's fresh level and rank.
+    if (!cloud || cloud.puuid === local.puuid) return { ...cloud, ...local } as RiotProfilePayload;
+    return cloud;
+  } catch {
+    return apiRequest<RiotProfilePayload>('/api/riot/profile');
+  }
 }

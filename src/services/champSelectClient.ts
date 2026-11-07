@@ -1,7 +1,7 @@
 import { ensureDdragonVersion } from './assetResolver';
 import type { ChampSelectPlayer, ChampSelectSession } from '../types/game';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+import { agentHeaders, getAgentEndpoint } from './endpoints';
 
 type RawPlayer = {
   cellId?: number;
@@ -127,7 +127,8 @@ function mapSession(raw: RawSession, names: Map<number, string>): ChampSelectSes
 }
 
 export async function fetchLiveChampSelect(): Promise<ChampSelectSession | null> {
-  const response = await fetch(`${BASE_URL}/api/champ-select/session`);
+  const agent = await getAgentEndpoint();
+  const response = await fetch(`${agent.url}/api/champ-select/session`, { headers: agentHeaders(agent) });
   if (!response.ok) return null;
   const body = await response.json() as { is_active?: boolean; session?: RawSession | null };
   if (!body.is_active || !body.session) return null;

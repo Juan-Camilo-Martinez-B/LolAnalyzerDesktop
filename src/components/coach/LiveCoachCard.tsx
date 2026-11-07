@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { Badge, Card } from '../ui';
-import { apiRequest } from '../../services/backendAuth';
+import { agentRequest } from '../../services/backendAuth';
 import { publishAppError } from '../../services/userErrors';
 import { publishCoachToOverlay } from '../../services/overwolfService';
 import './liveCoach.css';
@@ -57,7 +57,7 @@ export function LiveCoachCard() {
 
     const pull = async () => {
       try {
-        const body = await apiRequest<LiveCoachState>('/api/coach/live');
+        const body = await agentRequest<LiveCoachState>('/api/coach/live');
         if (!cancelled) setState(body);
       } catch (error) {
         if (!cancelled) publishAppError(error);

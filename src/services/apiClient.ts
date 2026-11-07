@@ -14,7 +14,9 @@ import { toUserMessage } from './userErrors';
 /* ─────────────────────────────────────────────────────────
    Configuration
 ───────────────────────────────────────────────────────── */
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+import { CLOUD_API_URL } from './endpoints';
+
+const BASE_URL = CLOUD_API_URL;
 const API_V1   = `${BASE_URL}/api/v1`;
 
 let _authToken: string | null = null;

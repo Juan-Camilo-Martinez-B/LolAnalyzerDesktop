@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { eventBus } from '../services/eventBus';
 import { analyzeLatest, isFreshAnalysis, type MatchAnalysis } from '../services/analysisClient';
+import { syncClientHistory } from '../services/backendAuth';
 
 /**
  * The client writes the finished game to its history a little after the
@@ -35,7 +36,8 @@ export function usePostGameAnalysis(): { analysis: MatchAnalysis | null; dismiss
       RETRY_DELAYS_MS.forEach((delay) => {
         timers.current.push(window.setTimeout(() => {
           if (found) return;
-          void analyzeLatest()
+          // The agent copies the finished game to the account before the cloud analyses it.
+          void syncClientHistory().then(() => analyzeLatest())
             .then((result) => {
               // An older stored analysis means the new game is not in the history yet.
               if (!found && isFreshAnalysis(result, endedAt)) {
