@@ -232,12 +232,12 @@ export function SettingsView() {
           </div>
           <div className="settings-row">
             <div>
-              <strong style={{ fontSize: '0.8rem' }}>Alerta de tilt</strong>
-              <p>Pulso grave cuando salta el banner.</p>
+              <strong style={{ fontSize: '0.8rem' }}>Alertas de peligro</strong>
+              <p>Pulso grave por tilt, vida baja, muerte o falta de maná.</p>
             </div>
             <Switch
               checked={settings.audio.tiltAlerts}
-              label="Alerta de tilt"
+              label="Alertas de peligro"
               onClick={() => {
                 const next = { ...settings.audio, tiltAlerts: !settings.audio.tiltAlerts };
                 update({ audio: next });
@@ -248,13 +248,28 @@ export function SettingsView() {
           <div className="settings-row">
             <div>
               <strong style={{ fontSize: '0.8rem' }}>Objetivos</strong>
-              <p>Aviso de dragón, barón y larvas.</p>
+              <p>Aviso antes del dragón y el barón, y cuando un equipo toma un objetivo.</p>
             </div>
             <Switch
               checked={settings.audio.objectiveAlerts}
               label="Alertas de objetivos"
               onClick={() => {
                 const next = { ...settings.audio, objectiveAlerts: !settings.audio.objectiveAlerts };
+                update({ audio: next });
+                applyAudio(next);
+              }}
+            />
+          </div>
+          <div className="settings-row">
+            <div>
+              <strong style={{ fontSize: '0.8rem' }}>Consejos del coach</strong>
+              <p>Campanilla suave con cada consejo normal (oro, visión).</p>
+            </div>
+            <Switch
+              checked={settings.audio.coachTips}
+              label="Consejos del coach"
+              onClick={() => {
+                const next = { ...settings.audio, coachTips: !settings.audio.coachTips };
                 update({ audio: next });
                 applyAudio(next);
               }}
@@ -282,7 +297,7 @@ export function SettingsView() {
               onClick={() => audioService.playWarning()}
             >
               <AudioLines size={12} style={{ verticalAlign: 'middle', marginRight: 6 }} />
-              Probar tilt
+              Probar peligro
             </button>
             <button
               type="button"
@@ -290,6 +305,13 @@ export function SettingsView() {
               onClick={() => audioService.playHextechAlert()}
             >
               Probar objetivo
+            </button>
+            <button
+              type="button"
+              disabled={soundBlocked || !settings.audio.coachTips}
+              onClick={() => audioService.playCoachTip()}
+            >
+              Probar consejo
             </button>
           </div>
         </Card>

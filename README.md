@@ -85,3 +85,15 @@ Al fijar el campeón, runas, hechizos y objetos se importan automáticamente una
 ## Preload de Electron
 
 Las ventanas usan `sandbox: true`, y un preload con sandbox solo puede ser CommonJS. Por eso el preload vive en `electron/preload.cts` y se compila a `dist-electron/preload.cjs`. Si se compilara como módulo ES, `window.lolAnalyzer` no existiría y el overlay no recibiría datos.
+
+## Sonidos
+
+Los sonidos se sintetizan con Web Audio y suenan en el overlay cuando llega un consejo nuevo del coach:
+
+| Sonido | Cuándo | Interruptor en Ajustes |
+| --- | --- | --- |
+| Alerta de objetivo | Dragón o Barón a punto de aparecer, o un equipo toma un objetivo | Objetivos |
+| Pulso grave | Vida baja, muerte, tilt, falta de maná o un consejo crítico | Alertas de peligro |
+| Campanilla suave | Consejos normales (oro sin gastar, visión) | Consejos del coach |
+
+Ajustes tiene un botón de prueba para cada uno, y el silencio general los apaga todos. El overlay puede sonar sin que hagas clic (`autoplayPolicy`), y la ventana de escritorio no se frena en segundo plano porque es la que consulta al coach y le reenvía cada consejo al overlay.

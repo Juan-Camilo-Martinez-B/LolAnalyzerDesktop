@@ -18,8 +18,10 @@ interface LivePlayer {
 }
 
 interface LiveAdvice {
+  id?: number;
   text: string;
   severity: string;
+  category?: string;
   champion: string;
   role: string;
   gameTime: number;
@@ -34,6 +36,7 @@ interface LiveCoachState {
 }
 
 const SOURCE_LABELS: Record<string, string> = {
+  rules: 'Lectura en vivo',
   groq: 'Groq',
   gemini: 'Gemini',
   heuristic: 'Motor local',
@@ -69,13 +72,20 @@ export function LiveCoachCard() {
     };
   }, []);
 
-  const adviceText = state?.in_game ? state.advice?.text ?? null : null;
-  const adviceSeverity = state?.advice?.severity ?? 'info';
+  const liveAdvice = state?.in_game ? state.advice ?? null : null;
+  const adviceKey = liveAdvice ? `${liveAdvice.id ?? ''}|${liveAdvice.text}` : '';
 
-  // The overlay has no session of its own; this window relays the tip to it.
+  // The overlay has no session of its own; this window relays each new tip to it.
   useEffect(() => {
-    publishCoachToOverlay(adviceText ? { text: adviceText, severity: adviceSeverity, at: Date.now() } : null);
-  }, [adviceText, adviceSeverity]);
+    publishCoachToOverlay(liveAdvice ? {
+      text: liveAdvice.text,
+      severity: liveAdvice.severity,
+      category: liveAdvice.category,
+      at: Date.now(),
+    } : null);
+    // Only a new tip (id or text) is relayed; polls with the same tip are not.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adviceKey]);
 
   const inGame = Boolean(state?.in_game);
   const advice = state?.advice;

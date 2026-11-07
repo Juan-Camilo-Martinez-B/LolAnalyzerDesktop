@@ -64,7 +64,10 @@ export interface OverlayPlayerStats {
 /** Coach tip relayed from the desktop window, which owns the session. */
 export interface OverlayCoachAdvice {
   text: string;
+  /** INFO, WARNING or CRITICAL. */
   severity: string;
+  /** recall, death, objective, economy, vision, tilt, farm or general. */
+  category?: string;
   at: number;
 }
 

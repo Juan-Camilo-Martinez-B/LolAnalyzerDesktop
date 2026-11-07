@@ -6,7 +6,7 @@
 // relayed by the desktop window, and deaths feed the tilt reading.
 // ============================================================
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { eventBus } from '../services/eventBus';
 import {
   isElectronApp,
@@ -14,6 +14,7 @@ import {
   type OverlayCoachAdvice,
   type OverlayPlayerStats,
 } from '../services/overwolfService';
+import { playAdviceSound } from './adviceSound';
 
 export interface OverlayLive {
   stats: OverlayPlayerStats | null;
@@ -30,6 +31,7 @@ export function useOverlayLive(): OverlayLive {
   const [deathTimes, setDeathTimes] = useState<number[]>([]);
   // Outside Electron there is no click-through window, so the panel is always movable.
   const [editMode, setEditMode] = useState(!isElectronApp());
+  const lastSoundAt = useRef<number | null>(null);
 
   useEffect(() => subscribeOverlayLive({
     onStats: (next) => {
@@ -39,7 +41,14 @@ export function useOverlayLive(): OverlayLive {
         setAdvice(null);
       }
     },
-    onAdvice: setAdvice,
+    onAdvice: (next) => {
+      setAdvice(next);
+      // One sound per new tip; the relay sends a fresh timestamp only for new tips.
+      if (next && next.at !== lastSoundAt.current) {
+        lastSoundAt.current = next.at;
+        playAdviceSound(next);
+      }
+    },
     onEditMode: setEditMode,
   }), []);
 

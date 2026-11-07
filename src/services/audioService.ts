@@ -11,6 +11,7 @@ class AudioService {
   private tiltAlerts = true;
   private objectiveAlerts = true;
   private uiClicks = true;
+  private coachTips = true;
 
   constructor() {
     this.applyPreferences(loadSettings().audio);
@@ -43,6 +44,33 @@ class AudioService {
     this.tiltAlerts = audio.tiltAlerts;
     this.objectiveAlerts = audio.objectiveAlerts;
     this.uiClicks = audio.uiClicks;
+    this.coachTips = audio.coachTips;
+  }
+
+  /** Soft two-note chime for a regular coach tip. */
+  public playCoachTip() {
+    if (!this.coachTips) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      [660, 880].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = ctx.currentTime + idx * 0.09;
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.08, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.16);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.18);
+      });
+    } catch {
+      // Audio error ignored
+    }
   }
 
   /** Soft Hextech UI Click */

@@ -41,13 +41,14 @@ function publish(channel: string, payload: unknown): void {
 }
 
 /** Only short plain fields cross into the overlay. */
-function sanitizeAdvice(payload: unknown): { text: string; severity: string; at: number } | null {
+function sanitizeAdvice(payload: unknown): { text: string; severity: string; category: string; at: number } | null {
   if (typeof payload !== 'object' || payload === null) return null;
-  const raw = payload as { text?: unknown; severity?: unknown; at?: unknown };
+  const raw = payload as { text?: unknown; severity?: unknown; category?: unknown; at?: unknown };
   if (typeof raw.text !== 'string' || !raw.text.trim()) return null;
   return {
     text: raw.text.trim().slice(0, 240),
-    severity: typeof raw.severity === 'string' ? raw.severity.slice(0, 20) : 'info',
+    severity: typeof raw.severity === 'string' ? raw.severity.slice(0, 20) : 'INFO',
+    category: typeof raw.category === 'string' ? raw.category.slice(0, 20) : 'general',
     at: typeof raw.at === 'number' && Number.isFinite(raw.at) ? raw.at : Date.now(),
   };
 }
@@ -124,6 +125,8 @@ if (!app.requestSingleInstanceLock()) {
     windows = createAppWindows();
     windows.background.webContents.setBackgroundThrottling(false);
     windows.overlay.webContents.setBackgroundThrottling(false);
+    // The desktop window polls the coach and relays it to the overlay, even minimized.
+    windows.desktop.webContents.setBackgroundThrottling(false);
     overlayController = new OverlayController(windows.overlay, publish);
     overlayController.start();
     agent = new GameDataAgent(publish);

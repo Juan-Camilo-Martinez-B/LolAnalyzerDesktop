@@ -12,9 +12,12 @@ export type ThemePreference = 'light' | 'system' | 'dark';
 
 export interface AudioPreferences {
   muted: boolean;
+  /** Danger alerts: tilt, low health, death and low mana. The key keeps its old name. */
   tiltAlerts: boolean;
   objectiveAlerts: boolean;
   uiClicks: boolean;
+  /** Soft chime for regular coach tips (gold, vision). */
+  coachTips: boolean;
 }
 
 export interface UserSettings {
@@ -38,6 +41,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
     tiltAlerts: true,
     objectiveAlerts: true,
     uiClicks: true,
+    coachTips: true,
   },
 };
 
@@ -81,6 +85,7 @@ export function loadSettings(): UserSettings {
         tiltAlerts: parsed.audio?.tiltAlerts ?? DEFAULT_SETTINGS.audio.tiltAlerts,
         objectiveAlerts: parsed.audio?.objectiveAlerts ?? DEFAULT_SETTINGS.audio.objectiveAlerts,
         uiClicks: parsed.audio?.uiClicks ?? DEFAULT_SETTINGS.audio.uiClicks,
+        coachTips: parsed.audio?.coachTips ?? DEFAULT_SETTINGS.audio.coachTips,
       },
     };
   } catch {

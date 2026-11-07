@@ -18,8 +18,9 @@ function rendererUrl(page: 'index.html' | 'overlay.html' | 'background.html'): s
   return `${dev}/${page}`;
 }
 
-function webPreferences(): WebPreferences {
+function webPreferences(extra: Partial<WebPreferences> = {}): WebPreferences {
   return {
+    ...extra,
     // Sandboxed preloads must be CommonJS, so this one is built from preload.cts.
     preload: path.join(moduleDir, 'preload.cjs'),
     contextIsolation: true,
@@ -91,7 +92,8 @@ export function createAppWindows(): AppWindows {
     fullscreenable: false,
     thickFrame: false,
     backgroundColor: '#00000000',
-    webPreferences: webPreferences(),
+    // The HUD plays coach and objective sounds with no click from the player.
+    webPreferences: webPreferences({ autoplayPolicy: 'no-user-gesture-required' }),
   });
   overlay.setAlwaysOnTop(true, 'screen-saver');
   // Click-through from the start. Only the edit mode (Ctrl+Shift+L) takes the mouse.
