@@ -3,6 +3,10 @@ import { GameDataAgent } from './agent/gameDataAgent.js';
 import { IpcChannel, canonicalWindowName, eventChannels } from './ipcChannels.js';
 import { HotkeyManager } from './hotkeys.js';
 import { DEFAULT_HOTKEYS } from './hotkeyRules.js';
+import { registerAppScheme, serveAppScheme } from './appProtocol.js';
+import { LocalAgent } from './localAgent.js';
+import fs from 'node:fs';
+import path from 'node:path';
 import { OverlayController, type GamePhaseName } from './overlayController.js';
 import { createAppWindows, type AppWindows } from './windows.js';
 
@@ -19,6 +23,18 @@ let windows: AppWindows | null = null;
 let overlayController: OverlayController | null = null;
 let agent: GameDataAgent | null = null;
 let hotkeys: HotkeyManager | null = null;
+const localAgent = new LocalAgent();
+
+/** Cloud API base for the packaged build, from package.json "config.cloudApiUrl". */
+function cloudApiUrl(): string {
+  if (process.env.LOLANALYZER_CLOUD_URL) return process.env.LOLANALYZER_CLOUD_URL;
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(app.getAppPath(), 'package.json'), 'utf8')) as { config?: { cloudApiUrl?: unknown } };
+    return typeof pkg.config?.cloudApiUrl === 'string' ? pkg.config.cloudApiUrl : '';
+  } catch {
+    return '';
+  }
+}
 let quitting = false;
 
 function broadcast(channel: string, payload: unknown): void {
@@ -90,6 +106,14 @@ function registerIpc(): void {
     return true;
   });
 
+  // Windows of this app may ask where the local agent listens and its launch token.
+  ipcMain.handle(IpcChannel.agentInfo, (event) => {
+    if (!windows || (event.sender !== windows.desktop.webContents && event.sender !== windows.overlay.webContents)) {
+      return null;
+    }
+    return localAgent.current();
+  });
+
   ipcMain.handle(IpcChannel.hotkeysGet, () => ({
     config: hotkeys?.current() ?? DEFAULT_HOTKEYS,
     defaults: DEFAULT_HOTKEYS,
@@ -138,7 +162,12 @@ if (!app.requestSingleInstanceLock()) {
     desktop.show();
   });
 
+  registerAppScheme();
+
   app.whenReady().then(() => {
+    if (app.isPackaged) serveAppScheme();
+    // Started before the windows so their first requests find it.
+    void localAgent.start(cloudApiUrl());
     windows = createAppWindows();
     windows.background.webContents.setBackgroundThrottling(false);
     windows.overlay.webContents.setBackgroundThrottling(false);
@@ -185,6 +214,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('before-quit', () => {
     quitting = true;
     hotkeys?.dispose();
+    localAgent.stop();
     agent?.stop();
     overlayController?.stop();
   });

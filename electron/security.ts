@@ -1,4 +1,5 @@
 import { app, type WebContents } from 'electron';
+import { APP_ORIGIN } from './appProtocol.js';
 
 function rendererOrigin(): string | null {
   const dev = process.env.ELECTRON_RENDERER_URL;
@@ -12,6 +13,7 @@ function rendererOrigin(): string | null {
 
 export function isAllowedNavigation(url: string): boolean {
   if (url.startsWith('file:')) return true;
+  if (url === APP_ORIGIN || url.startsWith(`${APP_ORIGIN}/`)) return true;
   const origin = rendererOrigin();
   if (!origin) return false;
   try {

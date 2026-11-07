@@ -8,6 +8,7 @@ export const IpcChannel = {
   coachPublish: 'lol:coach-publish',
   hotkeysGet: 'lol:hotkeys-get',
   hotkeysSet: 'lol:hotkeys-set',
+  agentInfo: 'lol:agent-info',
   overlayToggle: 'lol:overlay-toggle',
   overlayGetStatus: 'lol:overlay-get-status',
   gameTime: 'lol:game-time',
@@ -31,6 +32,7 @@ export const invokeChannels = new Set<string>([
   IpcChannel.coachPublish,
   IpcChannel.hotkeysGet,
   IpcChannel.hotkeysSet,
+  IpcChannel.agentInfo,
   IpcChannel.overlayToggle,
   IpcChannel.overlayGetStatus,
 ]);

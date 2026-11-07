@@ -12,6 +12,7 @@ const overlaySetEditMode = 'lol:overlay-set-edit-mode';
 const coachPublish = 'lol:coach-publish';
 const hotkeysGet = 'lol:hotkeys-get';
 const hotkeysSet = 'lol:hotkeys-set';
+const agentInfo = 'lol:agent-info';
 const overlayToggle = 'lol:overlay-toggle';
 const overlayGetStatus = 'lol:overlay-get-status';
 const gameTime = 'lol:game-time';
@@ -64,6 +65,9 @@ const api = {
   },
   publishCoachAdvice(payload: unknown): Promise<boolean> {
     return ipcRenderer.invoke(coachPublish, payload);
+  },
+  getAgentInfo(): Promise<unknown> {
+    return ipcRenderer.invoke(agentInfo);
   },
   getHotkeys(): Promise<unknown> {
     return ipcRenderer.invoke(hotkeysGet);

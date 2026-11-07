@@ -1,7 +1,8 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BrowserWindow, app, screen, type Rectangle, type WebPreferences } from 'electron';
+import { BrowserWindow, screen, type Rectangle, type WebPreferences } from 'electron';
 import { hardenContents } from './security.js';
+import { APP_ORIGIN } from './appProtocol.js';
 
 const moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -40,7 +41,8 @@ function loadPage(win: BrowserWindow, page: 'index.html' | 'overlay.html' | 'bac
     void win.loadURL(devUrl);
     return;
   }
-  void win.loadFile(path.join(app.getAppPath(), 'dist', page));
+  // Packaged build: dist/ is served from app://lolanalyzer (see appProtocol.ts).
+  void win.loadURL(`${APP_ORIGIN}/${page}`);
 }
 
 export function createAppWindows(): AppWindows {
