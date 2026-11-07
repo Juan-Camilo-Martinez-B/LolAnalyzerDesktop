@@ -20,7 +20,8 @@ function rendererUrl(page: 'index.html' | 'overlay.html' | 'background.html'): s
 
 function webPreferences(): WebPreferences {
   return {
-    preload: path.join(moduleDir, 'preload.js'),
+    // Sandboxed preloads must be CommonJS, so this one is built from preload.cts.
+    preload: path.join(moduleDir, 'preload.cjs'),
     contextIsolation: true,
     nodeIntegration: false,
     sandbox: true,
