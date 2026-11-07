@@ -75,3 +75,7 @@ El manifiesto está en `public/manifest.json`. El juego objetivo es League of Le
 En el navegador, `Shift+`` ` también oculta o muestra el overlay.
 
 Detalle de flujo de datos, carga en Overwolf y zonas HUD: [docs/ui_ux_architecture.md](docs/ui_ux_architecture.md).
+
+## Runas y objetos en la selección
+
+Cuando eliges campeón, la vista de selección muestra **Runas y objetos**. Las runas son las páginas que recomienda el propio cliente de League para ese campeón y línea. Los objetos son los que más usaste con ese campeón en tus partidas guardadas. El backend escribe en el cliente: crea o reemplaza la página "LolAnalyzer - <campeón>" (con los hechizos de invocador) y un conjunto de objetos con el mismo nombre en la tienda. Nunca borra tus páginas propias; si no queda espacio, avisa. La tarjeta solo marca "Importadas" cuando el cliente confirmó el cambio. Este escritorio no ve las credenciales del cliente.

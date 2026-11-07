@@ -153,3 +153,142 @@
     font-size: 0.95rem;
   }
 }
+
+/* Runes and item set importer */
+
+.loadout__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hextech-cyan);
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.loadout__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.loadout__heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.loadout__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.loadout__tab {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-dark);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.loadout__tab.is-active {
+  border-color: var(--hextech-cyan);
+  color: var(--hextech-cyan);
+}
+
+.loadout__styles {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.loadout__perks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loadout__perks li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+}
+
+.loadout__perks li.is-keystone {
+  grid-column: 1 / -1;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.loadout__items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loadout__items img {
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--border-dark);
+}
+
+.loadout__action {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--hextech-gold);
+  background: var(--hextech-gold);
+  color: #1a1407;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.loadout__action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.loadout__loading,
+.loadout__empty,
+.loadout__ok,
+.loadout__error {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.loadout__ok {
+  color: var(--accent-green, var(--green-400));
+}
+
+.loadout__error {
+  color: var(--accent-red);
+}

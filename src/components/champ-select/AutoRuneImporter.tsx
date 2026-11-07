@@ -1,130 +1,191 @@
-import React, { useState } from 'react';
-import { Zap, Check, Flame, Shield, Compass, ArrowRight } from 'lucide-react';
-import { Card, Badge } from '../ui';
-import { lcuService } from '../../services/lcuService';
+import React, { useEffect, useState } from 'react';
+import { Check, Package, Zap } from 'lucide-react';
+import { Badge, Card, Spinner } from '../ui';
+import { assetResolver } from '../../services/assetResolver';
 import { audioService } from '../../services/audioService';
+import {
+  RUNE_STYLE_NAMES,
+  fetchLoadout,
+  importItems,
+  importRunes,
+  runeIconUrl,
+  type Loadout,
+} from '../../services/loadoutClient';
+import { messageFromUnknown } from '../../services/userErrors';
 import './champSelect.css';
 
 export interface AutoRuneImporterProps {
-  championName?: string;
-  onImportSuccess?: () => void;
+  championId: number;
+  championName: string;
+  position?: string;
 }
 
-export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({
-  championName = 'Ahri',
-  onImportSuccess,
-}) => {
-  const [isImporting, setIsImporting] = useState(false);
-  const [isImported, setIsImported] = useState(false);
+type ImportState = { status: 'idle' | 'working' | 'done' | 'error'; message?: string };
 
-  const handleAutoImport = async () => {
-    audioService.playClick();
-    setIsImporting(true);
+const IDLE: ImportState = { status: 'idle' };
 
-    try {
-      // Send rune page to LCU
-      await lcuService.importRunePage({
-        name: `LolAnalyzer - ${championName} Burst`,
-        primaryStyleId: 8100, // Domination
-        subStyleId: 8000,     // Precision
-        selectedPerkIds: [8112, 8126, 8138, 8106, 9101, 8014, 5008, 5008, 5002],
-        current: true,
+/**
+ * Runes from the client's recommendations and items from the player's own games.
+ * The badge only says "importado" after the client confirmed the write.
+ */
+export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, championName, position }) => {
+  const [loadout, setLoadout] = useState<Loadout | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [runeState, setRuneState] = useState<ImportState>(IDLE);
+  const [itemState, setItemState] = useState<ImportState>(IDLE);
+
+  useEffect(() => {
+    // The parent remounts this card (key) when the champion or lane changes.
+    let cancelled = false;
+    fetchLoadout(championId, championName, position)
+      .then((body) => {
+        if (!cancelled) setLoadout(body);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setLoadError(messageFromUnknown(error));
       });
+    return () => {
+      cancelled = true;
+    };
+  }, [championId, championName, position]);
 
-      // Set summoner spells (Flash 4, Teleport 12)
-      await lcuService.setSummonerSpells(4, 12);
+  const page = loadout?.runePages[pageIndex] ?? null;
+  const build = loadout?.build;
 
-      setIsImported(true);
+  const applyRunes = async () => {
+    if (!page) return;
+    audioService.playClick();
+    setRuneState({ status: 'working' });
+    try {
+      const result = await importRunes(championName, page);
+      setRuneState({
+        status: 'done',
+        message: result.spellsApplied ? 'Runas y hechizos aplicados.' : 'Runas aplicadas.',
+      });
       audioService.playSuccess();
+    } catch (error) {
+      setRuneState({ status: 'error', message: messageFromUnknown(error) });
+    }
+  };
 
-      if (onImportSuccess) {
-        onImportSuccess();
-      }
-    } catch {
-      // LCU offline fallback preview state
-      setIsImported(true);
+  const applyItems = async () => {
+    if (!build || build.itemIds.length === 0) return;
+    audioService.playClick();
+    setItemState({ status: 'working' });
+    try {
+      await importItems(championId, championName, build.itemIds, build.games);
+      setItemState({ status: 'done', message: 'Conjunto creado en la tienda del cliente.' });
       audioService.playSuccess();
-    } finally {
-      setIsImporting(false);
+    } catch (error) {
+      setItemState({ status: 'error', message: messageFromUnknown(error) });
     }
   };
 
   return (
-    <Card variant="cyan" className="card--fit">
+    <Card variant="cyan" className="card--fit loadout">
       <div className="cs-head">
-        <div className="cs-head__title" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--hextech-cyan)', fontWeight: 700, fontSize: '1rem', textTransform: 'uppercase' }}>
-          <Zap size={18} /> Optimal Runes & Spells Auto-Importer
+        <div className="cs-head__title loadout__title">
+          <Zap size={18} /> Runas y objetos · {championName}
         </div>
-        <Badge variant={isImported ? 'win' : 'cyan'}>
-          {isImported ? 'Applied to Client' : 'Ready to Import'}
+        <Badge variant={loadout?.clientConnected ? 'win' : 'neutral'}>
+          {loadout ? (loadout.clientConnected ? 'Cliente conectado' : 'Cliente cerrado') : 'Cargando'}
         </Badge>
       </div>
 
-      {/* Main Grid Layout: Primary Tree, Secondary Tree, Spells & CTA */}
-      <div className="cs-grid">
-        {/* Primary Tree */}
-        <div style={{ background: 'var(--bg-glass-heavy)', border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '12px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-red)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Flame size={14} /> Primary: Domination
-          </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-            ● Electrocute (Keystone)
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span>• Cheap Shot</span>
-            <span>• Eyeball Collection</span>
-            <span>• Ultimate Hunter</span>
-          </div>
-        </div>
+      {loadError && <p className="loadout__error">{loadError}</p>}
+      {!loadout && !loadError && <div className="loadout__loading"><Spinner size="sm" /> Leyendo recomendaciones…</div>}
 
-        {/* Secondary Tree */}
-        <div style={{ background: 'var(--bg-glass-heavy)', border: '1px solid var(--border-dark)', borderRadius: '8px', padding: '12px' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--hextech-gold)', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Compass size={14} /> Secondary: Precision
-          </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-            ● Manaflow / Transcendence
-          </div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span>• Presence of Mind</span>
-            <span>• Coup de Grace</span>
-          </div>
-        </div>
+      {loadout && (
+        <div className="cs-grid loadout__grid">
+          <section className="cs-panel loadout__section">
+            <h3 className="loadout__heading">Runas recomendadas por el cliente</h3>
+            {loadout.runePages.length > 1 && (
+              <div className="loadout__tabs" role="tablist" aria-label="Página de runas">
+                {loadout.runePages.map((option, index) => (
+                  <button
+                    key={`${option.position ?? 'any'}-${option.primaryStyleId}-${index}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={index === pageIndex}
+                    className={`loadout__tab ${index === pageIndex ? 'is-active' : ''}`}
+                    onClick={() => {
+                      setPageIndex(index);
+                      setRuneState(IDLE);
+                    }}
+                  >
+                    {option.perks[0]?.name || RUNE_STYLE_NAMES[option.primaryStyleId] || 'Página'}
+                  </button>
+                ))}
+              </div>
+            )}
+            {page ? (
+              <>
+                <p className="loadout__styles">
+                  {RUNE_STYLE_NAMES[page.primaryStyleId] ?? 'Principal'} + {RUNE_STYLE_NAMES[page.subStyleId] ?? 'Secundaria'}
+                </p>
+                <ul className="loadout__perks">
+                  {page.perks.map((perk, index) => {
+                    const icon = runeIconUrl(perk.iconPath);
+                    return (
+                      <li key={`${perk.id}-${index}`} className={index === 0 ? 'is-keystone' : ''}>
+                        {icon && <img src={icon} alt="" width={index === 0 ? 28 : 20} height={index === 0 ? 28 : 20} loading="lazy" />}
+                        <span>{perk.name || `Runa ${perk.id}`}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <button
+                  type="button"
+                  className="loadout__action"
+                  onClick={applyRunes}
+                  disabled={runeState.status === 'working' || !loadout.clientConnected}
+                >
+                  {runeState.status === 'working' ? 'Importando…' : runeState.status === 'done' ? <><Check size={14} /> Importadas</> : 'Importar runas'}
+                </button>
+              </>
+            ) : (
+              <p className="loadout__empty">
+                {loadout.clientConnected ? 'El cliente no tiene recomendaciones para este campeón.' : 'Abre el cliente de League para ver las runas.'}
+              </p>
+            )}
+            {runeState.message && (
+              <p className={runeState.status === 'error' ? 'loadout__error' : 'loadout__ok'}>{runeState.message}</p>
+            )}
+          </section>
 
-        {/* Spells & Action CTA */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Spells:</span>
-            <span style={{ color: 'var(--hextech-gold)', fontWeight: 700 }}>Flash (D) + Teleport (F)</span>
-          </div>
-
-          <button
-            onClick={handleAutoImport}
-            disabled={isImporting}
-            style={{
-              background: isImported ? 'var(--accent-green)' : 'var(--hextech-cyan)',
-              color: 'var(--hextech-black)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '12px 16px',
-              fontSize: '0.85rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              boxShadow: isImported
-                ? '0 0 14px rgba(46, 204, 113, 0.4)'
-                : '0 0 14px rgba(10, 200, 185, 0.4)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            {isImported ? <Check size={16} /> : <Zap size={16} />}
-            {isImported ? 'Runes & Spells Synced!' : '1-Click Auto Import to LoL Client'}
-          </button>
+          <section className="cs-panel loadout__section">
+            <h3 className="loadout__heading"><Package size={14} /> Tu build habitual</h3>
+            {build && build.itemIds.length > 0 ? (
+              <>
+                <p className="loadout__styles">Según {build.games} {build.games === 1 ? 'partida' : 'partidas'} con {championName}</p>
+                <ul className="loadout__items">
+                  {build.itemIds.map((itemId) => (
+                    <li key={itemId}>
+                      <img src={assetResolver.getItemIcon(itemId)} alt={`Objeto ${itemId}`} width={36} height={36} loading="lazy" />
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  className="loadout__action"
+                  onClick={applyItems}
+                  disabled={itemState.status === 'working' || !loadout.clientConnected}
+                >
+                  {itemState.status === 'working' ? 'Importando…' : itemState.status === 'done' ? <><Check size={14} /> Importados</> : 'Importar objetos'}
+                </button>
+              </>
+            ) : (
+              <p className="loadout__empty">
+                Aún no hay partidas tuyas con {championName} en el historial. Juega algunas y la build aparecerá aquí.
+              </p>
+            )}
+            {itemState.message && (
+              <p className={itemState.status === 'error' ? 'loadout__error' : 'loadout__ok'}>{itemState.message}</p>
+            )}
+          </section>
         </div>
-      </div>
+      )}
     </Card>
   );
 };

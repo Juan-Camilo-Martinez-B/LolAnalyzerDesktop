@@ -184,40 +184,6 @@ export function injectMockLcuProfile(profile: SummonerProfile): void {
 }
 
 /* ─────────────────────────────────────────────────────────
-   Runes & Spells Importer
-───────────────────────────────────────────────────────── */
-export interface LcuRunePageInput {
-  name: string;
-  primaryStyleId: number;
-  subStyleId: number;
-  selectedPerkIds: number[];
-  current?: boolean;
-}
-
-export async function importRunePage(page: LcuRunePageInput): Promise<void> {
-  try {
-    // Delete current page if limit reached, or post new page
-    await lcuFetch('/lol-perks/v1/pages', {
-      method: 'POST',
-      body: JSON.stringify(page),
-    });
-  } catch (err) {
-    console.log('[LCU] Rune import mock/fallback executed:', err);
-  }
-}
-
-export async function setSummonerSpells(spell1Id: number, spell2Id: number): Promise<void> {
-  try {
-    await lcuFetch('/lol-champ-select/v1/session/my-selection', {
-      method: 'PATCH',
-      body: JSON.stringify({ spell1Id, spell2Id }),
-    });
-  } catch (err) {
-    console.log('[LCU] Summoner spells set mock/fallback executed:', err);
-  }
-}
-
-/* ─────────────────────────────────────────────────────────
    Phase mapper
 ───────────────────────────────────────────────────────── */
 function _mapLcuPhase(phase: LcuGameflowPhase) {
@@ -243,6 +209,4 @@ export const lcuService = {
   reprobeLcu,
   getLcuDiagnostics,
   injectMockLcuProfile,
-  importRunePage,
-  setSummonerSpells,
 };

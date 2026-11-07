@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Swords } from 'lucide-react';
 import { TeamCompositionGrid } from '../components/champ-select/TeamCompositionGrid';
+import { AutoRuneImporter } from '../components/champ-select/AutoRuneImporter';
 import { Card } from '../components/ui';
 import { useApp } from '../context/AppContext';
 import { fetchLiveChampSelect } from '../services/champSelectClient';
@@ -37,6 +38,7 @@ export function ChampSelectView() {
 
   const secondsLeft = Math.max(0, Math.ceil((session?.timer.adjustedTimeLeftInPhase ?? 0) / 1000));
   const phaseLabel = session?.timer.phase?.replace(/_/g, ' ') || 'Selección';
+  const me = session?.myTeam.find((player) => player.isLocalPlayer && player.championId > 0 && player.championName);
 
   return (
     <div className="page-view">
@@ -55,11 +57,23 @@ export function ChampSelectView() {
       </div>
 
       {session ? (
-        <TeamCompositionGrid
-          myTeam={session.myTeam}
-          theirTeam={session.theirTeam}
-          bans={session.bans}
-        />
+        <>
+          {me?.championName && (
+            <div style={{ marginBottom: 16 }}>
+              <AutoRuneImporter
+                key={`${me.championId}-${me.assignedPosition}`}
+                championId={me.championId}
+                championName={me.championName}
+                position={me.assignedPosition}
+              />
+            </div>
+          )}
+          <TeamCompositionGrid
+            myTeam={session.myTeam}
+            theirTeam={session.theirTeam}
+            bans={session.bans}
+          />
+        </>
       ) : (
         <Card className="cs-wait">
           <h2 className="cs-wait__title">{waiting ? 'Leyendo el cliente…' : 'Entra en cola'}</h2>
