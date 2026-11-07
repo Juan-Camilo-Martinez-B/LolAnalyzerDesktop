@@ -170,6 +170,22 @@ body,
   color: var(--gold-500);
 }
 
+.hud-advice--praise {
+  border-left-color: var(--green-400);
+  background: linear-gradient(90deg, rgba(0, 214, 143, 0.16), rgba(200, 155, 60, 0.12));
+  font-weight: 700;
+  animation: praiseGlow 1.4s ease-out 1;
+}
+
+.hud-advice--praise svg {
+  color: var(--green-400);
+}
+
+@keyframes praiseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(0, 214, 143, 0.55); }
+  100% { box-shadow: 0 0 0 8px rgba(0, 214, 143, 0); }
+}
+
 .hud-advice--critical,
 .hud-advice--high {
   border-left-color: var(--red-400);

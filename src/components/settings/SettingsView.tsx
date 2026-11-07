@@ -246,6 +246,21 @@ export function SettingsView() {
           </div>
           <div className="settings-row">
             <div>
+              <strong style={{ fontSize: '0.8rem' }}>Felicitaciones</strong>
+              <p>Fanfarria por multiasesinatos, primera sangre, objetivos y gran farmeo.</p>
+            </div>
+            <Switch
+              checked={settings.audio.praise}
+              label="Felicitaciones"
+              onClick={() => {
+                const next = { ...settings.audio, praise: !settings.audio.praise };
+                update({ audio: next });
+                applyAudio(next);
+              }}
+            />
+          </div>
+          <div className="settings-row">
+            <div>
               <strong style={{ fontSize: '0.8rem' }}>Consejos del coach</strong>
               <p>Campanilla suave con cada consejo normal (oro, visión).</p>
             </div>
@@ -296,6 +311,13 @@ export function SettingsView() {
               onClick={() => audioService.playCoachTip()}
             >
               Probar consejo
+            </button>
+            <button
+              type="button"
+              disabled={soundBlocked || !settings.audio.praise}
+              onClick={() => audioService.playPraise()}
+            >
+              Probar felicitación
             </button>
           </div>
         </Card>

@@ -104,7 +104,7 @@ export const LiveHudPanel: React.FC<LiveHudPanelProps> = ({
           </div>
 
           {advice && (
-            <p className={`hud-advice hud-advice--${advice.severity}`}>
+            <p className={`hud-advice hud-advice--${advice.category === 'praise' ? 'praise' : advice.severity.toLowerCase()}`}>
               <Sparkles size={12} />
               <span>{advice.text}</span>
             </p>

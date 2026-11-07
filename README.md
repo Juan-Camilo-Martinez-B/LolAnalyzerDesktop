@@ -94,6 +94,7 @@ Los sonidos se sintetizan con Web Audio y suenan en el overlay cuando llega un c
 
 | Sonido | Cuándo | Interruptor en Ajustes |
 | --- | --- | --- |
+| Fanfarria | Buenas jugadas: multiasesinato, primera sangre, ace, torre, objetivo propio o farmeo casi perfecto, perfecto o más que perfecto | Felicitaciones |
 | Alerta de objetivo | Dragón o Barón a punto de aparecer, o un equipo toma un objetivo | Objetivos |
 | Pulso grave | Vida baja, muerte, tilt, falta de maná o un consejo crítico | Alertas de peligro |
 | Campanilla suave | Consejos normales (oro sin gastar, visión) | Consejos del coach |

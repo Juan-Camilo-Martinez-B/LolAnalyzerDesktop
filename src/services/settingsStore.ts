@@ -18,6 +18,8 @@ export interface AudioPreferences {
   uiClicks: boolean;
   /** Soft chime for regular coach tips (gold, vision). */
   coachTips: boolean;
+  /** Fanfare for good plays: multikills, objectives, great farming. */
+  praise: boolean;
 }
 
 export type FlashKey = 'D' | 'F';
@@ -56,6 +58,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
     objectiveAlerts: true,
     uiClicks: true,
     coachTips: true,
+    praise: true,
   },
   loadout: {
     openChampSelect: true,
@@ -107,6 +110,7 @@ export function loadSettings(): UserSettings {
         objectiveAlerts: parsed.audio?.objectiveAlerts ?? DEFAULT_SETTINGS.audio.objectiveAlerts,
         uiClicks: parsed.audio?.uiClicks ?? DEFAULT_SETTINGS.audio.uiClicks,
         coachTips: parsed.audio?.coachTips ?? DEFAULT_SETTINGS.audio.coachTips,
+        praise: parsed.audio?.praise ?? DEFAULT_SETTINGS.audio.praise,
       },
       loadout: {
         openChampSelect: parsed.loadout?.openChampSelect ?? DEFAULT_SETTINGS.loadout.openChampSelect,

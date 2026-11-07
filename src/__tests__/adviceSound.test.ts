@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { adviceSound } from '../overlay/adviceSound';
 
 describe('advice sound', () => {
+  it('plays the fanfare for praise, even when the text is about an objective', () => {
+    expect(adviceSound({ category: 'praise', severity: 'INFO' })).toBe('praise');
+  });
+
   it('chimes for objectives even when the enemy took them', () => {
     expect(adviceSound({ category: 'objective', severity: 'WARNING' })).toBe('objective');
   });

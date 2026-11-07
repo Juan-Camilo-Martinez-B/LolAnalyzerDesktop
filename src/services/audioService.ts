@@ -12,6 +12,7 @@ class AudioService {
   private objectiveAlerts = true;
   private uiClicks = true;
   private coachTips = true;
+  private praise = true;
 
   constructor() {
     this.applyPreferences(loadSettings().audio);
@@ -45,6 +46,33 @@ class AudioService {
     this.objectiveAlerts = audio.objectiveAlerts;
     this.uiClicks = audio.uiClicks;
     this.coachTips = audio.coachTips;
+    this.praise = audio.praise;
+  }
+
+  /** Rising four-note fanfare for a good play. */
+  public playPraise() {
+    if (!this.praise) return;
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    try {
+      [523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        const start = ctx.currentTime + idx * 0.08;
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.0001, start);
+        gain.gain.exponentialRampToValueAtTime(0.1, start + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + (idx === 3 ? 0.4 : 0.14));
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + (idx === 3 ? 0.42 : 0.16));
+      });
+    } catch {
+      // Audio error ignored
+    }
   }
 
   /** Soft two-note chime for a regular coach tip. */
