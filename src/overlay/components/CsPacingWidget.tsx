@@ -1,17 +1,17 @@
 import React from 'react';
-import { Target, TrendingUp, TrendingDown, Award } from 'lucide-react';
+import { Target } from 'lucide-react';
 import { Badge, ProgressBar } from '../../components/ui';
 
 export interface CsPacingWidgetProps {
-  currentCs?: number;
-  gameTimeSec?: number;
-  targetCsPerMin?: number;
+  currentCs: number;
+  gameTimeSec: number;
+  targetCsPerMin: number;
 }
 
 export const CsPacingWidget: React.FC<CsPacingWidgetProps> = ({
-  currentCs = 118,
-  gameTimeSec = 872, // 14m 32s
-  targetCsPerMin = 9.0,
+  currentCs,
+  gameTimeSec,
+  targetCsPerMin,
 }) => {
   const currentMinutes = Math.max(1, gameTimeSec / 60);
   const currentCsPerMin = currentCs / currentMinutes;
@@ -36,10 +36,10 @@ export const CsPacingWidget: React.FC<CsPacingWidgetProps> = ({
       {/* Widget Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-          <Target size={14} color="var(--hextech-cyan)" /> CS Pacing Tracker
+          <Target size={14} color="var(--hextech-cyan)" /> Ritmo de CS
         </div>
         <Badge variant={isAhead ? 'win' : 'gold'}>
-          {isAhead ? `+${csDelta} vs Baseline` : `${csDelta} vs Baseline`}
+          {isAhead ? `+${csDelta} vs meta` : `${csDelta} vs meta`}
         </Badge>
       </div>
 
@@ -55,7 +55,7 @@ export const CsPacingWidget: React.FC<CsPacingWidgetProps> = ({
         </div>
 
         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textAlign: 'right' }}>
-          <span style={{ color: 'var(--hextech-gold)', fontWeight: 700 }}>{targetCs}</span> Target ({targetCsPerMin} /m)
+          <span style={{ color: 'var(--hextech-gold)', fontWeight: 700 }}>{targetCs}</span> Meta ({targetCsPerMin.toFixed(1)}/m)
         </div>
       </div>
 

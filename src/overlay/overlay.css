@@ -1,4 +1,4 @@
-/* The Electron overlay window is click-through. Only the HUD panel receives the pointer. */
+/* The Electron overlay window is click-through. It only takes the mouse in edit mode. */
 
 html,
 body,
@@ -8,16 +8,194 @@ body,
   pointer-events: none;
 }
 
-/* Compact Mini-HUD — one line, HUD-safe, top-left friendly */
+/* HUD panel. Click-through while locked; Ctrl+Shift+L unlocks it to drag. */
 
-.mini-hud {
+.hud-panel {
+  width: 100%;
+  max-height: calc(100vh - 24px);
+  background: var(--overlay-panel);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-body);
+  color: var(--slate-100);
+  pointer-events: auto;
+  user-select: none;
+  transition: opacity 0.15s ease, max-width 0.2s ease, box-shadow 0.15s ease;
+}
+
+.hud-panel.is-editing {
+  cursor: grab;
+  border-style: dashed;
+  box-shadow: 0 0 0 2px rgba(200, 155, 60, 0.35), var(--shadow-card);
+}
+
+.hud-panel.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+.hud-head {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 34px;
+  height: 32px;
   padding: 0 10px;
-  user-select: none;
-  cursor: move;
+  border-bottom: 1px solid var(--border-surface);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.hud-head__clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--cyan-400);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-head__champ {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--gold-200);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hud-head__level,
+.hud-head__role {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--slate-300);
+  border: 1px solid var(--border-surface);
+  border-radius: 4px;
+  padding: 0 4px;
+}
+
+.hud-head__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--gold-500);
+}
+
+.hud-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px;
+}
+
+.hud-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.hud-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-surface);
+}
+
+.hud-stat__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--slate-400);
+}
+
+.hud-stat strong {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--slate-100);
+}
+
+.hud-stat__sub {
+  font-size: 0.64rem;
+  color: var(--slate-300);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-stat__sub em {
+  font-style: normal;
+  font-weight: 800;
+}
+
+.hud-stat__sub .is-ahead { color: var(--green-400); }
+.hud-stat__sub .is-behind { color: var(--gold-300); }
+
+.hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-row__goal {
+  font-size: 0.62rem;
+  color: var(--slate-400);
+}
+
+.hud-advice {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border-left: 3px solid var(--gold-500);
+  background: rgba(200, 155, 60, 0.1);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--slate-100);
+}
+
+.hud-advice svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--gold-500);
+}
+
+.hud-advice--critical,
+.hud-advice--high {
+  border-left-color: var(--red-400);
+  background: rgba(255, 70, 85, 0.1);
+}
+
+.hud-waiting {
+  margin: 0;
+  padding: 10px;
+  font-size: 0.72rem;
+  color: var(--slate-300);
+}
+
+.hud-expanded {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 10px 10px;
+}
+
+.hud-edit-hint {
+  margin: 0;
+  padding: 6px 10px;
+  border-top: 1px dashed var(--border-gold);
+  font-size: 0.66rem;
+  color: var(--gold-200);
 }
 
 .mini-hud-tilt {
@@ -58,15 +236,6 @@ body,
   50%      { box-shadow: 0 0 0 4px rgba(255, 70, 85, 0); }
 }
 
-.overlay-no-drag {
-  -webkit-app-region: no-drag;
-  cursor: default;
-}
-
-.overlay-drag {
-  -webkit-app-region: drag;
-}
-
 .overlay-icon-btn {
   background: transparent;
   border: none;
@@ -88,7 +257,24 @@ body,
   gap: 8px;
   padding: 8px 12px 10px;
   border-top: 1px solid var(--border-gold);
-  background: rgba(11, 14, 20, 0.72);
+  background: transparent;
+}
+
+.overlay-controls-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--slate-300);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.overlay-controls-keys {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  color: var(--slate-400);
+  font-size: 0.65rem;
 }
 
 .overlay-controls-row {

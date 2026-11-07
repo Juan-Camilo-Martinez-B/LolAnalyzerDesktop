@@ -1,21 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import '../index.css';
 import './overlay.css';
 import { AppProvider } from '../context/AppContext';
-import { OverlayHeader } from './components/OverlayHeader';
 import { CsPacingWidget } from './components/CsPacingWidget';
-import { ObjectiveTimersWidget } from './components/ObjectiveTimersWidget';
 import { LiveTiltWarning } from './components/LiveTiltWarning';
-import { MiniHudBar } from './components/MiniHudBar';
+import { LiveHudPanel } from './components/LiveHudPanel';
 import { OverlayControls } from './components/OverlayControls';
 import { useOverlay, useGameClock } from '../hooks/useGameState';
 import { useUserSettings } from '../hooks/useUserSettings';
-import { registerHotkeys, overwolfService, setOverlayInteractive } from '../services/overwolfService';
-import { EventSimulatorBar } from '../components/debug/EventSimulatorBar';
+import { isElectronApp, registerHotkeys, toggleOverlay } from '../services/overwolfService';
 import { audioService } from '../services/audioService';
+import { deathsBeforeTiltAlert, type OverlayAnchor } from '../services/settingsStore';
+import { simulatorTiltIndex } from '../services/tiltCalculations';
 import { ThemeRoot } from '../components/theme/ThemeRoot';
-import type { OverlayAnchor } from '../services/settingsStore';
+import { csTargetForPosition, readTilt } from './hudMetrics';
+import { useOverlayLive } from './useOverlayLive';
+import { useDraggablePanel } from './useDraggablePanel';
 
 function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
   if (anchor === 'top-center') {
@@ -30,10 +31,10 @@ function anchorStyle(anchor: OverlayAnchor): React.CSSProperties {
 const OverlayApp: React.FC = () => {
   const { overlay, setMode, setVisible, setOpacity } = useOverlay();
   const { settings, update } = useUserSettings();
-  const timeSec = useGameClock();
-  const [showTiltAlert, setShowTiltAlert] = useState(true);
-  const [controlsOpen, setControlsOpen] = useState(false);
-  const [hiddenTiltAt, setHiddenTiltAt] = useState<number | null>(null);
+  const clockSec = useGameClock();
+  const live = useOverlayLive();
+  const { panelRef, style: dragStyle, dragging, handleProps, reset } = useDraggablePanel(live.editMode);
+  const electron = isElectronApp();
 
   useEffect(() => {
     setVisible(true);
@@ -45,104 +46,75 @@ const OverlayApp: React.FC = () => {
     audioService.applyPreferences(settings.audio);
   }, [setOpacity, settings.overlayOpacity, settings.audio]);
 
-  const hudVisible = overlay.visible && overlay.mode !== 'hidden';
+  if (!overlay.visible || overlay.mode === 'hidden') return null;
 
-  const gameTime = timeSec > 0 ? timeSec : overlay.gameTime > 0 ? overlay.gameTime : 872;
-  const csPerMin = overlay.csPerMin > 0 ? overlay.csPerMin : 7.8;
-  const csDelta = overlay.csVsChallenger !== 0 ? overlay.csVsChallenger : -1.2;
-  const tiltActive = overlay.tiltAlert
-    ? overlay.tiltAlert.timestamp !== hiddenTiltAt
-    : showTiltAlert;
-  const tiltLabel = overlay.tiltAlert?.triggerReason ?? '2 muertes consecutivas en 3 minutos';
-  const isExpanded = overlay.mode === 'expanded';
-  const nativeWindow = overwolfService.isOverwolfAvailable();
+  const gameTime = live.stats?.gameTime ?? clockSec;
+  const tilt = readTilt(live.deathTimes, gameTime, deathsBeforeTiltAlert(settings.coachSensitivity));
+  const expanded = overlay.mode === 'expanded';
+  const csTarget = csTargetForPosition(live.stats?.position);
 
   const changeOpacity = (opacity: number) => {
     setOpacity(opacity);
     update({ overlayOpacity: opacity });
   };
 
+  const hide = () => {
+    if (electron) void toggleOverlay();
+    else setVisible(false);
+  };
+
   return (
-    <>
-    {hudVisible && (
     <div
+      ref={panelRef}
+      className={`hud-panel ${live.editMode && electron ? 'is-editing' : ''} ${dragging ? 'is-dragging' : ''}`}
       style={{
-        width: '100%',
-        maxWidth: isExpanded ? '360px' : '340px',
-        maxHeight: 'calc(100vh - 24px)',
-        background: 'var(--overlay-panel)',
-        border: '1px solid var(--border-gold)',
-        borderRadius: '10px',
-        overflowX: 'hidden',
-        overflowY: 'auto',
-        boxShadow: 'var(--shadow-card)',
-        fontFamily: 'var(--font-body)',
-        color: 'var(--slate-100)',
+        maxWidth: expanded ? 360 : 320,
         opacity: overlay.opacity,
-        pointerEvents: 'auto',
-        transition: 'opacity 0.15s ease, max-width 0.2s ease',
-        ...(nativeWindow ? { position: 'absolute', top: 12, left: 12 } : anchorStyle(settings.overlayAnchor)),
+        ...(dragStyle ?? anchorStyle(settings.overlayAnchor)),
       }}
-      onMouseEnter={() => {
-        void setOverlayInteractive(true);
-      }}
-      onMouseLeave={() => {
-        void setOverlayInteractive(false);
-      }}
+      {...handleProps}
     >
-      {isExpanded ? (
-        <>
-          <OverlayHeader gameTimeSec={gameTime} csPerMin={csPerMin} />
-          <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {tiltActive && (
-              <LiveTiltWarning
-                tiltIndex={overlay.tiltAlert?.tiltIndex}
-                triggerReason={tiltLabel}
-                adviceMessage={overlay.tiltAlert?.coachMessage}
-                onDismiss={() => {
-                  if (overlay.tiltAlert) setHiddenTiltAt(overlay.tiltAlert.timestamp);
-                  setShowTiltAlert(false);
-                }}
-              />
-            )}
-            <CsPacingWidget gameTimeSec={gameTime} currentCs={Math.round(csPerMin * (gameTime / 60))} />
-            <ObjectiveTimersWidget currentGameTimeSec={gameTime} />
-          </div>
-          <OverlayControls
-            opacity={overlay.opacity}
-            mode={overlay.mode}
-            onOpacityChange={changeOpacity}
-            onToggleMode={() => setMode('compact')}
-            onHide={() => setVisible(false)}
-          />
-        </>
-      ) : (
-        <>
-          <MiniHudBar
-            gameTimeSec={gameTime}
-            csPerMin={csPerMin}
-            csDelta={csDelta}
-            tiltActive={tiltActive}
-            tiltLabel={tiltLabel}
-            controlsOpen={controlsOpen}
-            onExpand={() => setMode('expanded')}
-            onToggleControls={() => setControlsOpen((open) => !open)}
-          />
-          {controlsOpen && (
-            <OverlayControls
-              opacity={overlay.opacity}
-              mode={overlay.mode}
-              onOpacityChange={changeOpacity}
-              onToggleMode={() => setMode('expanded')}
-              onHide={() => setVisible(false)}
+      <LiveHudPanel
+        stats={live.stats}
+        gameTimeSec={gameTime}
+        tilt={tilt}
+        advice={live.advice}
+        expanded={expanded}
+        editMode={live.editMode && electron}
+        onToggleExpanded={() => setMode(expanded ? 'compact' : 'expanded')}
+      />
+
+      {expanded && live.stats && (
+        <div className="hud-expanded">
+          {tilt.active && (
+            <LiveTiltWarning
+              tiltIndex={simulatorTiltIndex(tilt.recentDeaths)}
+              triggerReason={tilt.label}
+              adviceMessage={live.advice?.text ?? 'Juega seguro unos minutos: farmea con visión y espera a tu equipo.'}
             />
           )}
+          {csTarget != null && (
+            <CsPacingWidget
+              currentCs={live.stats.creepScore}
+              gameTimeSec={live.stats.gameTime}
+              targetCsPerMin={csTarget}
+            />
+          )}
+        </div>
+      )}
+
+      {live.editMode && electron && (
+        <>
+          <p className="hud-edit-hint">Arrastra el panel. Pulsa Ctrl+Shift+L para fijarlo y volver al juego.</p>
+          <OverlayControls
+            opacity={overlay.opacity}
+            onOpacityChange={changeOpacity}
+            onResetPosition={reset}
+            onHide={hide}
+          />
         </>
       )}
     </div>
-    )}
-    <EventSimulatorBar placement="float" />
-    </>
   );
 };
 

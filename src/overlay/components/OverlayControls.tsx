@@ -1,32 +1,26 @@
 import React from 'react';
-import { EyeOff, Keyboard } from 'lucide-react';
-import type { OverlayState } from '../../types/coach';
+import { EyeOff, Keyboard, RotateCcw } from 'lucide-react';
 
 export interface OverlayControlsProps {
   opacity: number;
-  mode: OverlayState['mode'];
   onOpacityChange: (opacity: number) => void;
-  onToggleMode: () => void;
+  onResetPosition: () => void;
   onHide: () => void;
 }
 
-/** Opacity slider and hotkey legend. Does not cover the game HUD by itself. */
+/** Shown only while the HUD is unlocked: opacity, position reset and the hotkey legend. */
 export const OverlayControls: React.FC<OverlayControlsProps> = ({
   opacity,
-  mode,
   onOpacityChange,
-  onToggleMode,
+  onResetPosition,
   onHide,
 }) => {
   const percent = Math.round(opacity * 100);
-  const compact = mode !== 'expanded';
 
   return (
-    <div className="overlay-controls overlay-no-drag">
+    <div className="overlay-controls">
       <div className="overlay-controls-row">
-        <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--slate-300)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          Opacidad {percent}%
-        </span>
+        <span className="overlay-controls-label">Opacidad {percent}%</span>
         <input
           className="overlay-opacity-slider"
           type="range"
@@ -40,18 +34,17 @@ export const OverlayControls: React.FC<OverlayControlsProps> = ({
       </div>
 
       <div className="overlay-controls-row">
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--slate-400)', fontSize: '0.65rem' }}>
+        <span className="overlay-controls-keys">
           <Keyboard size={12} color="var(--gold-500)" />
-          <span className="overlay-hotkey">Ctrl+Tab</span>
-          ocultar
-          <span className="overlay-hotkey">Shift+F1</span>
-          {compact ? 'expandir' : 'compacto'}
+          <span className="overlay-hotkey">Ctrl+Shift+L</span> fijar
+          <span className="overlay-hotkey">Ctrl+Shift+O</span> ocultar
         </span>
         <span style={{ display: 'inline-flex', gap: 6 }}>
-          <button type="button" className="overlay-text-btn" onClick={onToggleMode}>
-            {compact ? 'Expandir' : 'Mini-HUD'}
+          <button type="button" className="overlay-text-btn" onClick={onResetPosition} title="Volver a la esquina de Ajustes">
+            <RotateCcw size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
+            Posición
           </button>
-          <button type="button" className="overlay-text-btn" onClick={onHide} title="Ocultar overlay (Ctrl+Tab)">
+          <button type="button" className="overlay-text-btn" onClick={onHide} title="Ocultar overlay (Ctrl+Shift+O)">
             <EyeOff size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />
             Ocultar
           </button>

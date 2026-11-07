@@ -3,6 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { Badge, Card } from '../ui';
 import { apiRequest } from '../../services/backendAuth';
 import { publishAppError } from '../../services/userErrors';
+import { publishCoachToOverlay } from '../../services/overwolfService';
 import './liveCoach.css';
 
 interface LivePlayer {
@@ -31,6 +32,12 @@ interface LiveCoachState {
   player: LivePlayer | null;
   advice: LiveAdvice | null;
 }
+
+const SOURCE_LABELS: Record<string, string> = {
+  groq: 'Groq',
+  gemini: 'Gemini',
+  heuristic: 'Motor local',
+};
 
 function clock(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));
@@ -62,6 +69,14 @@ export function LiveCoachCard() {
     };
   }, []);
 
+  const adviceText = state?.in_game ? state.advice?.text ?? null : null;
+  const adviceSeverity = state?.advice?.severity ?? 'info';
+
+  // The overlay has no session of its own; this window relays the tip to it.
+  useEffect(() => {
+    publishCoachToOverlay(adviceText ? { text: adviceText, severity: adviceSeverity, at: Date.now() } : null);
+  }, [adviceText, adviceSeverity]);
+
   const inGame = Boolean(state?.in_game);
   const advice = state?.advice;
   const player = state?.player;
@@ -78,8 +93,8 @@ export function LiveCoachCard() {
         <Sparkles size={16} color="var(--hextech-gold)" />
         <strong>{title}</strong>
         {advice && (
-          <Badge variant={advice.source === 'gemini' ? 'gold' : 'neutral'}>
-            {advice.source === 'gemini' ? 'Gemini' : 'Motor local'}
+          <Badge variant={advice.source === 'heuristic' ? 'neutral' : 'gold'}>
+            {SOURCE_LABELS[advice.source] ?? 'Motor local'}
           </Badge>
         )}
       </div>

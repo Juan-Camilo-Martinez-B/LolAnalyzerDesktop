@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertTriangle, HeartPulse, X, Sparkles, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, HeartPulse, X } from 'lucide-react';
 import { audioService } from '../../services/audioService';
 
 export interface LiveTiltWarningProps {
@@ -8,6 +8,8 @@ export interface LiveTiltWarningProps {
   adviceMessage?: string;
   onDismiss?: () => void;
 }
+
+const BREATH_LABELS = { Inhale: 'Inhala', Hold: 'Sostén', Exhale: 'Exhala' } as const;
 
 export const LiveTiltWarning: React.FC<LiveTiltWarningProps> = ({
   tiltIndex = 78,
@@ -72,7 +74,7 @@ export const LiveTiltWarning: React.FC<LiveTiltWarningProps> = ({
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-red)', fontWeight: 800, fontSize: '0.8rem', textTransform: 'uppercase' }}>
-              <AlertTriangle size={16} /> TILT ALERT: Level {tiltIndex}/100
+              <AlertTriangle size={16} /> Alerta de tilt: {tiltIndex}/100
             </div>
             <button
               onClick={onDismiss}
@@ -113,14 +115,14 @@ export const LiveTiltWarning: React.FC<LiveTiltWarningProps> = ({
               transition: 'all 0.15s ease',
             }}
           >
-            <HeartPulse size={14} /> 10s Breathing Reset Exercise
+            <HeartPulse size={14} /> Respirar 10 s
           </button>
         </div>
       ) : (
         /* Breathing Guided Exercise Overlay */
         <div style={{ textAlign: 'center', padding: '10px 0' }}>
           <div style={{ color: 'var(--hextech-gold)', fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', marginBottom: '6px' }}>
-            Mindset Reset • {breathPhase} ({breathTimer}s)
+            Reinicio mental • {BREATH_LABELS[breathPhase]} ({breathTimer} s)
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'center', margin: '12px 0' }}>
