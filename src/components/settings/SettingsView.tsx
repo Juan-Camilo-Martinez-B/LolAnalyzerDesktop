@@ -13,6 +13,9 @@ import { deathsBeforeTiltAlert, type CoachSensitivity, type OverlayAnchor, type 
 import type { ConnectionStatus } from '../../types/game';
 import { PasswordCard } from '../auth/PasswordCard';
 import { RiotLinkCard } from '../riot/RiotLinkCard';
+import { HotkeysCard } from './HotkeysCard';
+import { LoadoutPrefsCard } from './LoadoutPrefsCard';
+import { Switch } from './Switch';
 import '../auth/auth.css';
 import './settings.css';
 
@@ -45,29 +48,6 @@ function statusLabel(status: ConnectionStatus): string {
   if (status === 'error') return 'No disponible';
   if (status === 'reconnecting') return 'Reconectando';
   return 'Sin conexión';
-}
-
-function Switch({
-  checked,
-  label,
-  onClick,
-}: {
-  checked: boolean;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      className="settings-switch"
-      role="switch"
-      aria-checked={checked}
-      aria-label={label}
-      onClick={onClick}
-    >
-      <i />
-    </button>
-  );
 }
 
 export function SettingsView() {
@@ -213,6 +193,10 @@ export function SettingsView() {
             Superior derecha y el centro inferior quedan bloqueados: ahí viven el KDA y la barra de habilidades.
           </p>
         </Card>
+
+        <HotkeysCard />
+
+        <LoadoutPrefsCard />
 
         <Card variant="flat" title="Alertas de audio" subtitle="Cues suaves para tilt, objetivos y clics de la interfaz">
           <div className="settings-row">

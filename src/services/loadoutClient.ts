@@ -68,7 +68,7 @@ export function fetchLoadout(championId: number, position?: string): Promise<Loa
   return apiRequest<Loadout>(`/api/champ-select/loadout?${query.toString()}`);
 }
 
-export function importRunes(championName: string, page: RunePage): Promise<{ spellsApplied: boolean }> {
+export function importRunes(championName: string, page: RunePage): Promise<unknown> {
   return apiRequest('/api/champ-select/loadout/runes', {
     method: 'POST',
     body: JSON.stringify({
@@ -76,8 +76,15 @@ export function importRunes(championName: string, page: RunePage): Promise<{ spe
       primary_style_id: page.primaryStyleId,
       sub_style_id: page.subStyleId,
       perk_ids: page.perks.map((perk) => perk.id),
-      summoner_spell_ids: page.summonerSpellIds.slice(0, 2),
     }),
+  });
+}
+
+/** Sends [D, F]; the order is kept, so Flash lands on the key the player chose. */
+export function importSpells(spellIds: [number, number]): Promise<unknown> {
+  return apiRequest('/api/champ-select/loadout/spells', {
+    method: 'POST',
+    body: JSON.stringify({ spell_ids: spellIds }),
   });
 }
 

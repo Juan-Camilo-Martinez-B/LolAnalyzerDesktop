@@ -1,8 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { Check, Lightbulb, Package, Swords, Zap } from 'lucide-react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Check, Lightbulb, Package, Sparkles, Swords, Zap } from 'lucide-react';
 import { Badge, Card, Spinner } from '../ui';
 import { assetResolver } from '../../services/assetResolver';
 import { audioService } from '../../services/audioService';
+import { useUserSettings } from '../../hooks/useUserSettings';
+import { SUMMONER_SPELLS, orderSpells } from '../../services/spellOrder';
 import {
   RUNE_STYLE_NAMES,
   autoImportKey,
@@ -10,6 +12,7 @@ import {
   fetchLoadout,
   importItems,
   importRunes,
+  importSpells,
   runeIconUrl,
   type Loadout,
   type RunePage,
@@ -40,6 +43,9 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, 
   const [pageIndex, setPageIndex] = useState(0);
   const [runeState, setRuneState] = useState<ImportState>(IDLE);
   const [itemState, setItemState] = useState<ImportState>(IDLE);
+  const [spellState, setSpellState] = useState<ImportState>(IDLE);
+  const { settings } = useUserSettings();
+  const prefs = settings.loadout;
   const [autoNote, setAutoNote] = useState<string | null>(null);
 
   // The parent remounts this card (key) when the champion, lane or enemy picks change.
@@ -60,13 +66,19 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, 
   const name = loadout?.championName || championName;
   const page = loadout?.runePages[pageIndex] ?? null;
   const blocks = loadout?.itemBlocks ?? [];
+  const recommendedSpells = loadout?.summonerSpellIds ?? page?.summonerSpellIds;
+  // Stable [D, F] pair so the auto-import effect only reruns when it really changes.
+  const spells = useMemo(
+    () => orderSpells(recommendedSpells ?? [], prefs.flashKey),
+    [recommendedSpells, prefs.flashKey],
+  );
 
   const applyRunes = useCallback(async (target: RunePage, silent = false) => {
     if (!silent) audioService.playClick();
     setRuneState({ status: 'working' });
     try {
-      const result = await importRunes(name, target);
-      setRuneState({ status: 'done', message: result.spellsApplied ? 'Runas y hechizos aplicados.' : 'Runas aplicadas.' });
+      await importRunes(name, target);
+      setRuneState({ status: 'done', message: 'Runas aplicadas.' });
       if (!silent) audioService.playSuccess();
     } catch (error) {
       setRuneState({ status: 'error', message: messageFromUnknown(error) });
@@ -86,19 +98,40 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, 
     }
   }, [loadout, name]);
 
-  // Locked pick: import the meta build once per champion and opponent.
+  const applySpells = useCallback(async (silent = false) => {
+    if (!spells) return;
+    if (!silent) audioService.playClick();
+    setSpellState({ status: 'working' });
+    try {
+      await importSpells(spells);
+      const [d, f] = spells.map((id) => SUMMONER_SPELLS[id]?.name ?? `Hechizo ${id}`);
+      setSpellState({ status: 'done', message: `${d} en D y ${f} en F.` });
+      if (!silent) audioService.playSuccess();
+    } catch (error) {
+      setSpellState({ status: 'error', message: messageFromUnknown(error) });
+    }
+  }, [spells]);
+
+  // Locked pick: import what Settings has switched on, once per champion and opponent.
   useEffect(() => {
     if (!locked || !loadout?.clientConnected || loadout.source !== 'opgg') return;
     const first = loadout.runePages[0];
     if (!first || first.source !== 'opgg') return;
+    const tasks: { label: string; run: () => Promise<void> }[] = [];
+    if (prefs.autoRunes) tasks.push({ label: 'runas', run: () => applyRunes(first, true) });
+    if (prefs.autoItems && loadout.itemBlocks.length > 0) tasks.push({ label: 'objetos', run: () => applyItems(true) });
+    if (prefs.autoSpells && spells) tasks.push({ label: 'hechizos', run: () => applySpells(true) });
+    if (tasks.length === 0) return;
     if (!claimAutoImport(autoImportKey(loadout))) return;
     const versus = loadout.opponent ? ` contra ${loadout.opponent.name}` : '';
+    const labels = tasks.map((task) => task.label);
+    const list = labels.length > 1 ? `${labels.slice(0, -1).join(', ')} y ${labels[labels.length - 1]}` : labels[0];
     // Started after the effect so the import's state updates stay asynchronous.
-    void Promise.resolve().then(() => Promise.all([applyRunes(first, true), applyItems(true)])).then(() => {
-      setAutoNote(`Importado automáticamente${versus}.`);
+    void Promise.resolve().then(() => Promise.all(tasks.map((task) => task.run()))).then(() => {
+      setAutoNote(`Se importaron ${list} automáticamente${versus}.`);
       audioService.playSuccess();
     });
-  }, [locked, loadout, applyRunes, applyItems]);
+  }, [locked, loadout, prefs.autoRunes, prefs.autoItems, prefs.autoSpells, spells, applyRunes, applyItems, applySpells]);
 
   const sourceBadge = loadout?.source === 'opgg' ? 'OP.GG' : loadout?.source === 'client' ? 'Cliente de League' : 'Sin datos';
 
@@ -176,6 +209,42 @@ export const AutoRuneImporter: React.FC<AutoRuneImporterProps> = ({ championId, 
             )}
             {runeState.message && (
               <p className={runeState.status === 'error' ? 'loadout__error' : 'loadout__ok'}>{runeState.message}</p>
+            )}
+          </section>
+
+          <section className="cs-panel loadout__section">
+            <h3 className="loadout__heading"><Sparkles size={14} /> Hechizos</h3>
+            {spells ? (
+              <>
+                <ul className="loadout__spells">
+                  {spells.map((spellId, index) => {
+                    const spell = SUMMONER_SPELLS[spellId];
+                    return (
+                      <li key={spellId}>
+                        <span className="loadout__spell-key">{index === 0 ? 'D' : 'F'}</span>
+                        {spell && (
+                          <img src={assetResolver.getSummonerSpellIcon(spell.key)} alt="" width={28} height={28} loading="lazy" />
+                        )}
+                        <span>{spell?.name ?? `Hechizo ${spellId}`}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="loadout__styles">Destello va en {prefs.flashKey} (cámbialo en Ajustes).</p>
+                <button
+                  type="button"
+                  className="loadout__action"
+                  onClick={() => void applySpells()}
+                  disabled={spellState.status === 'working'}
+                >
+                  {spellState.status === 'working' ? 'Importando…' : spellState.status === 'done' ? <><Check size={14} /> Importados</> : 'Importar hechizos'}
+                </button>
+              </>
+            ) : (
+              <p className="loadout__empty">No hay hechizos recomendados para esta build.</p>
+            )}
+            {spellState.message && (
+              <p className={spellState.status === 'error' ? 'loadout__error' : 'loadout__ok'}>{spellState.message}</p>
             )}
           </section>
 

@@ -20,12 +20,24 @@ export interface AudioPreferences {
   coachTips: boolean;
 }
 
+export type FlashKey = 'D' | 'F';
+
+/** What champion select imports by itself once the pick is locked. */
+export interface LoadoutPreferences {
+  autoRunes: boolean;
+  autoItems: boolean;
+  autoSpells: boolean;
+  /** Key that holds Flash when spells are imported. */
+  flashKey: FlashKey;
+}
+
 export interface UserSettings {
   coachSensitivity: CoachSensitivity;
   overlayAnchor: OverlayAnchor;
   overlayOpacity: number;
   theme: ThemePreference;
   audio: AudioPreferences;
+  loadout: LoadoutPreferences;
 }
 
 export const SETTINGS_STORAGE_KEY = 'lolanalyzer.settings.v1';
@@ -42,6 +54,12 @@ export const DEFAULT_SETTINGS: UserSettings = {
     objectiveAlerts: true,
     uiClicks: true,
     coachTips: true,
+  },
+  loadout: {
+    autoRunes: true,
+    autoItems: true,
+    autoSpells: true,
+    flashKey: 'D',
   },
 };
 
@@ -87,6 +105,12 @@ export function loadSettings(): UserSettings {
         uiClicks: parsed.audio?.uiClicks ?? DEFAULT_SETTINGS.audio.uiClicks,
         coachTips: parsed.audio?.coachTips ?? DEFAULT_SETTINGS.audio.coachTips,
       },
+      loadout: {
+        autoRunes: parsed.loadout?.autoRunes ?? DEFAULT_SETTINGS.loadout.autoRunes,
+        autoItems: parsed.loadout?.autoItems ?? DEFAULT_SETTINGS.loadout.autoItems,
+        autoSpells: parsed.loadout?.autoSpells ?? DEFAULT_SETTINGS.loadout.autoSpells,
+        flashKey: parsed.loadout?.flashKey === 'F' ? 'F' : 'D',
+      },
     };
   } catch {
     return DEFAULT_SETTINGS;
@@ -105,6 +129,7 @@ export function patchSettings(patch: {
   overlayOpacity?: number;
   theme?: ThemePreference;
   audio?: Partial<AudioPreferences>;
+  loadout?: Partial<LoadoutPreferences>;
 }): UserSettings {
   const current = loadSettings();
   const next: UserSettings = {
@@ -112,6 +137,7 @@ export function patchSettings(patch: {
     ...patch,
     overlayOpacity: clampOpacity(patch.overlayOpacity ?? current.overlayOpacity),
     audio: { ...current.audio, ...patch.audio },
+    loadout: { ...current.loadout, ...patch.loadout },
   };
   saveSettings(next);
   return next;

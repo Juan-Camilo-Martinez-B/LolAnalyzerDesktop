@@ -55,7 +55,7 @@ Eso compila el proceso principal, abre Vite en `http://127.0.0.1:5173` y lanza E
 
 El overlay es una `BrowserWindow` transparente que copia el rectángulo de `League of Legends.exe` (título habitual «League of Legends (TM) Client») y se dibuja encima. Tiene que estar en **ventana sin bordes** o en **ventana**. En `Config/game.cfg`, `[General] WindowMode` vale `2` o `1` en esos modos. Si vale `0` (pantalla completa exclusiva) el overlay no se muestra. El aviso queda en `localStorage` con la clave `lolanalyzer.overlayNotice.v1` para que la interfaz de escritorio pueda leerlo. Si el archivo no está, el overlay se muestra igual cuando la ventana del juego existe: igual conviene usar ventana sin bordes, porque en pantalla completa exclusiva Windows no deja dibujar encima.
 
-Atajos globales, liberados al salir:
+Atajos globales, liberados al salir. Se cambian en **Ajustes → Atajos del overlay**: pulsas el atajo y luego la combinación nueva. Deben incluir Ctrl o Alt, no pueden repetirse y se rechazan las combinaciones que League ya usa (por ejemplo `Ctrl+Q`, que sube la Q de nivel). Si otro programa ocupa la combinación, se mantiene la anterior. Se guardan en `hotkeys.json` dentro de los datos de la app y se registran al abrirla. Los predeterminados son:
 
 - `Ctrl+Shift+O` muestra u oculta el overlay.
 - `Ctrl+Shift+M` alterna panel compacto y expandido.
@@ -80,7 +80,7 @@ Detalle de flujo de datos, carga en Overwolf y zonas HUD: [docs/ui_ux_architectu
 
 Cuando eliges campeón, la vista de selección muestra **Runas y objetos** con la build meta de OP.GG. Si el rival de tu línea ya eligió, la build es para ese matchup ("Meta vs <campeón>") e incluye un consejo de línea. Si todavía no hay rival, o es una partida de práctica, se usa la build general del campeón para su línea, y la tarjeta se actualiza sola cuando aparece el rival. Las páginas recomendadas por el cliente de League quedan como alternativa, y son el respaldo si OP.GG no responde.
 
-Al fijar el campeón, runas, hechizos y objetos se importan automáticamente una vez por campeón y rival. También están los botones **Importar runas** e **Importar objetos**. El backend escribe en el cliente la página y el conjunto "LolAnalyzer - <campeón>" (Inicio, Build principal y Situacionales). Nunca borra tus páginas propias; si no queda espacio, avisa. La tarjeta solo marca "Importadas" cuando el cliente confirmó el cambio. Este escritorio no ve las credenciales del cliente.
+Al fijar el campeón se importa automáticamente, una vez por campeón y rival, lo que esté activo en **Ajustes → Importación en la selección**: runas, objetos y hechizos de invocador, cada uno con su interruptor. Junto a los hechizos eliges en qué tecla va Destello (D o F, D por defecto); los hechizos se colocan en ese orden y, si la build no lleva Destello, se respeta el orden recomendado. Los botones **Importar runas**, **Importar hechizos** e **Importar objetos** siguen disponibles aunque el automático esté apagado. El backend escribe en el cliente la página y el conjunto "LolAnalyzer - <campeón>" (Inicio, Build principal y Situacionales). Nunca borra tus páginas propias; si no queda espacio, avisa. La tarjeta solo marca "Importadas" cuando el cliente confirmó el cambio. Este escritorio no ve las credenciales del cliente.
 
 ## Preload de Electron
 

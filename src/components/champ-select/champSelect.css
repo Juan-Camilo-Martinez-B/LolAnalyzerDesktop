@@ -336,3 +336,39 @@
   margin-top: 2px;
   color: var(--hextech-gold);
 }
+
+.loadout__spells {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loadout__spells li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+}
+
+.loadout__spells img {
+  border-radius: 5px;
+  border: 1px solid var(--border-dark);
+}
+
+.loadout__spell-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid var(--hextech-gold);
+  color: var(--hextech-gold);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
