@@ -292,3 +292,47 @@
 .loadout__error {
   color: var(--accent-red);
 }
+
+.loadout__versus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-red);
+  color: var(--accent-red);
+  font-size: 0.72rem;
+  text-transform: none;
+}
+
+.loadout__block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loadout__block-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.loadout__tip {
+  display: flex;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border-left: 3px solid var(--hextech-gold);
+  background: var(--bg-glass-heavy);
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.loadout__tip svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--hextech-gold);
+}

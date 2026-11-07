@@ -78,4 +78,10 @@ Detalle de flujo de datos, carga en Overwolf y zonas HUD: [docs/ui_ux_architectu
 
 ## Runas y objetos en la selección
 
-Cuando eliges campeón, la vista de selección muestra **Runas y objetos**. Las runas son las páginas que recomienda el propio cliente de League para ese campeón y línea. Los objetos son los que más usaste con ese campeón en tus partidas guardadas. El backend escribe en el cliente: crea o reemplaza la página "LolAnalyzer - <campeón>" (con los hechizos de invocador) y un conjunto de objetos con el mismo nombre en la tienda. Nunca borra tus páginas propias; si no queda espacio, avisa. La tarjeta solo marca "Importadas" cuando el cliente confirmó el cambio. Este escritorio no ve las credenciales del cliente.
+Cuando eliges campeón, la vista de selección muestra **Runas y objetos** con la build meta de OP.GG. Si el rival de tu línea ya eligió, la build es para ese matchup ("Meta vs <campeón>") e incluye un consejo de línea. Si todavía no hay rival, o es una partida de práctica, se usa la build general del campeón para su línea, y la tarjeta se actualiza sola cuando aparece el rival. Las páginas recomendadas por el cliente de League quedan como alternativa, y son el respaldo si OP.GG no responde.
+
+Al fijar el campeón, runas, hechizos y objetos se importan automáticamente una vez por campeón y rival. También están los botones **Importar runas** e **Importar objetos**. El backend escribe en el cliente la página y el conjunto "LolAnalyzer - <campeón>" (Inicio, Build principal y Situacionales). Nunca borra tus páginas propias; si no queda espacio, avisa. La tarjeta solo marca "Importadas" cuando el cliente confirmó el cambio. Este escritorio no ve las credenciales del cliente.
+
+## Preload de Electron
+
+Las ventanas usan `sandbox: true`, y un preload con sandbox solo puede ser CommonJS. Por eso el preload vive en `electron/preload.cts` y se compila a `dist-electron/preload.cjs`. Si se compilara como módulo ES, `window.lolAnalyzer` no existiría y el overlay no recibiría datos.

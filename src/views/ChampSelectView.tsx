@@ -39,6 +39,15 @@ export function ChampSelectView() {
   const secondsLeft = Math.max(0, Math.ceil((session?.timer.adjustedTimeLeftInPhase ?? 0) / 1000));
   const phaseLabel = session?.timer.phase?.replace(/_/g, ' ') || 'Selección';
   const me = session?.myTeam.find((player) => player.isLocalPlayer && player.championId > 0 && player.championName);
+  const locked = Boolean(session && me && session.actions.some((group) => group.some((action) => (
+    action.type === 'pick' && action.actorCellId === session.localPlayerCellId && action.completed
+  ))));
+  // Enemy picks drive the lane matchup; a new pick refetches the build.
+  const enemyPicks = (session?.theirTeam ?? [])
+    .map((player) => player.championId)
+    .filter((championId) => championId > 0)
+    .sort((a, b) => a - b)
+    .join(',');
 
   return (
     <div className="page-view">
@@ -61,10 +70,11 @@ export function ChampSelectView() {
           {me?.championName && (
             <div style={{ marginBottom: 16 }}>
               <AutoRuneImporter
-                key={`${me.championId}-${me.assignedPosition}`}
+                key={`${me.championId}-${me.assignedPosition}-${enemyPicks}`}
                 championId={me.championId}
                 championName={me.championName}
                 position={me.assignedPosition}
+                locked={locked}
               />
             </div>
           )}
