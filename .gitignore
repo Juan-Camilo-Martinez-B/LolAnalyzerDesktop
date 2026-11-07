@@ -26,3 +26,6 @@ release
 
 # Electron main process build
 dist-electron
+
+# Website build
+dist-web
