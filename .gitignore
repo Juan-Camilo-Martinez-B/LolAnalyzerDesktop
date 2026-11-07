@@ -33,3 +33,6 @@ dist-web
 # Vercel project link
 .vercel
 .env*.local
+
+.vercel
+.env*

@@ -1,0 +1,10 @@
+# Only what the landing page build needs goes to Vercel.
+release/
+dist/
+dist-electron/
+dist-web/
+electron/
+scripts/
+docs/
+*.opk
+.env*
