@@ -7,7 +7,7 @@
   "type": "module",
   "main": "dist-electron/main.js",
   "config": {
-    "cloudApiUrl": ""
+    "cloudApiUrl": "https://lolanalyzer-api.vercel.app"
   },
   "scripts": {
     "dev": "vite",

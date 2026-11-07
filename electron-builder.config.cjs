@@ -9,6 +9,9 @@ const agentDir = process.env.AGENT_DIR
 module.exports = {
   appId: 'com.lolanalyzer.desktop',
   productName: 'LolAnalyzer',
+  // A packaged name of its own: its single-instance lock and user data never clash
+  // with a development copy (`lol-analyzer-desktop`) open at the same time.
+  extraMetadata: { name: 'lolanalyzer', productName: 'LolAnalyzer' },
   directories: { output: 'release' },
   files: [
     'dist/**/*',

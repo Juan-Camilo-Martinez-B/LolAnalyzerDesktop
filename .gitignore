@@ -29,3 +29,7 @@ dist-electron
 
 # Website build
 dist-web
+
+# Vercel project link
+.vercel
+.env*.local
