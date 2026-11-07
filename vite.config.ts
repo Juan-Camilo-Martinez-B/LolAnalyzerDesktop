@@ -1,10 +1,20 @@
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 
+/** Cloud API of the release build, from package.json "config.cloudApiUrl" (one source for Vite and Electron). */
+function releaseCloudUrl(): string {
+  const pkg = JSON.parse(readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf8')) as { config?: { cloudApiUrl?: string } };
+  return pkg.config?.cloudApiUrl ?? '';
+}
+
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
+  define: mode === 'desktop' && releaseCloudUrl()
+    ? { 'import.meta.env.VITE_API_BASE_URL': JSON.stringify(releaseCloudUrl()) }
+    : {},
   resolve: {
     alias: {
       '@': resolve(import.meta.dirname, './src'),
@@ -31,4 +41,4 @@ export default defineConfig({
     environment: 'node',
     include: ['src/__tests__/**/*.test.ts', 'electron/**/*.test.ts'],
   },
-});
+}));

@@ -2,8 +2,13 @@
   "name": "lol-analyzer-desktop",
   "private": true,
   "version": "1.0.0",
+  "description": "Coach en tiempo real, overlay e importación de runas para League of Legends.",
+  "author": "Juan Camilo Martinez",
   "type": "module",
   "main": "dist-electron/main.js",
+  "config": {
+    "cloudApiUrl": ""
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -12,7 +17,10 @@
     "preview": "vite preview",
     "package:opk": "npm run build && node scripts/package-opk.mjs",
     "build:electron": "tsc -p tsconfig.electron.json",
-    "dev:electron": "npm run build:electron && concurrently -k -n vite,electron \"vite --host 127.0.0.1 --port 5173 --strictPort\" \"wait-on http://127.0.0.1:5173 && cross-env ELECTRON_RENDERER_URL=http://127.0.0.1:5173 electron .\""
+    "dev:electron": "npm run build:electron && concurrently -k -n vite,electron \"vite --host 127.0.0.1 --port 5173 --strictPort\" \"wait-on http://127.0.0.1:5173 && cross-env ELECTRON_RENDERER_URL=http://127.0.0.1:5173 electron .\"",
+    "build:desktop": "tsc -b && vite build --mode desktop && npm run build:electron",
+    "dist:win": "npm run build:desktop && electron-builder --config electron-builder.config.cjs --win",
+    "build:web": "vite build --config vite.web.config.ts"
   },
   "dependencies": {
     "koffi": "^3.3.7",
@@ -29,6 +37,7 @@
     "concurrently": "^10.0.7",
     "cross-env": "^10.1.0",
     "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
     "oxlint": "^1.79.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2",
