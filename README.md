@@ -36,7 +36,7 @@ La apariencia predeterminada es clara, con superficies opacas. En Ajustes se eli
 
 ## Probar sin el cliente de League
 
-La barra **SIM**, al pie del escritorio y del overlay, solo aparece fuera de Overwolf. Desde ahí se dispara lobby, selección, partida, tiempo, CS, kill, muerte, tilt, consejo, victoria, derrota, una simulación de 40 segundos y reset.
+La barra **SIM**, al pie de la ventana de escritorio, solo aparece fuera de Overwolf. El overlay ya no la muestra para no tapar el juego. Desde ahí se dispara lobby, selección, partida, tiempo, CS, kill, muerte, tilt, consejo, victoria, derrota, una simulación de 40 segundos y reset.
 
 La muerte usa la sensibilidad del coach guardada en Ajustes: 1, 2 o 3 muertes antes de la alerta.
 
@@ -58,9 +58,12 @@ El overlay es una `BrowserWindow` transparente que copia el rectángulo de `Leag
 Atajos globales, liberados al salir:
 
 - `Ctrl+Shift+O` muestra u oculta el overlay.
-- `Ctrl+Shift+M` alterna Mini-HUD y panel expandido.
+- `Ctrl+Shift+M` alterna panel compacto y expandido.
+- `Ctrl+Shift+L` desbloquea el HUD para moverlo con el mouse. Al pulsarlo otra vez se fija y el foco vuelve a League.
 
-El panel deja pasar el mouse al juego salvo cuando el cursor está sobre el HUD. La posición del panel dentro de la ventana del juego sigue el ancla de Ajustes. Si el puerto `2999` o su certificado no responden, la app arranca igual y la barra SIM del navegador (`npm run dev`) sigue sirviendo para probar sin League. Electron no lee la memoria del juego ni inyecta nada en el proceso.
+Fijo, el overlay deja pasar el mouse y el teclado al juego: nunca toma el foco, así que la tienda, las habilidades y el chat responden siempre. Si Windows llegara a activarlo, el foco se devuelve a la ventana del juego. En modo mover se arrastra el panel, se ajusta la opacidad y se puede volver a la esquina de Ajustes. La posición se guarda en `localStorage` (`lolanalyzer.overlayPosition.v1`) como fracción de la ventana, así sobrevive a un cambio de resolución.
+
+El panel muestra el reloj, campeón, nivel y rol, KDA, CS con CS/min frente a una meta por rol (Top 7.5, Jungla 6, Mid 8, ADC 8.5; Soporte sin meta), el oro disponible, el estado de tilt (muertes en los últimos 3 minutos según la sensibilidad de Ajustes) y el último consejo del coach. Los datos salen del Live Client (`127.0.0.1:2999`) a través del proceso principal. El consejo lo reenvía la ventana de escritorio, que es la que tiene la sesión. Sin partida, el panel dice que espera datos y no inventa números. Si el puerto `2999` o su certificado no responden, la app arranca igual y la barra SIM del navegador (`npm run dev`) sigue sirviendo para probar sin League. Electron no lee la memoria del juego ni inyecta nada en el proceso.
 
 ## Overwolf
 
