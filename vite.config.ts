@@ -7,15 +7,15 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(import.meta.dirname, './src'),
     },
   },
   build: {
     rollupOptions: {
       input: {
-        desktop: resolve(__dirname, 'index.html'),
-        overlay: resolve(__dirname, 'overlay.html'),
-        background: resolve(__dirname, 'background.html'),
+        desktop: resolve(import.meta.dirname, 'index.html'),
+        overlay: resolve(import.meta.dirname, 'overlay.html'),
+        background: resolve(import.meta.dirname, 'background.html'),
       },
     },
     outDir: 'dist',
