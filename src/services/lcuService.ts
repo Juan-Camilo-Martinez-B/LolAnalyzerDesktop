@@ -105,7 +105,7 @@ export function startLcuPolling(intervalMs = 2500): void {
 
       if (phase !== lastPhase) {
         lastPhase = phase;
-        const mapped = _mapLcuPhase(phase);
+        const mapped = mapGameflowPhase(phase);
         eventBus.emit('game:phase_changed', { phase: mapped });
 
         if (phase === 'ChampSelect') {
@@ -186,7 +186,8 @@ export function injectMockLcuProfile(profile: SummonerProfile): void {
 /* ─────────────────────────────────────────────────────────
    Phase mapper
 ───────────────────────────────────────────────────────── */
-function _mapLcuPhase(phase: LcuGameflowPhase) {
+/** Client gameflow name ('ChampSelect', 'InProgress'...) to the app phase. Unknown names are NONE. */
+export function mapGameflowPhase(phase: string): import('../types/game').GamePhase {
   const map: Record<LcuGameflowPhase, import('../types/game').GamePhase> = {
     None:                     'NONE',
     Lobby:                    'LOBBY',
@@ -200,7 +201,7 @@ function _mapLcuPhase(phase: LcuGameflowPhase) {
     PreEndOfGame:             'END_OF_GAME',
     EndOfGame:                'END_OF_GAME',
   };
-  return map[phase] ?? 'NONE';
+  return map[phase as LcuGameflowPhase] ?? 'NONE';
 }
 
 export const lcuService = {

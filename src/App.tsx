@@ -14,6 +14,8 @@ import { RiotDataBridge } from './components/riot/RiotDataBridge';
 import { ThemeRoot } from './components/theme/ThemeRoot';
 import { LiveCoachCard } from './components/coach/LiveCoachCard';
 import { PostGameAnalysisCard } from './components/coach/PostGameAnalysisCard';
+import { useClientPhase } from './hooks/useClientPhase';
+import { useAutoOpenChampSelect } from './hooks/useAutoOpenChampSelect';
 import { AppErrorBoundary } from './components/common/AppErrorBoundary';
 import { AppErrorNotice } from './components/common/AppErrorNotice';
 import './index.css';
@@ -41,6 +43,8 @@ function PageSkeleton() {
 function AppShell() {
   const { state } = useApp();
   const { activeTab } = state;
+  useClientPhase();
+  useAutoOpenChampSelect();
 
   return (
     <div className="app-shell">

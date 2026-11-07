@@ -24,6 +24,8 @@ export type FlashKey = 'D' | 'F';
 
 /** What champion select imports by itself once the pick is locked. */
 export interface LoadoutPreferences {
+  /** Jump to the champion select tab when the client enters champion select. */
+  openChampSelect: boolean;
   autoRunes: boolean;
   autoItems: boolean;
   autoSpells: boolean;
@@ -56,6 +58,7 @@ export const DEFAULT_SETTINGS: UserSettings = {
     coachTips: true,
   },
   loadout: {
+    openChampSelect: true,
     autoRunes: true,
     autoItems: true,
     autoSpells: true,
@@ -106,6 +109,7 @@ export function loadSettings(): UserSettings {
         coachTips: parsed.audio?.coachTips ?? DEFAULT_SETTINGS.audio.coachTips,
       },
       loadout: {
+        openChampSelect: parsed.loadout?.openChampSelect ?? DEFAULT_SETTINGS.loadout.openChampSelect,
         autoRunes: parsed.loadout?.autoRunes ?? DEFAULT_SETTINGS.loadout.autoRunes,
         autoItems: parsed.loadout?.autoItems ?? DEFAULT_SETTINGS.loadout.autoItems,
         autoSpells: parsed.loadout?.autoSpells ?? DEFAULT_SETTINGS.loadout.autoSpells,

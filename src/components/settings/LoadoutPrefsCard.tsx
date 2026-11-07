@@ -3,7 +3,8 @@ import { useUserSettings } from '../../hooks/useUserSettings';
 import type { FlashKey, LoadoutPreferences } from '../../services/settingsStore';
 import { Switch } from './Switch';
 
-const ROWS: { id: 'autoRunes' | 'autoItems' | 'autoSpells'; label: string; hint: string }[] = [
+const ROWS: { id: 'openChampSelect' | 'autoRunes' | 'autoItems' | 'autoSpells'; label: string; hint: string }[] = [
+  { id: 'openChampSelect', label: 'Abrir la selección', hint: 'Cambia a la pestaña Champ Select cuando empieza la selección de campeón.' },
   { id: 'autoRunes', label: 'Runas', hint: 'Crea y activa la página "LolAnalyzer - <campeón>".' },
   { id: 'autoItems', label: 'Objetos', hint: 'Escribe el conjunto de la tienda para el campeón.' },
   { id: 'autoSpells', label: 'Hechizos de invocador', hint: 'Coloca los hechizos de la build meta.' },
@@ -19,8 +20,8 @@ export function LoadoutPrefsCard() {
   return (
     <Card
       variant="flat"
-      title="Importación en la selección"
-      subtitle="Al fijar campeón se importa lo que esté activo. Los botones manuales siguen disponibles."
+      title="Selección de campeón"
+      subtitle="Qué hace la app sola durante la selección. Al fijar campeón se importa lo que esté activo; los botones manuales siguen disponibles."
     >
       {ROWS.map((row) => (
         <div key={row.id} className="settings-row">
@@ -48,7 +49,7 @@ export function LoadoutPrefsCard() {
             )}
             <Switch
               checked={loadout[row.id]}
-              label={`Importar ${row.label.toLowerCase()} automáticamente`}
+              label={row.id === 'openChampSelect' ? row.label : `Importar ${row.label.toLowerCase()} automáticamente`}
               onClick={() => set({ [row.id]: !loadout[row.id] })}
             />
           </div>
