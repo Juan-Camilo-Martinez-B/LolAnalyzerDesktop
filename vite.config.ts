@@ -22,11 +22,13 @@ export default defineConfig({
     emptyOutDir: true,
   },
   server: {
+    host: '127.0.0.1',
     port: 5173,
+    strictPort: true,
     cors: true,
   },
   test: {
     environment: 'node',
-    include: ['src/__tests__/**/*.test.ts'],
+    include: ['src/__tests__/**/*.test.ts', 'electron/**/*.test.ts'],
   },
 });

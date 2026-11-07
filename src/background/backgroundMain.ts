@@ -4,7 +4,7 @@
 // ============================================================
 
 import { eventBus } from '../services/eventBus';
-import { overwolfService } from '../services/overwolfService';
+import { closeWindow, openWindow, overwolfService, WINDOW } from '../services/overwolfService';
 import { startLcuPolling } from '../services/lcuService';
 import { deathsBeforeTiltAlert, loadSettings } from '../services/settingsStore';
 import { backgroundTiltIndex, tiltLevelForSensitivity } from '../services/tiltCalculations';
@@ -19,11 +19,12 @@ class BackgroundCoordinator {
   public async initialize() {
     console.log('[BackgroundCoordinator] Starting services...');
 
-    // 1. Subscribe to Overwolf Game Events if running inside Overwolf
+    // Game events come from Overwolf GEP or, in Electron, from the live-client bridge.
+    overwolfService.registerGameEvents();
     if (overwolfService.isOverwolfAvailable()) {
-      overwolfService.registerGameEvents();
+      console.log('[BackgroundCoordinator] Overwolf game events registered.');
     } else {
-      console.log('[BackgroundCoordinator] Running in browser mode - LCU and Overwolf events simulated.');
+      console.log('[BackgroundCoordinator] Outside Overwolf. Electron republishes live client facts; the browser keeps the simulator.');
     }
 
     // 2. Start LCU Polling loop for local Riot Client REST API
@@ -61,15 +62,12 @@ class BackgroundCoordinator {
     if (newPhase === 'IN_GAME') this.deathsThisGame = 0;
     this.currentPhase = newPhase;
 
-    if (!overwolfService.isOverwolfAvailable()) return;
-
     if (newPhase === 'IN_GAME' || newPhase === 'CHAMP_SELECT') {
-      console.log('[BackgroundCoordinator] Auto-opening Overlay window...');
-      await overwolfService.obtainDeclaredWindow('overlay');
-      await overwolfService.restoreWindow('overlay');
+      console.log('[BackgroundCoordinator] Showing overlay...');
+      await openWindow(WINDOW.OVERLAY);
     } else if (newPhase === 'END_OF_GAME' || newPhase === 'NONE') {
-      console.log('[BackgroundCoordinator] Restoring Desktop window...');
-      await overwolfService.restoreWindow('desktop');
+      console.log('[BackgroundCoordinator] Hiding overlay...');
+      await closeWindow(WINDOW.OVERLAY);
     }
   }
 }

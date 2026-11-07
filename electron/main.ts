@@ -1,0 +1,141 @@
+import { app, BrowserWindow, ipcMain } from 'electron';
+import { GameDataAgent } from './agent/gameDataAgent.js';
+import { IpcChannel, canonicalWindowName, eventChannels } from './ipcChannels.js';
+import { registerGlobalHotkeys, unregisterGlobalHotkeys } from './hotkeys.js';
+import { OverlayController, type GamePhaseName } from './overlayController.js';
+import { createAppWindows, type AppWindows } from './windows.js';
+
+const PHASES = new Set<GamePhaseName>([
+  'LOBBY',
+  'MATCHMAKING',
+  'CHAMP_SELECT',
+  'IN_GAME',
+  'END_OF_GAME',
+  'NONE',
+]);
+
+let windows: AppWindows | null = null;
+let overlayController: OverlayController | null = null;
+let agent: GameDataAgent | null = null;
+let quitting = false;
+
+function broadcast(channel: string, payload: unknown): void {
+  if (!eventChannels.has(channel)) return;
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send(channel, payload);
+  }
+}
+
+function readPhase(payload: unknown): GamePhaseName | null {
+  if (typeof payload !== 'object' || payload === null || !('phase' in payload)) return null;
+  const phase = (payload as { phase?: unknown }).phase;
+  return typeof phase === 'string' && PHASES.has(phase as GamePhaseName) ? phase as GamePhaseName : null;
+}
+
+function publish(channel: string, payload: unknown): void {
+  if (channel === IpcChannel.gamePhase) {
+    const phase = readPhase(payload);
+    if (phase) overlayController?.setPhase(phase);
+  }
+  broadcast(channel, payload);
+}
+
+function registerIpc(): void {
+  ipcMain.handle(IpcChannel.windowOpen, (_event, name: unknown) => {
+    const canonical = canonicalWindowName(name);
+    if (!canonical || !windows) return false;
+    if (canonical === 'desktop') {
+      if (windows.desktop.isMinimized()) windows.desktop.restore();
+      windows.desktop.show();
+      return true;
+    }
+    if (canonical === 'background') return true;
+    overlayController?.requestShow();
+    return true;
+  });
+
+  ipcMain.handle(IpcChannel.windowClose, (_event, name: unknown) => {
+    const canonical = canonicalWindowName(name);
+    if (!canonical || !windows) return false;
+    if (canonical === 'in_game_overlay') {
+      overlayController?.requestHide();
+      return true;
+    }
+    if (canonical === 'desktop') {
+      windows.desktop.close();
+      return true;
+    }
+    return true;
+  });
+
+  ipcMain.handle(IpcChannel.windowMinimize, (_event, name: unknown) => {
+    const canonical = canonicalWindowName(name);
+    if (canonical !== 'desktop' || !windows) return false;
+    windows.desktop.minimize();
+    return true;
+  });
+
+  ipcMain.handle(IpcChannel.overlaySetInteractive, (_event, interactive: unknown) => {
+    if (typeof interactive !== 'boolean') return false;
+    overlayController?.setInteractive(interactive);
+    return true;
+  });
+
+  ipcMain.handle(IpcChannel.overlayToggle, () => {
+    return overlayController?.toggleUserVisibility() ?? false;
+  });
+
+  ipcMain.handle(IpcChannel.overlayGetStatus, () => {
+    return overlayController?.status() ?? null;
+  });
+}
+
+if (!app.requestSingleInstanceLock()) {
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    const desktop = windows?.desktop;
+    if (!desktop || desktop.isDestroyed()) return;
+    if (desktop.isMinimized()) desktop.restore();
+    desktop.show();
+  });
+
+  app.whenReady().then(() => {
+    windows = createAppWindows();
+    windows.background.webContents.setBackgroundThrottling(false);
+    windows.overlay.webContents.setBackgroundThrottling(false);
+    overlayController = new OverlayController(windows.overlay, publish);
+    overlayController.start();
+    agent = new GameDataAgent(publish);
+    agent.start();
+    registerIpc();
+    registerGlobalHotkeys({
+      toggleOverlay: () => {
+        overlayController?.toggleUserVisibility();
+        broadcast(IpcChannel.hotkey, { action: 'toggle' });
+      },
+      cycleMode: () => {
+        broadcast(IpcChannel.hotkey, { action: 'cycle-mode' });
+      },
+    });
+
+    windows.overlay.on('close', (event) => {
+      if (quitting) return;
+      event.preventDefault();
+      overlayController?.requestHide();
+    });
+    windows.desktop.on('closed', () => {
+      if (!quitting) app.quit();
+    });
+  }).catch((error: unknown) => {
+    console.error('[electron] no se pudo abrir LolAnalyzer', error);
+    app.quit();
+  });
+
+  app.on('before-quit', () => {
+    quitting = true;
+    unregisterGlobalHotkeys();
+    agent?.stop();
+    overlayController?.stop();
+  });
+}

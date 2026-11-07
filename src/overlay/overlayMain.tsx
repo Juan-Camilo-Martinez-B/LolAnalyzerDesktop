@@ -11,7 +11,7 @@ import { MiniHudBar } from './components/MiniHudBar';
 import { OverlayControls } from './components/OverlayControls';
 import { useOverlay, useGameClock } from '../hooks/useGameState';
 import { useUserSettings } from '../hooks/useUserSettings';
-import { registerHotkeys, overwolfService } from '../services/overwolfService';
+import { registerHotkeys, overwolfService, setOverlayInteractive } from '../services/overwolfService';
 import { EventSimulatorBar } from '../components/debug/EventSimulatorBar';
 import { audioService } from '../services/audioService';
 import { ThemeRoot } from '../components/theme/ThemeRoot';
@@ -82,6 +82,12 @@ const OverlayApp: React.FC = () => {
         pointerEvents: 'auto',
         transition: 'opacity 0.15s ease, max-width 0.2s ease',
         ...(nativeWindow ? { position: 'absolute', top: 12, left: 12 } : anchorStyle(settings.overlayAnchor)),
+      }}
+      onMouseEnter={() => {
+        void setOverlayInteractive(true);
+      }}
+      onMouseLeave={() => {
+        void setOverlayInteractive(false);
       }}
     >
       {isExpanded ? (

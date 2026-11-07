@@ -1,3 +1,13 @@
+/* The Electron overlay window is click-through. Only the HUD panel receives the pointer. */
+
+html,
+body,
+#overlay-root {
+  background: transparent !important;
+  background-image: none !important;
+  pointer-events: none;
+}
+
 /* Compact Mini-HUD — one line, HUD-safe, top-left friendly */
 
 .mini-hud {

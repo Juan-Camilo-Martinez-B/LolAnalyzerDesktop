@@ -40,6 +40,28 @@ La barra **SIM**, al pie del escritorio y del overlay, solo aparece fuera de Ove
 
 La muerte usa la sensibilidad del coach guardada en Ajustes: 1, 2 o 3 muertes antes de la alerta.
 
+## Electron (ventana sin bordes)
+
+El camino de ejecución del overlay es Electron. Overwolf queda en el repositorio como ruta inactiva (`public/manifest.json`, `scripts/package-opk.mjs` y el SDK); no hace falta para desarrollar ni para jugar.
+
+Desde `lol-analyzer-desktop`:
+
+```bash
+npm install
+npm run dev:electron
+```
+
+Eso compila el proceso principal, abre Vite en `http://127.0.0.1:5173` y lanza Electron. La ventana de escritorio mide 1280×820 y no tiene marco del sistema. `npm run build:electron` solo compila `electron/` a `dist-electron/`.
+
+El overlay es una `BrowserWindow` transparente que copia el rectángulo de `League of Legends.exe` (título habitual «League of Legends (TM) Client») y se dibuja encima. Tiene que estar en **ventana sin bordes** o en **ventana**. En `Config/game.cfg`, `[General] WindowMode` vale `2` o `1` en esos modos. Si vale `0` (pantalla completa exclusiva) el overlay no se muestra. El aviso queda en `localStorage` con la clave `lolanalyzer.overlayNotice.v1` para que la interfaz de escritorio pueda leerlo. Si el archivo no está, el overlay se muestra igual cuando la ventana del juego existe: igual conviene usar ventana sin bordes, porque en pantalla completa exclusiva Windows no deja dibujar encima.
+
+Atajos globales, liberados al salir:
+
+- `Ctrl+Shift+O` muestra u oculta el overlay.
+- `Ctrl+Shift+M` alterna Mini-HUD y panel expandido.
+
+El panel deja pasar el mouse al juego salvo cuando el cursor está sobre el HUD. La posición del panel dentro de la ventana del juego sigue el ancla de Ajustes. Si el puerto `2999` o su certificado no responden, la app arranca igual y la barra SIM del navegador (`npm run dev`) sigue sirviendo para probar sin League. Electron no lee la memoria del juego ni inyecta nada en el proceso.
+
 ## Overwolf
 
 El manifiesto está en `public/manifest.json`. El juego objetivo es League of Legends, id `5426`. Atajos declarados:

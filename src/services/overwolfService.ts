@@ -12,6 +12,44 @@ import type { TiltAlert, CoachMessage } from '../types/coach';
 import type { OverlayAnchor } from './settingsStore';
 import { eventBus } from './eventBus';
 
+const OVERLAY_NOTICE_KEY = 'lolanalyzer.overlayNotice.v1';
+const GAME_PHASES = new Set<GamePhase>(['LOBBY', 'MATCHMAKING', 'CHAMP_SELECT', 'IN_GAME', 'END_OF_GAME', 'NONE']);
+const LIVE_EVENT_TYPES = new Set<LiveGameEvent['type']>([
+  'kill', 'death', 'assist', 'objective', 'cs_update', 'gold_update', 'game_start', 'game_end',
+]);
+
+interface ElectronNotice {
+  code: 'exclusive-fullscreen' | null;
+  message: string;
+  windowMode: 0 | 1 | 2 | null;
+  updatedAt: number;
+}
+
+interface ElectronStatus {
+  phase?: string | null;
+  notice?: ElectronNotice;
+}
+
+interface LolAnalyzerBridge {
+  openWindow(name: string): Promise<boolean>;
+  closeWindow(name: string): Promise<boolean>;
+  minimizeWindow(name: string): Promise<boolean>;
+  setOverlayInteractive(interactive: boolean): Promise<void>;
+  toggleOverlay(): Promise<boolean>;
+  getOverlayStatus(): Promise<ElectronStatus | null>;
+  onGameTime(listener: (payload: { seconds: number }) => void): () => void;
+  onGameEvent(listener: (payload: unknown) => void): () => void;
+  onGamePhase(listener: (payload: { phase: string }) => void): () => void;
+  onHotkey(listener: (payload: { action: 'toggle' | 'cycle-mode' }) => void): () => void;
+  onOverlayNotice(listener: (payload: unknown) => void): () => void;
+}
+
+declare global {
+  interface Window {
+    lolAnalyzer?: LolAnalyzerBridge;
+  }
+}
+
 /* ─────────────────────────────────────────────────────────
    Window name constants (must match manifest.json)
 ───────────────────────────────────────────────────────── */
@@ -24,9 +62,73 @@ export const WINDOW = {
 /* ─────────────────────────────────────────────────────────
    Runtime detection
 ───────────────────────────────────────────────────────── */
-const isOverwolf = (): boolean =>
-  typeof window !== 'undefined' &&
-  typeof (window as { overwolf?: unknown }).overwolf !== 'undefined';
+const isElectronRuntime = (): boolean =>
+  typeof window !== 'undefined' && typeof window.lolAnalyzer !== 'undefined';
+
+const isOverwolf = (): boolean => {
+  if (isElectronRuntime()) return false;
+  return typeof window !== 'undefined' &&
+    typeof (window as { overwolf?: unknown }).overwolf !== 'undefined';
+};
+
+function electronBridge(): LolAnalyzerBridge | null {
+  return isElectronRuntime() ? window.lolAnalyzer ?? null : null;
+}
+
+function canonicalWindow(name: string): string {
+  return name === 'overlay' ? WINDOW.OVERLAY : name;
+}
+
+function isGamePhase(phase: string): phase is GamePhase {
+  return GAME_PHASES.has(phase as GamePhase);
+}
+
+function isLiveEvent(value: unknown): value is LiveGameEvent {
+  if (!value || typeof value !== 'object') return false;
+  const event = value as LiveGameEvent;
+  return LIVE_EVENT_TYPES.has(event.type) && typeof event.timestamp === 'number';
+}
+
+function rememberNotice(notice: unknown): void {
+  if (!notice || typeof notice !== 'object') return;
+  try {
+    localStorage.setItem(OVERLAY_NOTICE_KEY, JSON.stringify(notice));
+  } catch {
+    // Private mode or a blocked storage must not break the overlay.
+  }
+}
+
+let electronBridgeStarted = false;
+
+function ensureElectronBridge(): void {
+  const api = electronBridge();
+  if (!api || electronBridgeStarted) return;
+  electronBridgeStarted = true;
+  api.onGameTime(({ seconds }) => {
+    if (typeof seconds === 'number' && Number.isFinite(seconds)) {
+      eventBus.emit('game:time_update', { seconds });
+    }
+  });
+  api.onGameEvent((payload) => {
+    if (isLiveEvent(payload)) eventBus.emit('game:event', payload);
+  });
+  api.onGamePhase(({ phase }) => {
+    if (isGamePhase(phase)) eventBus.emit('game:phase_changed', { phase });
+  });
+  api.onHotkey(({ action }) => {
+    if (action === 'cycle-mode') eventBus.emit('overlay:cycle_mode');
+  });
+  api.onOverlayNotice((notice) => rememberNotice(notice));
+  void api.getOverlayStatus().then((status) => {
+    if (!status) return;
+    rememberNotice(status.notice);
+    if (status.phase && isGamePhase(status.phase)) {
+      eventBus.emit('game:phase_changed', { phase: status.phase });
+    }
+  }).catch(() => {});
+}
+
+if (typeof window !== 'undefined') ensureElectronBridge();
 
 /* ─────────────────────────────────────────────────────────
    Window Management
@@ -41,6 +143,10 @@ export async function getWindowId(windowName: string): Promise<string | null> {
 }
 
 export async function openWindow(windowName: string): Promise<boolean> {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    return electronBridge()!.openWindow(canonicalWindow(windowName));
+  }
   if (!isOverwolf()) {
     console.log(`[OW] openWindow: ${windowName} (dev mode - no-op)`);
     return true;
@@ -53,6 +159,10 @@ export async function openWindow(windowName: string): Promise<boolean> {
 }
 
 export async function closeWindow(windowName: string): Promise<boolean> {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    return electronBridge()!.closeWindow(canonicalWindow(windowName));
+  }
   if (!isOverwolf()) return true;
   const id = await getWindowId(windowName);
   if (!id) return false;
@@ -62,6 +172,10 @@ export async function closeWindow(windowName: string): Promise<boolean> {
 }
 
 export async function minimizeWindow(windowName: string): Promise<boolean> {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    return electronBridge()!.minimizeWindow(canonicalWindow(windowName));
+  }
   if (!isOverwolf()) return true;
   const id = await getWindowId(windowName);
   if (!id) return false;
@@ -71,6 +185,11 @@ export async function minimizeWindow(windowName: string): Promise<boolean> {
 }
 
 export async function toggleOverlay(): Promise<void> {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    await electronBridge()!.toggleOverlay();
+    return;
+  }
   if (!isOverwolf()) {
     eventBus.emit('overlay:toggle');
     return;
@@ -93,8 +212,14 @@ const OVERLAY_ANCHORS: Record<OverlayAnchor, { left: number; top: number }> = {
   'bottom-left': { left: 20, top: 640 },
 };
 
+export async function setOverlayInteractive(interactive: boolean): Promise<void> {
+  if (!isElectronRuntime()) return;
+  ensureElectronBridge();
+  await electronBridge()!.setOverlayInteractive(interactive);
+}
+
 export function placeOverlay(anchor: OverlayAnchor): void {
-  if (!isOverwolf()) return;
+  if (isElectronRuntime() || !isOverwolf()) return;
   const pos = OVERLAY_ANCHORS[anchor];
   overwolf.windows.changePosition(WINDOW.OVERLAY, pos.left, pos.top, () => {});
 }
@@ -109,6 +234,10 @@ export function placeOverlay(anchor: OverlayAnchor): void {
  * Must run inside the overlay window so compact-mode updates hit that window's state.
  */
 export function registerHotkeys(): () => void {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    return () => {};
+  }
   if (isOverwolf()) {
     const listener = (event: overwolf.settings.hotkeys.OnPressedEvent) => {
       if (event.name === 'toggle_overlay') {
@@ -149,6 +278,10 @@ export function registerHotkeys(): () => void {
 const LOL_GAME_CLASS_ID = 5426; // Overwolf LoL class ID
 
 export function registerGameEventListener(): void {
+  if (isElectronRuntime()) {
+    ensureElectronBridge();
+    return;
+  }
   if (!isOverwolf()) {
     console.log('[OW] registerGameEventListener: dev mode, using simulator');
     return;

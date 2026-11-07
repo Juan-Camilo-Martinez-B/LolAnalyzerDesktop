@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" style="background: transparent; pointer-events: none;">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -25,8 +25,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Outfit:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-transparent select-none overflow-hidden" style="background: transparent !important; margin: 0; padding: 0;">
-    <div id="overlay-root"></div>
+  <body class="bg-transparent select-none overflow-hidden" style="background: transparent !important; background-image: none !important; margin: 0; padding: 0; pointer-events: none;">
+    <div id="overlay-root" style="background: transparent; pointer-events: none;"></div>
     <script type="module" src="/src/overlay/overlayMain.tsx"></script>
   </body>
 </html>
