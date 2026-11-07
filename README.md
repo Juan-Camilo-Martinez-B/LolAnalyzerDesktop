@@ -108,3 +108,34 @@ Al salir de una partida, el escritorio pide el análisis de esa partida a `POST 
 El mismo análisis aparece en el detalle de cada partida del dashboard. Las partidas antiguas muestran **Analizar esta partida**, así solo se gastan tokens en las que abres. Cada análisis se guarda y no se vuelve a generar.
 
 En la selección, cuando se conoce al rival de línea, la tarjeta de runas y objetos muestra un **Plan de línea**: en línea, cuándo pelear y qué evitar. Se arma con los datos del matchup de OP.GG y se genera una sola vez por matchup. Sin Groq, se usan textos generados con reglas.
+
+## Distribución: ejecutable y página web
+
+Un solo código fuente con dos builds; la página web nunca entra en el ejecutable.
+
+| Build | Comando | Resultado | Dónde |
+| --- | --- | --- | --- |
+| Escritorio | `npm run dist:win` | `release/LolAnalyzer-Setup.exe` (NSIS, x64) | GitHub Releases |
+| Web | `npm run build:web` | `dist-web/` (landing con el botón de descarga) | Vercel: https://lolanalyzer-web.vercel.app |
+
+**Ejecutable.** `electron-builder.config.cjs` empaqueta `dist/`, `dist-electron/` y el agente local (`lolanalyzer-agent.exe`, compilado con PyInstaller en el repositorio del backend; `AGENT_DIR` cambia su ruta). Antes de empaquetar hay que generar el agente: `python agent/build_agent.py` en `lol-analyzer-backend`. La URL de la API en la nube sale de `package.json` → `config.cloudApiUrl` (hoy `https://lolanalyzer-api.vercel.app`): Vite la usa en el build de escritorio (`--mode desktop`) y Electron se la pasa al agente. El instalador no contiene claves.
+
+Al abrirse, la app empaquetada:
+- sirve sus páginas desde `app://lolanalyzer`, el origen que la API en la nube permite en CORS;
+- arranca el agente en `127.0.0.1` (primer puerto libre desde 8765) con un token aleatorio de 64 caracteres que solo conocen sus ventanas;
+- lo cierra al salir (y el agente también se cierra solo si la app muere).
+
+Tiene su propio nombre de paquete (`lolanalyzer`), así que puede abrirse junto a una copia de desarrollo.
+
+**Página web.** `vite.web.config.ts` construye `web/index.html` con `src/landing/`. El botón apunta a `/releases/latest/download/LolAnalyzer-Setup.exe`, que siempre resuelve a la versión más reciente porque el instalador conserva el mismo nombre. En Vercel, `vercel.json` instala sin descargar Electron y `.vercelignore` deja fuera los artefactos de escritorio.
+
+**Versiones.** Cada versión de escritorio es un tag `desktop-vX.Y.Z` con su Release. La rama `release/desktop-1.0` conserva la 1.0 para parches mientras `main` sigue avanzando. Para publicar una versión nueva:
+
+```bash
+npm version minor
+npm run dist:win
+git push --follow-tags
+gh release create desktop-v1.1.0 release/LolAnalyzer-Setup.exe --title "LolAnalyzer 1.1.0" --generate-notes
+```
+
+Windows SmartScreen avisa al instalar porque el ejecutable no está firmado: "Más información" → "Ejecutar de todas formas".
