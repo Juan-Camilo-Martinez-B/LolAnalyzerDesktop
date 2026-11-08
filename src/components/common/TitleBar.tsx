@@ -12,11 +12,33 @@ import './TitleBar.css';
 interface TitleBarProps {
   windowName?: string;
   subtitle?: string;
+  /** The LCU and API dots need the app state, which only exists after login. */
+  showStatus?: boolean;
 }
 
-export function TitleBar({ windowName = WINDOW.DESKTOP, subtitle }: TitleBarProps) {
+function ConnectionIndicators() {
   const { lcu, backend } = useConnectionStatus();
+  return (
+    <div className="titlebar__status" aria-label="Connection status">
+      <div className="titlebar__status-item">
+        <span
+          className={`status-dot ${lcu === 'connected' ? 'status-dot--online' : 'status-dot--offline'}`}
+          aria-label={`LCU ${lcu}`}
+        />
+        <span>LCU</span>
+      </div>
+      <div className="titlebar__status-item">
+        <span
+          className={`status-dot ${backend === 'connected' ? 'status-dot--online' : backend === 'reconnecting' ? 'status-dot--warning' : 'status-dot--offline'}`}
+          aria-label={`Backend ${backend}`}
+        />
+        <span>API</span>
+      </div>
+    </div>
+  );
+}
 
+export function TitleBar({ windowName = WINDOW.DESKTOP, subtitle, showStatus = true }: TitleBarProps) {
   const handleMinimize = () => minimizeWindow(windowName);
   const handleClose    = () => closeWindow(windowName);
 
@@ -40,22 +62,7 @@ export function TitleBar({ windowName = WINDOW.DESKTOP, subtitle }: TitleBarProp
       </div>
 
       {/* Status indicators */}
-      <div className="titlebar__status" aria-label="Connection status">
-        <div className="titlebar__status-item">
-          <span
-            className={`status-dot ${lcu === 'connected' ? 'status-dot--online' : 'status-dot--offline'}`}
-            aria-label={`LCU ${lcu}`}
-          />
-          <span>LCU</span>
-        </div>
-        <div className="titlebar__status-item">
-          <span
-            className={`status-dot ${backend === 'connected' ? 'status-dot--online' : backend === 'reconnecting' ? 'status-dot--warning' : 'status-dot--offline'}`}
-            aria-label={`Backend ${backend}`}
-          />
-          <span>API</span>
-        </div>
-      </div>
+      {showStatus && <ConnectionIndicators />}
 
       {/* Window controls */}
       <div className="titlebar__controls" role="group" aria-label="Window controls">

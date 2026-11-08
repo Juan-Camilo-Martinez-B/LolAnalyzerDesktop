@@ -75,10 +75,20 @@ function AppShell() {
 }
 
 // ── Root export ──────────────────────────────────────────────
+/** Window frame before login: the window has no native frame, so it needs its own buttons. */
+function GuestShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="app-shell">
+      <TitleBar showStatus={false} />
+      <div className="guest-body">{children}</div>
+    </div>
+  );
+}
+
 function AuthSwitch() {
   const { status } = useAuth();
-  if (status === 'loading') return <div className="page-skeleton">Comprobando sesión…</div>;
-  if (status !== 'authenticated') return <AuthGate />;
+  if (status === 'loading') return <GuestShell><div className="page-skeleton">Comprobando sesión…</div></GuestShell>;
+  if (status !== 'authenticated') return <GuestShell><AuthGate /></GuestShell>;
   return (
     <AppProvider>
       <AppShell />
