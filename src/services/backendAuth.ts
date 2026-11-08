@@ -269,51 +269,37 @@ export interface RiotStatsPayload {
   champions: unknown[];
 }
 
-export async function fetchRiotBundle(): Promise<{
-  profile: RiotProfilePayload;
-  matches: unknown[];
-  stats: RiotStatsPayload;
-}> {
-  // The cloud cannot read the League client: the agent copies recent games first.
-  await syncClientHistory();
-  const [profile, matches, stats] = await Promise.all([
-    clientProfileOrCloud(),
-    apiRequest<unknown[]>('/api/riot/matches?count=10'),
-    apiRequest<RiotStatsPayload>('/api/riot/stats'),
-  ]);
-  return { profile, matches, stats };
-}
-
 /**
- * Stored games and totals for accounts without a linked Riot ID. The client is
- * not copied: the account open in League may belong to someone else.
+ * Copies the open client's profile and recent games to the account, whatever
+ * League account is open. Returns that profile's puuid, or null when the client
+ * is closed or the agent is not ready (the stored history still loads).
  */
-export async function fetchHistoryBundle(): Promise<{ matches: unknown[]; stats: RiotStatsPayload }> {
-  const [matches, stats] = await Promise.all([
-    apiRequest<unknown[]>('/api/riot/matches?count=10'),
-    apiRequest<RiotStatsPayload>('/api/riot/stats'),
-  ]);
-  return { matches, stats };
-}
-
-/** Copies the client's recent games to the account. Silent when the client is closed. */
-export async function syncClientHistory(): Promise<void> {
+export async function syncClientHistory(): Promise<string | null> {
   try {
-    await agentRequest('/api/local/history/sync', { method: 'POST' });
+    const body = await agentRequest<{ clientConnected?: boolean; puuid?: string | null }>(
+      '/api/local/history/sync',
+      { method: 'POST' },
+    );
+    return body.clientConnected && body.puuid ? body.puuid : null;
   } catch {
-    // Client closed, agent not ready or another account open: the stored history still loads.
+    return null;
   }
 }
 
-/** Level and rank straight from the open client; the cloud (Riot API) when it is closed. */
-async function clientProfileOrCloud(): Promise<RiotProfilePayload> {
+/** Level and rank of the account open in the client, or null when it is closed. */
+export async function fetchClientProfile(): Promise<RiotProfilePayload | null> {
   try {
-    const local = await agentRequest<RiotProfilePayload>('/api/local/profile');
-    const cloud = await apiRequest<RiotProfilePayload>('/api/riot/profile').catch(() => null);
-    // Same linked account: keep the client's fresh level and rank.
-    if (!cloud || cloud.puuid === local.puuid) return { ...cloud, ...local } as RiotProfilePayload;
-    return cloud;
+    return await agentRequest<RiotProfilePayload>('/api/local/profile');
   } catch {
-    return apiRequest<RiotProfilePayload>('/api/riot/profile');
+    return null;
+  }
+}
+
+/** The linked Riot ID through the Riot API (works with the client closed). */
+export async function fetchLinkedProfile(): Promise<RiotProfilePayload | null> {
+  try {
+    return await apiRequest<RiotProfilePayload>('/api/riot/profile');
+  } catch {
+    return null;
   }
 }

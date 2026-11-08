@@ -190,3 +190,29 @@
     flex-wrap: wrap;
   }
 }
+
+/* Selector de perfil de League (una cuenta del analizador puede tener varios) */
+.profile-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.profile-selector__label {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.profile-selector__select {
+  background: var(--bg-glass-medium);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font: inherit;
+  padding: 3px 8px;
+  max-width: 260px;
+  cursor: pointer;
+}

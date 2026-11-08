@@ -5,10 +5,15 @@ import { useAuth } from '../../context/AuthContext';
 import { assetResolver, ensureDdragonVersion } from '../../services/assetResolver';
 import { TierBadge, Badge } from '../ui';
 import { audioService } from '../../services/audioService';
+import { useApp } from '../../context/AppContext';
+import { ALL_PROFILES } from '../../services/riotProfiles';
+import { ProfileSelector } from './ProfileSelector';
 
 export const ProfileHeader: React.FC = () => {
   const { summoner, rankInfo, connectionStatus, refreshState } = useGameState();
   const { user } = useAuth();
+  const { state } = useApp();
+  const showingAll = state.activeProfile === ALL_PROFILES && state.riotProfiles.length > 0;
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [iconVersion, setIconVersion] = useState(assetResolver.getVersion());
 
@@ -37,7 +42,7 @@ export const ProfileHeader: React.FC = () => {
     : '';
   const name = summoner?.gameName
     ? `${summoner.gameName}#${summoner.tagLine || user?.riotTagLine || ''}`
-    : summoner?.displayName || linkedName || 'Sin Riot ID';
+    : showingAll ? 'Todos los perfiles' : summoner?.displayName || linkedName || 'Sin perfil de League';
 
   const level = summoner?.summonerLevel && summoner.summonerLevel > 0 ? summoner.summonerLevel : null;
   const profileIconId = summoner?.profileIconId ?? user?.summonerIconId ?? 29;
@@ -121,6 +126,8 @@ export const ProfileHeader: React.FC = () => {
             </Badge>
           </div>
 
+          <ProfileSelector />
+
           <div className="profile-meta">
             <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <Shield size={13} color="var(--hextech-cyan)" /> Solo/Duo Ranked
@@ -172,7 +179,7 @@ export const ProfileHeader: React.FC = () => {
               </>
             ) : (
               <div style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-                {linkedName ? 'Sin clasificar' : 'Vincula tu Riot ID en Ajustes'}
+                {summoner || linkedName ? 'Sin clasificar' : showingAll ? 'Varios perfiles' : 'Abre League o vincula tu Riot ID'}
               </div>
             )}
           </div>

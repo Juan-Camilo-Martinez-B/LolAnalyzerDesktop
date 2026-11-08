@@ -23,6 +23,7 @@ import type { CoachAnalytics, CoachMessage, TiltAlert, OverlayState } from '../t
 import type { ConnectionStatus } from '../types/game';
 import { csPerMinute } from '../services/tiltCalculations';
 import { eventBus } from '../services/eventBus';
+import { ALL_PROFILES, type StoredRiotProfile } from '../services/riotProfiles';
 import { setGameClock } from '../services/gameClock';
 import { checkBackendHealth } from '../services/apiClient';
 
@@ -41,6 +42,12 @@ export interface AppState {
   // Profile
   summoner:   SummonerProfile | null;
   rankedInfo: RankedInfo | null;
+  /** League profiles stored for the analyzer account. */
+  riotProfiles:  StoredRiotProfile[];
+  /** Profile on screen: a puuid or ALL_PROFILES. */
+  activeProfile: string;
+  /** Profile picked in the selector; null follows the client automatically. */
+  profileChoice: string | null;
 
   // Stats
   kpiSummary:          KpiSummary | null;
@@ -83,6 +90,9 @@ export const initialState: AppState = {
   gameTimeSec:         0,
   summoner:            null,
   rankedInfo:          null,
+  riotProfiles:        [],
+  activeProfile:       ALL_PROFILES,
+  profileChoice:       null,
   kpiSummary:          null,
   championPerformance: [],
   matchHistory:        [],
@@ -104,8 +114,10 @@ type AppAction =
   | { type: 'SET_BACKEND_STATUS';  payload: ConnectionStatus }
   | { type: 'SET_GAME_PHASE';      payload: GamePhase }
   | { type: 'SET_GAME_TIME';       payload: number }
-  | { type: 'SET_SUMMONER';        payload: SummonerProfile }
-  | { type: 'SET_RANKED_INFO';     payload: RankedInfo }
+  | { type: 'SET_SUMMONER';        payload: SummonerProfile | null }
+  | { type: 'SET_RANKED_INFO';     payload: RankedInfo | null }
+  | { type: 'SET_RIOT_PROFILES';   payload: { profiles: StoredRiotProfile[]; active: string } }
+  | { type: 'SET_PROFILE_CHOICE';  payload: string | null }
   | { type: 'SET_KPI';             payload: KpiSummary }
   | { type: 'SET_CHAMP_PERF';      payload: ChampionPerformance[] }
   | { type: 'SET_MATCH_HISTORY';   payload: MatchRecord[] }
@@ -128,6 +140,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SET_GAME_TIME':       return { ...state, gameTimeSec: action.payload };
     case 'SET_SUMMONER':        return { ...state, summoner: action.payload };
     case 'SET_RANKED_INFO':     return { ...state, rankedInfo: action.payload };
+    case 'SET_RIOT_PROFILES':   return { ...state, riotProfiles: action.payload.profiles, activeProfile: action.payload.active };
+    case 'SET_PROFILE_CHOICE':  return { ...state, profileChoice: action.payload };
     case 'SET_KPI':             return { ...state, kpiSummary: action.payload };
     case 'SET_CHAMP_PERF':      return { ...state, championPerformance: action.payload };
     case 'SET_MATCH_HISTORY':   return { ...state, matchHistory: action.payload };
