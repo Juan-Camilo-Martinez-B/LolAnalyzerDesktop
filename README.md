@@ -103,6 +103,8 @@ Ajustes tiene un botón de prueba para cada uno, y el silencio general los apaga
 
 ## Análisis post-partida y plan de línea
 
+**Historial del cliente.** No importa si la app se abre antes que League. `useClientPhase` consulta el agente cada 3 segundos y, además de la fase, recibe `connected`: si el cliente respondió. Cuando el cliente aparece se emite `lcu:connected` (también el punto LCU de la barra superior se pone en verde) y `RiotDataBridge` vuelve a copiar las partidas del cliente a la cuenta y recarga el dashboard. También recarga cuando termina una partida (`history:updated`). Sin Riot ID vinculado se cargan igual las partidas y las estadísticas; el perfil y el rango necesitan el vínculo.
+
 Al salir de una partida, el escritorio pide el análisis de esa partida a `POST /api/analysis/latest`. Lo intenta a los 15, 45, 90 y 150 segundos, porque el cliente de League tarda un poco en guardar la partida en su historial. Usa el resumen final de la partida, no la telemetría en vivo, así que es una sola llamada corta a la IA por partida. Cuando llega, aparece la tarjeta **Análisis de tu última partida** con tres bloques (lo que salió bien, qué mejorar y un foco para la próxima) y las métricas frente a la referencia del rol. La tarjeta se cierra con la X.
 
 El mismo análisis aparece en el detalle de cada partida del dashboard. Las partidas antiguas muestran **Analizar esta partida**, así solo se gastan tokens en las que abres. Cada análisis se guarda y no se vuelve a generar.
@@ -125,17 +127,29 @@ Al abrirse, la app empaquetada:
 - arranca el agente en `127.0.0.1` (primer puerto libre desde 8765) con un token aleatorio de 64 caracteres que solo conocen sus ventanas;
 - lo cierra al salir (y el agente también se cierra solo si la app muere).
 
+Antes de iniciar sesión la ventana ya muestra la barra superior con minimizar y cerrar (sin los indicadores LCU y API, que dependen del estado de la sesión), porque la ventana no tiene marco nativo.
+
 Tiene su propio nombre de paquete (`lolanalyzer`), así que puede abrirse junto a una copia de desarrollo.
 
 **Página web.** `vite.web.config.ts` construye `web/index.html` con `src/landing/`. El botón apunta a `/releases/latest/download/LolAnalyzer-Setup.exe`, que siempre resuelve a la versión más reciente porque el instalador conserva el mismo nombre. En Vercel, `vercel.json` instala sin descargar Electron y `.vercelignore` deja fuera los artefactos de escritorio.
 
-**Versiones.** Cada versión de escritorio es un tag `desktop-vX.Y.Z` con su Release. La rama `release/desktop-1.0` conserva la 1.0 para parches mientras `main` sigue avanzando. Para publicar una versión nueva:
+**Versiones.** Cada versión de escritorio es un tag `desktop-vX.Y.Z` con su Release, y cada versión menor tiene una rama `release/desktop-X.Y` en los tres repositorios para parches mientras `main` sigue avanzando.
+
+| Versión | Cambios |
+|---|---|
+| 1.1.0 | Las partidas del cliente cargan aunque la app se abra antes que League; el coach muestra Groq (y cada fuente) en lugar de Gemini; el login tiene botones de minimizar y cerrar; el agente exige su token también en las rutas de solo lectura. |
+| 1.0.0 | Primera versión pública. |
+
+Para publicar una versión nueva (ejemplo con 1.2.0):
 
 ```bash
-npm version minor
+npm version 1.2.0 --no-git-tag-version
+python ../lol-analyzer-backend/agent/build_agent.py
 npm run dist:win
-git push --follow-tags
-gh release create desktop-v1.1.0 release/LolAnalyzer-Setup.exe --title "LolAnalyzer 1.1.0" --generate-notes
+git tag desktop-v1.2.0 && git push origin main --tags
+gh release create desktop-v1.2.0 release/LolAnalyzer-Setup.exe --title "LolAnalyzer 1.2.0" --notes-file notas.md
 ```
+
+La web no necesita desplegarse de nuevo: el botón descarga siempre el último Release.
 
 Windows SmartScreen avisa al instalar porque el ejecutable no está firmado: "Más información" → "Ejecutar de todas formas".
