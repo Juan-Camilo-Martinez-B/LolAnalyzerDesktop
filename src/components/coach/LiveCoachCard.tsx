@@ -3,6 +3,7 @@ import { Sparkles } from 'lucide-react';
 import { Badge, Card } from '../ui';
 import { agentRequest } from '../../services/backendAuth';
 import { publishAppError } from '../../services/userErrors';
+import { adviceSourceLabel } from '../../services/adviceSources';
 import { publishCoachToOverlay } from '../../services/overwolfService';
 import './liveCoach.css';
 
@@ -35,12 +36,6 @@ interface LiveCoachState {
   advice: LiveAdvice | null;
 }
 
-const SOURCE_LABELS: Record<string, string> = {
-  rules: 'Lectura en vivo',
-  groq: 'Groq',
-  gemini: 'Gemini',
-  heuristic: 'Motor local',
-};
 
 function clock(seconds: number): string {
   const total = Math.max(0, Math.floor(seconds));
@@ -104,7 +99,7 @@ export function LiveCoachCard() {
         <strong>{title}</strong>
         {advice && (
           <Badge variant={advice.source === 'heuristic' ? 'neutral' : 'gold'}>
-            {SOURCE_LABELS[advice.source] ?? 'Motor local'}
+            {adviceSourceLabel(advice.source)}
           </Badge>
         )}
       </div>

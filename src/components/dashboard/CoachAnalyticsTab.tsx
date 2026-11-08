@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Bot, Sparkles } from 'lucide-react';
 import { apiRequest } from '../../services/backendAuth';
 import { Badge, Card } from '../ui';
+import { adviceSourceLabel, visibleSourceTotals } from '../../services/adviceSources';
 import './coachMetrics.css';
 
 interface CoachTip {
@@ -17,8 +18,7 @@ interface CoachTip {
 
 interface CoachMetrics {
   total: number;
-  fromGemini: number;
-  fromHeuristic: number;
+  bySource?: Record<string, number>;
   byTrigger: { trigger: string; count: number }[];
   recent: CoachTip[];
 }
@@ -84,9 +84,12 @@ export const CoachAnalyticsTab: React.FC = () => {
         <Card variant="cyan">
           <div className="coach-metrics__label"><Sparkles size={16} /> Origen</div>
           <p className="coach-metrics__note">
-            Gemini: <strong>{metrics?.fromGemini ?? 0}</strong>
-            {' · '}
-            Motor local: <strong>{metrics?.fromHeuristic ?? 0}</strong>
+            {visibleSourceTotals(metrics?.bySource).map((row, index) => (
+              <React.Fragment key={row.source}>
+                {index > 0 && ' · '}
+                {row.label}: <strong>{row.count}</strong>
+              </React.Fragment>
+            ))}
           </p>
         </Card>
       </div>
@@ -118,8 +121,8 @@ export const CoachAnalyticsTab: React.FC = () => {
               <li key={tip.id}>
                 <div className="coach-metrics__tip-head">
                   <strong>{tip.champion} · {tip.role} · {clock(tip.gameTime)}</strong>
-                  <Badge variant={tip.source === 'gemini' ? 'gold' : 'neutral'}>
-                    {tip.source === 'gemini' ? 'Gemini' : 'Motor local'}
+                  <Badge variant={tip.source === 'groq' ? 'gold' : 'neutral'}>
+                    {adviceSourceLabel(tip.source)}
                   </Badge>
                 </div>
                 <p>{tip.text}</p>
