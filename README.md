@@ -55,7 +55,7 @@ Eso compila el proceso principal, abre Vite en `http://127.0.0.1:5173` y lanza E
 
 El overlay es una `BrowserWindow` transparente que copia el rectángulo de `League of Legends.exe` (título habitual «League of Legends (TM) Client») y se dibuja encima. Tiene que estar en **ventana sin bordes** o en **ventana**. En `Config/game.cfg`, `[General] WindowMode` vale `2` o `1` en esos modos. Si vale `0` (pantalla completa exclusiva) el overlay no se muestra. El aviso queda en `localStorage` con la clave `lolanalyzer.overlayNotice.v1` para que la interfaz de escritorio pueda leerlo. Si el archivo no está, el overlay se muestra igual cuando la ventana del juego existe: igual conviene usar ventana sin bordes, porque en pantalla completa exclusiva Windows no deja dibujar encima.
 
-Atajos globales, liberados al salir. Se cambian en **Ajustes → Atajos del overlay**: pulsas el atajo y luego la combinación nueva. Deben incluir Ctrl o Alt, no pueden repetirse y se rechazan las combinaciones que League ya usa (por ejemplo `Ctrl+Q`, que sube la Q de nivel). Si otro programa ocupa la combinación, se mantiene la anterior. Se guardan en `hotkeys.json` dentro de los datos de la app y se registran al abrirla. Los predeterminados son:
+Atajos globales, liberados al salir. Se cambian en **Ajustes → Atajos del overlay**: pulsas el atajo y luego la combinación nueva. Deben incluir Ctrl o Alt, no pueden repetirse y se rechazan las combinaciones que League ya usa (por ejemplo `Ctrl+Q`, que sube la Q de nivel). Cada atajo se registra por separado: si otro programa ocupa una combinación, solo ese atajo queda inactivo, Ajustes lo marca en rojo y los otros dos siguen funcionando. Si al cambiarlo Windows la rechaza, ese atajo conserva la anterior. Mientras se graba una combinación nueva los atajos globales se liberan (`lol:hotkeys-suspend`), porque Windows se quedaría con la tecla antes de que la vea la ventana. El overlay solo aparece en partida, así que los atajos se notan dentro del juego. Se guardan en `hotkeys.json` dentro de los datos de la app y se registran al abrirla. Los predeterminados son:
 
 - `Ctrl+Shift+O` muestra u oculta el overlay.
 - `Ctrl+Shift+M` alterna panel compacto y expandido.
@@ -103,7 +103,17 @@ Ajustes tiene un botón de prueba para cada uno, y el silencio general los apaga
 
 ## Análisis post-partida y plan de línea
 
-**Historial del cliente.** No importa si la app se abre antes que League. `useClientPhase` consulta el agente cada 3 segundos y, además de la fase, recibe `connected`: si el cliente respondió. Cuando el cliente aparece se emite `lcu:connected` (también el punto LCU de la barra superior se pone en verde) y `RiotDataBridge` vuelve a copiar las partidas del cliente a la cuenta y recarga el dashboard. También recarga cuando termina una partida (`history:updated`). Las partidas del cliente solo se copian a cuentas con Riot ID vinculado y abiertas con esa misma cuenta de Riot (la API lo exige también: `POST /api/history/import` responde 409 sin vínculo). Sin vínculo, el dashboard muestra las partidas ya guardadas en la cuenta, como las de las cuentas demo.
+**Historial del cliente.** No importa si la app se abre antes que League. `useClientPhase` consulta el agente cada 3 segundos y, además de la fase, recibe `connected`: si el cliente respondió. Cuando el cliente aparece se emite `lcu:connected` (también el punto LCU de la barra superior se pone en verde) y `RiotDataBridge` vuelve a copiar las partidas del cliente a la cuenta y recarga el dashboard. También recarga cuando termina una partida (`history:updated`). 
+
+**Perfiles de League.** Una cuenta de LolAnalyzer no está atada a una cuenta de League. Cualquier cuenta que se abra en el cliente se copia a la cuenta del analizador como un perfil propio: cada partida guarda su puuid y cada perfil guarda nombre, nivel, icono y rango. El dashboard muestra un perfil a la vez (`chooseActiveProfile` en `src/services/riotProfiles.ts`):
+
+- con Riot ID vinculado, el vinculado (las partidas de otras cuentas también se guardan y se ven con el selector);
+- sin vínculo, la cuenta abierta en el cliente y, con el cliente cerrado, la última que se abrió;
+- el selector de la cabecera permite elegir otro perfil o **Todos los perfiles**; **Automático** vuelve a la regla anterior.
+
+Un mismo Riot ID puede vincularse a varias cuentas de LolAnalyzer; cada una guarda sus propios análisis.
+
+**Informes.** La sección **Coach e informes** tiene tres pestañas: **Informes post-partida** (todos los análisis guardados, `GET /api/analysis`, cada uno se despliega con sus métricas), **Planes de matchup** (el plan de línea que se recibió en cada selección de campeón, `GET /api/ai/matchup-plans`) y **Consejos en vivo** (las métricas del coach de antes).
 
 Al salir de una partida, el escritorio pide el análisis de esa partida a `POST /api/analysis/latest`. Lo intenta a los 15, 45, 90 y 150 segundos, porque el cliente de League tarda un poco en guardar la partida en su historial. Usa el resumen final de la partida, no la telemetría en vivo, así que es una sola llamada corta a la IA por partida. Cuando llega, aparece la tarjeta **Análisis de tu última partida** con tres bloques (lo que salió bien, qué mejorar y un foco para la próxima) y las métricas frente a la referencia del rol. La tarjeta se cierra con la X.
 
@@ -137,6 +147,7 @@ Tiene su propio nombre de paquete (`lolanalyzer`), así que puede abrirse junto 
 
 | Versión | Cambios |
 |---|---|
+| 1.2.0 | Varios perfiles de League por cuenta (el dashboard sigue al cliente o al Riot ID vinculado, con selector); un Riot ID puede vincularse a varias cuentas; atajos del overlay registrados uno por uno; pestañas de **Informes post-partida** y **Planes de matchup** en **Coach e informes**. |
 | 1.1.1 | Las cuentas sin Riot ID vinculado (como las demo) muestran sus partidas y análisis guardados; las partidas del cliente solo se copian a la cuenta vinculada. |
 | 1.1.0 | Las partidas del cliente cargan aunque la app se abra antes que League; el coach muestra Groq (y cada fuente) en lugar de Gemini; el login tiene botones de minimizar y cerrar; el agente exige su token también en las rutas de solo lectura. |
 | 1.0.0 | Primera versión pública. |

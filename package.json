@@ -1,7 +1,7 @@
 {
   "name": "lol-analyzer-desktop",
   "private": true,
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Coach en tiempo real, overlay e importación de runas para League of Legends.",
   "author": "Juan Camilo Martinez",
   "type": "module",
