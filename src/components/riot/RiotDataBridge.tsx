@@ -47,19 +47,18 @@ export function RiotDataBridge() {
       dispatch({ type: 'SET_CHAMP_PERF', payload: stats.champions as ChampionPerformance[] });
     };
 
-    // Without a linked Riot ID the client's games still load.
+    // Without a linked Riot ID only the stored games load; the client is not copied.
     if (!user.riotLinked || !user.riotGameName) {
       const loadHistory = () => {
         fetchHistoryBundle()
           .then((bundle) => { if (active) showStats(bundle.matches, bundle.stats); })
           .catch((error: unknown) => { if (active) publishAppError(error); });
       };
-      lastLoad = Date.now();
       loadHistory();
-      const stops = [eventBus.on('lcu:connected', throttled(loadHistory)), eventBus.on('history:updated', loadHistory)];
+      const stop = eventBus.on('history:updated', loadHistory);
       return () => {
         active = false;
-        stops.forEach((stop) => stop());
+        stop();
       };
     }
 

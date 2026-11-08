@@ -284,9 +284,11 @@ export async function fetchRiotBundle(): Promise<{
   return { profile, matches, stats };
 }
 
-/** Games and totals only, for accounts without a linked Riot ID. */
+/**
+ * Stored games and totals for accounts without a linked Riot ID. The client is
+ * not copied: the account open in League may belong to someone else.
+ */
 export async function fetchHistoryBundle(): Promise<{ matches: unknown[]; stats: RiotStatsPayload }> {
-  await syncClientHistory();
   const [matches, stats] = await Promise.all([
     apiRequest<unknown[]>('/api/riot/matches?count=10'),
     apiRequest<RiotStatsPayload>('/api/riot/stats'),
