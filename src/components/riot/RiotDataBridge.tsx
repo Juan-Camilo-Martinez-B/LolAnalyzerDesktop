@@ -1,10 +1,14 @@
 import { useEffect } from 'react';
+import { eventBus } from '../../services/eventBus';
 import { useApp } from '../../context/AppContext';
 import { useAuth } from '../../context/AuthContext';
-import { fetchRiotBundle } from '../../services/backendAuth';
+import { fetchHistoryBundle, fetchRiotBundle, type RiotStatsPayload } from '../../services/backendAuth';
 import { publishAppError } from '../../services/userErrors';
 import type { ChampionPerformance, KpiSummary } from '../../types/stats';
 import type { MatchRecord, RankedInfo, Region, SummonerProfile, Tier } from '../../types/game';
+
+// A client that was already open answers right after the first load; skip that repeat.
+const RELOAD_GAP_MS = 8000;
 
 const TIERS = new Set(['IRON', 'BRONZE', 'SILVER', 'GOLD', 'PLATINUM', 'EMERALD', 'DIAMOND', 'MASTER', 'GRANDMASTER', 'CHALLENGER']);
 
@@ -13,7 +17,52 @@ export function RiotDataBridge() {
   const { dispatch } = useApp();
 
   useEffect(() => {
-    if (!user?.riotLinked || !user.riotGameName) return;
+    if (!user) return;
+    let active = true;
+    let lastLoad = 0;
+    // Runs a load unless one just started (the client answering at startup).
+    const throttled = (load: () => void) => () => {
+      if (Date.now() - lastLoad < RELOAD_GAP_MS) return;
+      lastLoad = Date.now();
+      load();
+    };
+
+    const showStats = (matches: unknown[], stats: RiotStatsPayload) => {
+      dispatch({ type: 'SET_MATCH_HISTORY', payload: matches as MatchRecord[] });
+      dispatch({
+        type: 'SET_KPI',
+        payload: {
+          winrate: stats.winrate,
+          avgKills: stats.avgKills,
+          avgDeaths: stats.avgDeaths,
+          avgAssists: stats.avgAssists,
+          kda: stats.kda,
+          avgCSPerMin: stats.avgCSPerMin,
+          avgGoldDiffAt15: 0,
+          tiltIndex: stats.tiltIndex,
+          gamesAnalyzed: stats.gamesAnalyzed,
+          lastUpdated: stats.lastUpdated,
+        } satisfies KpiSummary,
+      });
+      dispatch({ type: 'SET_CHAMP_PERF', payload: stats.champions as ChampionPerformance[] });
+    };
+
+    // Without a linked Riot ID the client's games still load.
+    if (!user.riotLinked || !user.riotGameName) {
+      const loadHistory = () => {
+        fetchHistoryBundle()
+          .then((bundle) => { if (active) showStats(bundle.matches, bundle.stats); })
+          .catch((error: unknown) => { if (active) publishAppError(error); });
+      };
+      lastLoad = Date.now();
+      loadHistory();
+      const stops = [eventBus.on('lcu:connected', throttled(loadHistory)), eventBus.on('history:updated', loadHistory)];
+      return () => {
+        active = false;
+        stops.forEach((stop) => stop());
+      };
+    }
+
     const region = (user.region || 'la1') as Region;
     dispatch({
       type: 'SET_SUMMONER',
@@ -29,8 +78,7 @@ export function RiotDataBridge() {
         region,
       },
     });
-    let active = true;
-    fetchRiotBundle()
+    const loadAll = () => fetchRiotBundle()
       .then((bundle) => {
         if (!active) return;
         const region = (bundle.profile.region || user.region || 'la1') as Region;
@@ -46,23 +94,7 @@ export function RiotDataBridge() {
           region,
         };
         dispatch({ type: 'SET_SUMMONER', payload: summoner });
-        dispatch({ type: 'SET_MATCH_HISTORY', payload: bundle.matches as MatchRecord[] });
-        dispatch({
-          type: 'SET_KPI',
-          payload: {
-            winrate: bundle.stats.winrate,
-            avgKills: bundle.stats.avgKills,
-            avgDeaths: bundle.stats.avgDeaths,
-            avgAssists: bundle.stats.avgAssists,
-            kda: bundle.stats.kda,
-            avgCSPerMin: bundle.stats.avgCSPerMin,
-            avgGoldDiffAt15: 0,
-            tiltIndex: bundle.stats.tiltIndex,
-            gamesAnalyzed: bundle.stats.gamesAnalyzed,
-            lastUpdated: bundle.stats.lastUpdated,
-          } satisfies KpiSummary,
-        });
-        dispatch({ type: 'SET_CHAMP_PERF', payload: bundle.stats.champions as ChampionPerformance[] });
+        showStats(bundle.matches, bundle.stats);
         const solo = bundle.profile.rankedSolo;
         if (solo?.tier && TIERS.has(solo.tier)) {
           const ranked: RankedInfo = {
@@ -80,8 +112,15 @@ export function RiotDataBridge() {
         if (!active) return;
         publishAppError(error);
       });
+
+    lastLoad = Date.now();
+    void loadAll();
+    // The app may open before League: copy the client's games once it answers,
+    // and again when a finished game reaches the history.
+    const stops = [eventBus.on('lcu:connected', throttled(() => void loadAll())), eventBus.on('history:updated', () => void loadAll())];
     return () => {
       active = false;
+      stops.forEach((stop) => stop());
     };
   }, [dispatch, user]);
 

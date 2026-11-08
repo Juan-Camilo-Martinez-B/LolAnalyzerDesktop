@@ -284,6 +284,16 @@ export async function fetchRiotBundle(): Promise<{
   return { profile, matches, stats };
 }
 
+/** Games and totals only, for accounts without a linked Riot ID. */
+export async function fetchHistoryBundle(): Promise<{ matches: unknown[]; stats: RiotStatsPayload }> {
+  await syncClientHistory();
+  const [matches, stats] = await Promise.all([
+    apiRequest<unknown[]>('/api/riot/matches?count=10'),
+    apiRequest<RiotStatsPayload>('/api/riot/stats'),
+  ]);
+  return { matches, stats };
+}
+
 /** Copies the client's recent games to the account. Silent when the client is closed. */
 export async function syncClientHistory(): Promise<void> {
   try {

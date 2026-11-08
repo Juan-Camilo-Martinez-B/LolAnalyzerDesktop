@@ -33,6 +33,7 @@ export type AppEventMap = {
   'lcu:connected':          void;
   'lcu:disconnected':       void;
   'backend:sync_complete':  void;
+  'history:updated':        void;
   'backend:error':          { message: string };
 };
 

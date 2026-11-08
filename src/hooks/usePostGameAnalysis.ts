@@ -44,6 +44,8 @@ export function usePostGameAnalysis(): { analysis: MatchAnalysis | null; dismiss
                 found = true;
                 clearTimers();
                 setAnalysis(result);
+                // The finished game is stored now: the dashboard can reload.
+                eventBus.emit('history:updated');
               }
             })
             .catch(() => {
