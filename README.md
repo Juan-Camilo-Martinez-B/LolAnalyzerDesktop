@@ -137,6 +137,7 @@ Tiene su propio nombre de paquete (`lolanalyzer`), así que puede abrirse junto 
 
 | Versión | Cambios |
 |---|---|
+| 1.1.1 | Las cuentas sin Riot ID vinculado (como las demo) muestran sus partidas y análisis guardados; las partidas del cliente solo se copian a la cuenta vinculada. |
 | 1.1.0 | Las partidas del cliente cargan aunque la app se abra antes que League; el coach muestra Groq (y cada fuente) en lugar de Gemini; el login tiene botones de minimizar y cerrar; el agente exige su token también en las rutas de solo lectura. |
 | 1.0.0 | Primera versión pública. |
 
