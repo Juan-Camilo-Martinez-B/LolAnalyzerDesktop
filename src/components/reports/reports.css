@@ -1,0 +1,109 @@
+/* Informes guardados: post-partida y planes de matchup */
+.reports__note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 4px 0 8px;
+}
+
+.reports__note--error { color: var(--red-400); }
+
+.reports__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reports__item {
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.reports__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.reports__row:hover { background: var(--bg-glass-medium); }
+
+.reports__meta {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.reports__meta--end { margin-left: auto; }
+
+.reports__body { padding: 4px 12px 12px; }
+
+.reports__plans {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 10px;
+}
+
+.reports__plan {
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.8rem;
+}
+
+.reports__plan header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--hextech-gold);
+}
+
+.reports__plan dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 10px;
+}
+
+.reports__plan dt {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.reports__plan dd { margin: 0; }
+
+/* Pestañas de la vista del coach */
+.coach-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.coach-tabs button {
+  background: var(--bg-glass-medium);
+  border: 1px solid var(--border-gold);
+  border-radius: 999px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 0.8rem;
+  padding: 6px 14px;
+  cursor: pointer;
+}
+
+.coach-tabs button[aria-selected="true"] {
+  background: var(--hextech-gold);
+  color: var(--bg-surface-1);
+  font-weight: 700;
+}

@@ -39,7 +39,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   {
     id:    'coach',
-    label: 'AI Coach',
+    label: 'Coach e informes',
     icon:  <BrainCircuit size={20} />,
   },
 ];
