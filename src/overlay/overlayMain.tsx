@@ -37,7 +37,7 @@ const OverlayApp: React.FC = () => {
   const live = useOverlayLive();
   const { panelRef, style: dragStyle, dragging, handleProps, reset } = useDraggablePanel(live.editMode);
   const electron = isElectronApp();
-  const [hotkeys] = useHotkeys();
+  const [{ config: hotkeys }] = useHotkeys();
 
   useEffect(() => {
     setVisible(true);

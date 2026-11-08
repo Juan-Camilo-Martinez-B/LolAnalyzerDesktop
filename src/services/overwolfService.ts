@@ -38,6 +38,7 @@ interface LolAnalyzerBridge {
   publishCoachAdvice(payload: OverlayCoachAdvice): Promise<boolean>;
   getHotkeys(): Promise<unknown>;
   setHotkeys(config: unknown): Promise<unknown>;
+  suspendHotkeys(suspended: boolean): Promise<boolean>;
   onHotkeysChanged(listener: (payload: unknown) => void): () => void;
   toggleOverlay(): Promise<boolean>;
   getOverlayStatus(): Promise<ElectronStatus | null>;
@@ -251,7 +252,25 @@ export const DEFAULT_HOTKEYS: HotkeyConfig = {
   toggleEditMode: 'CommandOrControl+Shift+L',
 };
 
-export type HotkeySaveResult = { ok: boolean; config: HotkeyConfig; error?: string; action?: HotkeyAction };
+export type HotkeySaveResult = {
+  ok: boolean;
+  config: HotkeyConfig;
+  /** Actions whose combination another program holds; they do nothing until changed. */
+  inactive: HotkeyAction[];
+  error?: string;
+  action?: HotkeyAction;
+};
+
+export interface HotkeyStatus {
+  config: HotkeyConfig;
+  inactive: HotkeyAction[];
+}
+
+function inactiveList(value: unknown): HotkeyAction[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is HotkeyAction =>
+    item === 'toggleOverlay' || item === 'cycleMode' || item === 'toggleEditMode');
+}
 
 function isHotkeyConfig(value: unknown): value is HotkeyConfig {
   if (!value || typeof value !== 'object') return false;
@@ -260,30 +279,40 @@ function isHotkeyConfig(value: unknown): value is HotkeyConfig {
 }
 
 /** Current global shortcuts from the main process; the defaults outside Electron. */
-export async function getHotkeys(): Promise<HotkeyConfig> {
+export async function getHotkeys(): Promise<HotkeyStatus> {
   const api = electronBridge();
-  if (!api) return DEFAULT_HOTKEYS;
-  const body = await api.getHotkeys().catch(() => null) as { config?: unknown } | null;
-  return isHotkeyConfig(body?.config) ? body.config : DEFAULT_HOTKEYS;
+  if (!api) return { config: DEFAULT_HOTKEYS, inactive: [] };
+  const body = await api.getHotkeys().catch(() => null) as { config?: unknown; inactive?: unknown } | null;
+  return {
+    config: isHotkeyConfig(body?.config) ? body.config : DEFAULT_HOTKEYS,
+    inactive: inactiveList(body?.inactive),
+  };
+}
+
+/** Releases the global shortcuts while Settings records a new combination. */
+export async function suspendHotkeys(suspended: boolean): Promise<void> {
+  const api = electronBridge();
+  if (!api) return;
+  await api.suspendHotkeys(suspended).catch(() => false);
 }
 
 /** Asks main to register new shortcuts. Main validates them and keeps the old set on failure. */
 export async function saveHotkeys(config: HotkeyConfig): Promise<HotkeySaveResult> {
   const api = electronBridge();
-  if (!api) return { ok: false, config, error: 'Los atajos solo se pueden cambiar en la app de escritorio.' };
+  if (!api) return { ok: false, config, inactive: [], error: 'Los atajos solo se pueden cambiar en la app de escritorio.' };
   const body = await api.setHotkeys(config).catch(() => null) as Partial<HotkeySaveResult> | null;
   if (!body || !isHotkeyConfig(body.config)) {
-    return { ok: false, config, error: 'No se pudieron guardar los atajos.' };
+    return { ok: false, config, inactive: [], error: 'No se pudieron guardar los atajos.' };
   }
-  return { ok: Boolean(body.ok), config: body.config, error: body.error, action: body.action };
+  return { ok: Boolean(body.ok), config: body.config, inactive: inactiveList(body.inactive), error: body.error, action: body.action };
 }
 
-export function subscribeHotkeys(listener: (config: HotkeyConfig) => void): () => void {
+export function subscribeHotkeys(listener: (status: HotkeyStatus) => void): () => void {
   const api = electronBridge();
   if (!api) return () => {};
   return api.onHotkeysChanged((payload) => {
-    const config = (payload as { config?: unknown } | null)?.config;
-    if (isHotkeyConfig(config)) listener(config);
+    const body = payload as { config?: unknown; inactive?: unknown } | null;
+    if (isHotkeyConfig(body?.config)) listener({ config: body.config, inactive: inactiveList(body.inactive) });
   });
 }
 

@@ -116,17 +116,28 @@ function registerIpc(): void {
 
   ipcMain.handle(IpcChannel.hotkeysGet, () => ({
     config: hotkeys?.current() ?? DEFAULT_HOTKEYS,
+    inactive: hotkeys?.inactive() ?? [],
     defaults: DEFAULT_HOTKEYS,
   }));
 
   // Only the desktop window (Settings) may change the global shortcuts.
   ipcMain.handle(IpcChannel.hotkeysSet, (event, config: unknown) => {
     if (!windows || !hotkeys || event.sender !== windows.desktop.webContents) {
-      return { ok: false, config: hotkeys?.current() ?? DEFAULT_HOTKEYS, error: 'No disponible.' };
+      return { ok: false, config: hotkeys?.current() ?? DEFAULT_HOTKEYS, inactive: [], error: 'No disponible.' };
     }
     const result = hotkeys.apply(config);
-    if (result.ok) broadcast(IpcChannel.hotkeysChanged, { config: result.config });
+    broadcast(IpcChannel.hotkeysChanged, { config: result.config, inactive: result.inactive });
     return result;
+  });
+
+  // Settings releases the shortcuts while it records a new one (desktop window only).
+  ipcMain.handle(IpcChannel.hotkeysSuspend, (event, suspended: unknown) => {
+    if (!windows || !hotkeys || event.sender !== windows.desktop.webContents || typeof suspended !== 'boolean') {
+      return false;
+    }
+    if (suspended) hotkeys.suspend();
+    else hotkeys.resume();
+    return true;
   });
 
   ipcMain.handle(IpcChannel.overlaySetEditMode, (_event, enabled: unknown) => {

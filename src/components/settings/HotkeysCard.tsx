@@ -7,6 +7,7 @@ import {
   DEFAULT_HOTKEYS,
   isElectronApp,
   saveHotkeys,
+  suspendHotkeys,
   type HotkeyAction,
   type HotkeyConfig,
 } from '../../services/overwolfService';
@@ -24,7 +25,7 @@ type Status = { kind: 'idle' } | { kind: 'saving' } | { kind: 'ok'; text: string
  * if Windows or League already uses a combination, the previous one stays.
  */
 export function HotkeysCard() {
-  const [config, setConfig] = useHotkeys();
+  const [{ config, inactive }, setHotkeyStatus] = useHotkeys();
   const [recording, setRecording] = useState<HotkeyAction | null>(null);
   const [status, setStatus] = useState<Status>({ kind: 'idle' });
   const available = isElectronApp();
@@ -32,9 +33,19 @@ export function HotkeysCard() {
   const persist = async (next: HotkeyConfig, done: string) => {
     setStatus({ kind: 'saving' });
     const result = await saveHotkeys(next);
-    setConfig(result.config);
+    setHotkeyStatus({ config: result.config, inactive: result.inactive });
     setStatus(result.ok ? { kind: 'ok', text: done } : { kind: 'error', text: result.error ?? 'No se pudo guardar el atajo.' });
   };
+
+  // Windows swallows a registered shortcut before the window sees it, so they
+  // are released while a new combination is recorded.
+  useEffect(() => {
+    if (!recording || !available) return;
+    void suspendHotkeys(true);
+    return () => {
+      void suspendHotkeys(false);
+    };
+  }, [recording, available]);
 
   useEffect(() => {
     if (!recording) return;
@@ -70,15 +81,21 @@ export function HotkeysCard() {
       <div className="hotkey-list">
         {ACTIONS.map((action) => {
           const isRecording = recording === action.id;
+          const taken = inactive.includes(action.id);
           return (
             <div key={action.id} className="settings-row">
               <div>
                 <strong style={{ fontSize: '0.8rem' }}>{action.label}</strong>
                 <p>{action.hint}</p>
+                {taken && (
+                  <p className="settings-note settings-note--error">
+                    Otro programa usa {formatShortcut(config[action.id])}; este atajo no funciona. Elige otra combinación.
+                  </p>
+                )}
               </div>
               <button
                 type="button"
-                className={`hotkey-chip ${isRecording ? 'is-recording' : ''}`}
+                className={`hotkey-chip ${isRecording ? 'is-recording' : ''} ${taken ? 'is-taken' : ''}`}
                 disabled={!available || status.kind === 'saving'}
                 aria-label={`Cambiar atajo: ${action.label}`}
                 onClick={() => {
@@ -93,6 +110,9 @@ export function HotkeysCard() {
           );
         })}
       </div>
+      <p className="settings-note">
+        Funcionan en cualquier momento, pero el overlay solo aparece durante una partida: pruébalos dentro del juego.
+      </p>
       {recording && <p className="settings-note">Pulsa Ctrl o Alt con una letra, un número o F1–F12. Esc cancela.</p>}
       {status.kind === 'ok' && <p className="settings-note settings-note--ok">{status.text}</p>}
       {status.kind === 'error' && <p className="settings-note settings-note--error">{status.text}</p>}

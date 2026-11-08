@@ -1,20 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { app, globalShortcut } from 'electron';
-import {
-  DEFAULT_HOTKEYS,
-  HOTKEY_ACTIONS,
-  HOTKEY_LABELS,
-  checkHotkeyConfig,
-  type HotkeyAction,
-  type HotkeyConfig,
-} from './hotkeyRules.js';
+import { DEFAULT_HOTKEYS, checkHotkeyConfig, type HotkeyAction, type HotkeyConfig } from './hotkeyRules.js';
+import { applyChanges, registerAll, type HotkeyState, type Registrar } from './hotkeyRegistration.js';
 
 export type HotkeyHandlers = Record<HotkeyAction, () => void>;
 
 export type HotkeyResult =
-  | { ok: true; config: HotkeyConfig }
-  | { ok: false; config: HotkeyConfig; error: string; action?: HotkeyAction };
+  | { ok: true; config: HotkeyConfig; inactive: HotkeyAction[] }
+  | { ok: false; config: HotkeyConfig; inactive: HotkeyAction[]; error: string; action?: HotkeyAction };
 
 /** The player's shortcuts live next to the app data, so main can register them before any window loads. */
 function storePath(): string {
@@ -40,67 +34,85 @@ function writeStored(config: HotkeyConfig): void {
   }
 }
 
-/** Registers the overlay shortcuts and swaps them safely when the player changes one. */
+/**
+ * Registers the overlay shortcuts one by one: a combination held by another
+ * program disables only that action, and Settings shows which one it is.
+ */
 export class HotkeyManager {
-  private config: HotkeyConfig = DEFAULT_HOTKEYS;
+  private state: HotkeyState = { config: { ...DEFAULT_HOTKEYS }, inactive: [] };
+  private suspended = false;
+  private readonly registrar: Registrar;
 
-  constructor(private readonly handlers: HotkeyHandlers) {}
+  constructor(handlers: HotkeyHandlers) {
+    this.registrar = {
+      register: (action, accelerator) => {
+        try {
+          return globalShortcut.register(accelerator, handlers[action]);
+        } catch {
+          return false;
+        }
+      },
+      unregister: (accelerator) => {
+        try {
+          globalShortcut.unregister(accelerator);
+        } catch {
+          // Already free.
+        }
+      },
+    };
+  }
 
   current(): HotkeyConfig {
-    return { ...this.config };
+    return { ...this.state.config };
   }
 
-  /** Registers the saved shortcuts, or the defaults when one of them is taken. */
-  start(): HotkeyConfig {
-    const stored = readStored();
-    const failed = this.register(stored);
-    if (failed) {
-      console.warn(`[electron] el atajo de "${HOTKEY_LABELS[failed]}" está ocupado; se usan los predeterminados`);
-      this.register(DEFAULT_HOTKEYS);
+  inactive(): HotkeyAction[] {
+    return [...this.state.inactive];
+  }
+
+  /** Registers the saved shortcuts; each taken one falls back to its default on its own. */
+  start(): HotkeyResult {
+    globalShortcut.unregisterAll();
+    this.state = registerAll(this.registrar, readStored(), DEFAULT_HOTKEYS);
+    if (this.state.inactive.length > 0) {
+      console.warn(`[electron] atajos ocupados por otro programa: ${this.state.inactive.join(', ')}`);
     }
-    return this.current();
+    return { ok: true, config: this.current(), inactive: this.inactive() };
   }
 
-  /** Applies new shortcuts. If Windows refuses one, the previous set stays active. */
+  /** Applies new shortcuts. A refused one keeps its previous combination. */
   apply(raw: unknown): HotkeyResult {
     const check = checkHotkeyConfig(raw);
-    if (!check.ok) return { ok: false, config: this.current(), error: check.error, action: check.action };
-
-    const previous = this.current();
-    const failed = this.register(check.config);
-    if (failed) {
-      this.register(previous);
-      return {
-        ok: false,
-        config: this.current(),
-        error: 'Otro programa ya usa ese atajo. Elige otra combinación.',
-        action: failed,
-      };
+    if (!check.ok) {
+      return { ok: false, config: this.current(), inactive: this.inactive(), error: check.error, action: check.action };
     }
-    writeStored(this.config);
-    return { ok: true, config: this.current() };
+    if (this.suspended) this.resume();
+    const outcome = applyChanges(this.registrar, this.state, check.config);
+    this.state = outcome.state;
+    writeStored(this.state.config);
+    if (!outcome.ok) {
+      return { ok: false, config: this.current(), inactive: this.inactive(), error: outcome.error, action: outcome.action };
+    }
+    return { ok: true, config: this.current(), inactive: this.inactive() };
+  }
+
+  /**
+   * While Settings records a new combination the global shortcuts are released,
+   * otherwise Windows would swallow the keys before the window sees them.
+   */
+  suspend(): void {
+    if (this.suspended) return;
+    this.suspended = true;
+    globalShortcut.unregisterAll();
+  }
+
+  resume(): void {
+    if (!this.suspended) return;
+    this.suspended = false;
+    this.state = registerAll(this.registrar, this.state.config, this.state.config);
   }
 
   dispose(): void {
     globalShortcut.unregisterAll();
-  }
-
-  /** Returns the first action that could not be registered, or null when all worked. */
-  private register(config: HotkeyConfig): HotkeyAction | null {
-    globalShortcut.unregisterAll();
-    for (const action of HOTKEY_ACTIONS) {
-      let ok = false;
-      try {
-        ok = globalShortcut.register(config[action], this.handlers[action]);
-      } catch {
-        ok = false;
-      }
-      if (!ok) {
-        globalShortcut.unregisterAll();
-        return action;
-      }
-    }
-    this.config = { ...config };
-    return null;
   }
 }
